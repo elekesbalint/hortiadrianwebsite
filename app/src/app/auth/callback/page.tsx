@@ -12,18 +12,22 @@ function AuthCallbackContent() {
 
   useEffect(() => {
     const code = searchParams.get('code')
+    const tokenHash = searchParams.get('token_hash')
+    const type = searchParams.get('type')
     const next = searchParams.get('next')
     const redirectTo = next && next.startsWith('/') ? next : '/'
     const hasHash = typeof window !== 'undefined' && window.location.hash?.length > 0
 
-    // PKCE: code a query-ben (bejelentkezés, regisztráció, e-mail változtatás)
+    const doRedirect = () => {
+      setStatus('ok')
+      window.location.replace(redirectTo)
+    }
+
+    // PKCE: code a query-ben (bejelentkezés, regisztráció)
     if (code) {
       supabase.auth
         .exchangeCodeForSession(code)
-        .then(() => {
-          setStatus('ok')
-          window.location.replace(redirectTo)
-        })
+        .then(doRedirect)
         .catch((err) => {
           setStatus('error')
           setMessage(err?.message || 'A bejelentkezés sikertelen. Próbáld újra.')
@@ -31,13 +35,32 @@ function AuthCallbackContent() {
       return
     }
 
-    // Hash-ben jön a token (pl. e-mail megerősítés, jelszó reset): a Supabase kliens automatikusan feldolgozza
+    // token_hash + type (pl. e-mail változtatás, jelszó reset): verifyOtp kell, ez frissíti a sessiont
+    if (tokenHash && type) {
+      const otpType = type === 'recovery' ? 'recovery' : type === 'email_change' ? 'email_change' : (type as 'email' | 'magiclink' | 'signup')
+      supabase.auth
+        .verifyOtp({ token_hash: tokenHash, type: otpType })
+        .then(({ error }) => {
+          if (error) {
+            setStatus('error')
+            setMessage(error.message || 'A megerősítés sikertelen. Próbáld újra.')
+            return
+          }
+          doRedirect()
+        })
+        .catch((err) => {
+          setStatus('error')
+          setMessage(err?.message || 'A megerősítés sikertelen. Próbáld újra.')
+        })
+      return
+    }
+
+    // Hash-ben jön a token (implicit flow): a Supabase kliens automatikusan feldolgozza
     if (hasHash) {
       const t = setTimeout(() => {
         supabase.auth.getSession().then(({ data: { session } }) => {
           if (session) {
-            setStatus('ok')
-            window.location.replace(redirectTo)
+            doRedirect()
           } else {
             setStatus('error')
             setMessage('A munkamenet lejárt vagy érvénytelen. Próbáld újra.')
