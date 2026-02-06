@@ -108,7 +108,11 @@ export default function FiokBeallitasokPage() {
     setEmailMessage(null)
     if (!newEmail.trim()) return
     setEmailLoading(true)
-    const { error } = await supabase.auth.updateUser({ email: newEmail.trim() })
+    const redirectTo = typeof window !== 'undefined' ? `${window.location.origin}/auth/callback?next=/fiok/beallitasok` : undefined
+    const { error } = await supabase.auth.updateUser(
+      { email: newEmail.trim() },
+      { emailRedirectTo: redirectTo }
+    )
     setEmailLoading(false)
     if (error) {
       setEmailMessage({ type: 'error', text: error.message })
