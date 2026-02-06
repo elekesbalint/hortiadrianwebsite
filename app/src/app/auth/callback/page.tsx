@@ -70,8 +70,27 @@ function AuthCallbackContent() {
       return () => clearTimeout(t)
     }
 
-    setStatus('error')
-    setMessage('Hiányzó hitelesítési kód. Próbáld újra a bejelentkezést.')
+    // Nincs code/token_hash/hash: pl. Supabase már a saját /verify oldalán érvényesítette (e-mail változtatás)
+    // és ide redirectelt. Session frissítése a szerverről lehúzza az új user adatot (új e-mail).
+    supabase.auth
+      .refreshSession()
+      .then(({ data: { session }, error }) => {
+        if (error) {
+          setStatus('error')
+          setMessage(error.message || 'Hiányzó hitelesítési kód. Próbáld újra a bejelentkezést.')
+          return
+        }
+        if (session) {
+          doRedirect()
+        } else {
+          setStatus('error')
+          setMessage('Hiányzó hitelesítési kód. Próbáld újra a bejelentkezést.')
+        }
+      })
+      .catch((err) => {
+        setStatus('error')
+        setMessage(err?.message || 'Hiányzó hitelesítési kód. Próbáld újra a bejelentkezést.')
+      })
   }, [searchParams])
 
   if (status === 'loading') {
