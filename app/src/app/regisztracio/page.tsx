@@ -70,8 +70,9 @@ function RegisztracioForm() {
     // Ha be van pipálva a hírlevél checkbox, feliratkoztatjuk
     if (subscribeNewsletter && email) {
       try {
-        await supabase.from('newsletter_subscribers').insert({ 
-          email: email.trim().toLowerCase() 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Supabase table type inference issue
+        await (supabase.from('newsletter_subscribers') as any).insert({
+          email: email.trim().toLowerCase(),
         })
         // Csendes hiba kezelés - ha már fel van iratkozva, nem baj
       } catch (newsletterErr) {

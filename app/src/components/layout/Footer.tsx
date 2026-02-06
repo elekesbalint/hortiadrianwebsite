@@ -19,7 +19,8 @@ export function Footer() {
     if (!email) return
     setNewsletterError('')
     setNewsletterLoading(true)
-    const { error } = await supabase.from('newsletter_subscribers').insert({ email })
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Supabase table type inference
+    const { error } = await (supabase.from('newsletter_subscribers') as any).insert({ email })
     setNewsletterLoading(false)
     if (error) {
       if (error.code === '23505') {
