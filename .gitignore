@@ -1,0 +1,10 @@
+# Env és titkos adatok – soha ne kerüljenek fel
+.env
+.env.*
+!.env.example
+
+# macOS
+.DS_Store
+
+# Vercel
+.vercel

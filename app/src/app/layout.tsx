@@ -1,0 +1,46 @@
+import type { Metadata } from 'next'
+import { Dancing_Script } from 'next/font/google'
+import './globals.css'
+import { Header } from '@/components/layout/Header'
+
+const fontBrand = Dancing_Script({
+  subsets: ['latin', 'latin-ext'],
+  variable: '--font-brand',
+  display: 'swap',
+})
+import { Footer } from '@/components/layout/Footer'
+import { CookieConsent } from '@/components/layout/CookieConsent'
+import { AuthProviderWrapper } from '@/components/providers/AuthProviderWrapper'
+import { StatisticsTracker } from '@/components/StatisticsTracker'
+
+export const metadata: Metadata = {
+  title: 'Programláz - Fedezd fel Magyarország legjobb helyeit',
+  description: 'Éttermek, szállások, látnivalók és programok egy helyen, interaktív térképen. Fedezd fel Magyarország legjobb helyeit!',
+  keywords: 'éttermek, szállások, látnivalók, programok, Magyarország, térkép, kirándulás, utazás, programláz',
+  icons: {
+    icon: '/logo.png',
+    apple: '/logo.png',
+  },
+}
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  return (
+    <html lang="hu">
+      <body className={`${fontBrand.variable} antialiased min-h-screen flex flex-col`} suppressHydrationWarning>
+        <AuthProviderWrapper>
+          <StatisticsTracker />
+          <Header />
+          <main className="flex-1">
+            {children}
+          </main>
+          <Footer />
+          <CookieConsent />
+        </AuthProviderWrapper>
+      </body>
+    </html>
+  )
+}

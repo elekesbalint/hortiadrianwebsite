@@ -1,0 +1,26 @@
+Szia Adrián!
+
+Először is Köszönöm megkeresésedet! 
+
+A leírt térképalapú weboldal projektje teljes mértékben megvalósítható. Az általad említett funkciók (interaktív térkép, címkézés, szűrés, admin felület, feliratkozás, statisztikák) mind teljes mértékben kivitelezhetők.
+
+**Technológiai megközelítés:**
+Modern webes technológiákban gondolkodnék (React/Vue.js frontend, Node.js), mivel ezek a legmodernebb, legjobb, leggyorsabb és legszebb megoldások a mai webes fejlesztésben. Térképes szolgáltatásként Google Maps API-t vagy Mapbox-ot használnánk, ami lehetővé teszi az interaktív térképet, címkézést, szűrést és a külső navigációs szolgáltatásokhoz való integrációt. Ha neked van konkrét technológiai elképzelésed vagy preferenciád, azzal is természetesen szívesen dolgozunk a megoldás mindig a te igényeidhez igazodik.
+
+Fontos hangsúlyozni, hogy minden részletet személyre szabunk: a weboldal minden funkciója, design eleme és működése a te konkrét igényeid szerint készül el. Nincs sablon vagy előre kész megoldás minden projekt egyedi, és pontosan az üzleti céljaidhoz igazítjuk.
+
+**Időkeret:**
+A részletes specifikációtól függően, általában 4-6 hetes fejlesztési időtartamra számítanék egy teljes körű megoldás esetében.
+
+**Költségkeret:**
+A pontos árat természetesen a részletes követelmények, a kívánt design komplexitása, valamint a további funkcionalitási igények ismeretében tudnám megadni. Általános orientációként: egy ilyen jellegű, teljes funkcionalitással rendelkező weboldal fejlesztése Magyarországon fejlesztőként általában 950.000 - 1.100.000 Ft közötti összeggel járhat, a projekt méretétől és összetettségétől függően.
+
+Nagyon szívesen egyeztetnék veled személyesen vagy online (videóhívás) a részletes koncepció megismerése érdekében. Egy ilyen beszélgetés során pontosan meg tudnánk határozni a követelményeket, elkészíthetném a részletes tervet és a pontos árajánlatot is.
+
+Holnap nekem alkalmas lenne egy online egyeztetés. Mikor lenne számodra alkalmas egy egyeztetés? 
+
+Várom visszajelzésedet!
+
+Üdvözlettel,
+Elekes Bálint
+
