@@ -30,3 +30,23 @@ export async function addNewsletterSubscriber(email: string): Promise<{ ok: bool
   }
   return { ok: true }
 }
+
+/** Hírlevél leiratkozás (server-side, service role – kis-/nagybetűtől független). */
+export async function removeNewsletterSubscriber(
+  email: string
+): Promise<{ ok: boolean; deleted?: boolean; error?: string }> {
+  const normalized = email?.trim()?.toLowerCase()
+  if (!normalized) return { ok: false, error: 'Érvénytelen e-mail.' }
+
+  const supabase = getServiceSupabase()
+  if (!supabase) return { ok: false, error: 'Szerver konfiguráció hiányzik.' }
+
+  const { data, error } = await (supabase.from('newsletter_subscribers') as any)
+    .delete()
+    .eq('email', normalized)
+    .select('email')
+
+  if (error) return { ok: false, error: error.message }
+  const deleted = (data?.length ?? 0) > 0
+  return { ok: true, deleted }
+}

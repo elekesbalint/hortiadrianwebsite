@@ -12,6 +12,7 @@ import {
   registerServiceWorker,
   subscribeForPush,
 } from '@/lib/push'
+import { removeNewsletterSubscriber } from '@/lib/db/newsletter'
 
 const inputClass =
   'w-full pl-11 pr-4 py-3 bg-white border border-gray-200 rounded-xl outline-none focus:border-[#2D7A4F] focus:ring-2 focus:ring-[#2D7A4F]/20 transition-all'
@@ -126,20 +127,16 @@ export default function FiokBeallitasokPage() {
     if (!user?.email) return
     setNewsletterUnsubMessage(null)
     setNewsletterUnsubLoading(true)
-    const { data, error } = await supabase
-      .from('newsletter_subscribers')
-      .delete()
-      .eq('email', user.email)
-      .select('email')
+    const res = await removeNewsletterSubscriber(user.email)
     setNewsletterUnsubLoading(false)
-    if (error) {
-      setNewsletterUnsubMessage({ type: 'error', text: error.message })
+    if (!res.ok) {
+      setNewsletterUnsubMessage({ type: 'error', text: res.error || 'A leiratkozás sikertelen.' })
       return
     }
-    if (data && data.length > 0) {
+    if (res.deleted) {
       setNewsletterUnsubMessage({ type: 'success', text: 'Sikeresen leiratkoztál a hírlevélről.' })
     } else {
-      setNewsletterUnsubMessage({ type: 'error', text: 'Nem sikerült a leiratkozás (pl. nem voltál feliratkozva, vagy a munkamenet lejárt – próbáld újra bejelentkezés után).' })
+      setNewsletterUnsubMessage({ type: 'error', text: 'Nem voltál feliratkozva erre a címre (vagy már leiratkoztál).' })
     }
   }
 
