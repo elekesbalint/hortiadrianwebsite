@@ -5,7 +5,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { Mail, Phone, Facebook, Instagram, ArrowRight } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
-import { supabase } from '@/lib/supabase'
+import { addNewsletterSubscriber } from '@/lib/db/newsletter'
 
 export function Footer() {
   const [newsletterEmail, setNewsletterEmail] = useState('')
@@ -19,15 +19,10 @@ export function Footer() {
     if (!email) return
     setNewsletterError('')
     setNewsletterLoading(true)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Supabase table type inference
-    const { error } = await (supabase.from('newsletter_subscribers') as any).insert({ email })
+    const res = await addNewsletterSubscriber(email)
     setNewsletterLoading(false)
-    if (error) {
-      if (error.code === '23505') {
-        setNewsletterError('Már feliratkoztál ezzel az e-mail címmel.')
-      } else {
-        setNewsletterError(error.message || 'Sikertelen feliratkozás. Próbáld később.')
-      }
+    if (!res.ok) {
+      setNewsletterError(res.error === 'Érvénytelen e-mail.' ? res.error : res.error || 'Sikertelen feliratkozás. Próbáld később.')
       return
     }
     setNewsletterSuccess(true)

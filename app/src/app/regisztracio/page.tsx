@@ -8,6 +8,7 @@ import { Mail, Lock, User, Eye, EyeOff } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 import { supabase } from '@/lib/supabase'
+import { addNewsletterSubscriber } from '@/lib/db/newsletter'
 
 const inputClass =
   'w-full pl-11 pr-4 py-3 bg-white border border-gray-200 rounded-xl outline-none focus:border-[#2D7A4F] focus:ring-2 focus:ring-[#2D7A4F]/20 transition-all placeholder:text-gray-400'
@@ -67,17 +68,11 @@ function RegisztracioForm() {
       return
     }
     
-    // Ha be van pipálva a hírlevél checkbox, feliratkoztatjuk
+    // Ha be van pipálva a hírlevél checkbox, feliratkoztatjuk (server action = service role, nem függ RLS-től)
     if (subscribeNewsletter && email) {
-      try {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Supabase table type inference issue
-        await (supabase.from('newsletter_subscribers') as any).insert({
-          email: email.trim().toLowerCase(),
-        })
-        // Csendes hiba kezelés - ha már fel van iratkozva, nem baj
-      } catch (newsletterErr) {
-        // Csendes hiba - nem akarjuk megzavarni a regisztrációt
-        console.log('Newsletter subscription note:', newsletterErr)
+      const res = await addNewsletterSubscriber(email)
+      if (!res.ok && res.error) {
+        console.warn('Hírlevél feliratkozás sikertelen:', res.error)
       }
     }
     
