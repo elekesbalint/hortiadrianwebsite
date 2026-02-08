@@ -162,25 +162,21 @@ export default function AdminPlacesPage() {
       }
       placeId = res.id
       if (menuFile) {
-        uploadMenuFile(res.id, menuFile).then((url) => {
-          if (url) updatePlace(res.id, { ...form, menuUrl: url })
-        })
+        const url = await uploadMenuFile(res.id, menuFile)
+        if (url) await updatePlace(res.id, { ...form, menuUrl: url })
       }
     } else if (editingPlace) {
       placeId = editingPlace.id
+      if (menuFile) {
+        const url = await uploadMenuFile(editingPlace.id, menuFile)
+        if (url) finalMenuUrl = url
+      }
       const images = [form.imageUrl, ...galleryImages].filter(Boolean)
-      // Először mentjük a helyet (menü nélkül), így a modál gyorsan bezárul
       const result = await updatePlace(editingPlace.id, { ...form, menuUrl: finalMenuUrl, images })
       if (!result.ok) {
         alert('Hiba a mentés során: ' + result.error)
         setSaving(false)
         return
-      }
-      // Menü feltöltés háttérben; ha kész, frissítjük a menuUrl-t
-      if (menuFile) {
-        uploadMenuFile(editingPlace.id, menuFile).then((url) => {
-          if (url) updatePlace(editingPlace.id, { ...form, menuUrl: url, images })
-        })
       }
     }
     
@@ -188,11 +184,10 @@ export default function AdminPlacesPage() {
     if (placeId) {
       await setPlaceFilters(placeId, selectedFilterIds)
     }
-
+    
+    await load()
     setSaving(false)
     closeModal()
-    // Lista frissítése háttérben, ne blokkolja a UI-t
-    load()
   }
 
   // Google Places Autocomplete: helyeket és címeket is talál (pl. "budapest parkinn" → Park Inn Budapest)
