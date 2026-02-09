@@ -76,6 +76,7 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
   const [filterTer, setFilterTer] = useState('')
   const [filterKivelMesz, setFilterKivelMesz] = useState('')
   const [filterMegkozelites, setFilterMegkozelites] = useState('')
+  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null)
 
   useEffect(() => {
     Promise.all([getPlaces(), getCategories(), getFilters()]).then(([pls, cats, filts]) => {
@@ -91,6 +92,20 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
     getFavoritePlaceIds().then(setFavorites)
   }, [isLoggedIn])
 
+  // Felhasználó helyének lekérése
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.navigator?.geolocation) return
+    window.navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude })
+      },
+      () => {
+        // Hiba esetén nem csinálunk semmit, marad Budapest
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+    )
+  }, [])
+
   const config = categoryConfig[slug] || { name: slug, icon: MapPin, color: '#2D7A4F', gradient: 'from-emerald-400 to-teal-500', heroImage: '' }
   const categoryBySlug = useMemo(() => categories.find((c) => c.slug === slug), [categories, slug])
   /** Részletes oldal: DB-ből a megjelenített név (és opcionális detail_page_title), ikon pedig a headerrel egyezzen. */
@@ -102,10 +117,12 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
     return places.filter((p) => p.category_id === categoryBySlug.id)
   }, [places, categoryBySlug])
 
+  const centerForDistance = userLocation ?? BUDAPEST
+  
   const filteredPlaces = useMemo(() => {
     let list = placesInCategory.map((p) => ({
       ...p,
-      distanceFromCenter: calculateDistance(BUDAPEST.lat, BUDAPEST.lng, p.lat, p.lng),
+      distanceFromCenter: calculateDistance(centerForDistance.lat, centerForDistance.lng, p.lat, p.lng),
     }))
     // Kereső
     if (searchQuery.trim()) {
@@ -170,7 +187,7 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
       return a.name.localeCompare(b.name)
     })
     return list
-  }, [placesInCategory, searchQuery, filterCity, filterRatingMin, filterPriceLevel, filterMaxDistance, filterOpenOnly, filterSortBy, filters, filterEvszak, filterIdoszak, filterTer, filterKivelMesz, filterMegkozelites])
+  }, [placesInCategory, searchQuery, filterCity, filterRatingMin, filterPriceLevel, filterMaxDistance, filterOpenOnly, filterSortBy, filters, filterEvszak, filterIdoszak, filterTer, filterKivelMesz, filterMegkozelites, centerForDistance])
 
   const resetFilters = () => {
     setFilterCity('')
