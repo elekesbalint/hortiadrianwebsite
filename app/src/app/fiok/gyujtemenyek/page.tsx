@@ -69,7 +69,7 @@ export default function FiokGyujtemenyekPage() {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {places.map((place) => (
-            <Link key={place.id} href={`/hely/${place.id}`} onClick={() => recordStatistic('place_click', place.id)}>
+            <Link key={place.id} href={`/hely/${place.slug || place.id}`} onClick={() => recordStatistic('place_click', place.id)}>
               <Card hover className="h-full group relative">
                 <button
                   onClick={(e) => handleRemove(e, place.id)}

@@ -57,6 +57,29 @@ function slugify(text: string): string {
     .replace(/^-|-$/g, '') || 'hely'
 }
 
+/** Egyedi slug generálása: ha a slug már létezik, hozzáad egy számot a végéhez. */
+async function ensureUniqueSlug(baseSlug: string, excludeId?: string): Promise<string> {
+  let slug = baseSlug
+  let counter = 2
+  while (true) {
+    const query = supabase
+      .from('places')
+      .select('id')
+      .eq('slug', slug)
+      .eq('is_active', true)
+      .limit(1)
+    if (excludeId) {
+      query.neq('id', excludeId)
+    }
+    const { data } = await query
+    if (!data || data.length === 0) {
+      return slug
+    }
+    slug = `${baseSlug}-${counter}`
+    counter++
+  }
+}
+
 function rowToAppPlace(row: PlaceRowWithCategory): AppPlace {
   const images: string[] = Array.isArray(row.images) ? (row.images as string[]) : []
   return {
@@ -182,6 +205,18 @@ export async function getPlaceById(id: string): Promise<AppPlace | null> {
   return rowToAppPlace(data as PlaceRowWithCategory)
 }
 
+/** Hely lekérése slug alapján (SEO-barát URL-hez). */
+export async function getPlaceBySlug(slug: string): Promise<AppPlace | null> {
+  const { data, error } = await supabase
+    .from('places')
+    .select('*, categories(name, slug)')
+    .eq('slug', slug)
+    .eq('is_active', true)
+    .single()
+  if (error || !data) return null
+  return rowToAppPlace(data as PlaceRowWithCategory)
+}
+
 export async function getPlacesByIds(ids: string[]): Promise<AppPlace[]> {
   if (ids.length === 0) return []
   const { data, error } = await supabase
@@ -248,7 +283,8 @@ export type PlaceFormInput = {
 }
 
 export async function insertPlace(input: PlaceFormInput): Promise<{ id: string } | { error: string }> {
-  const slug = slugify(input.name)
+  const baseSlug = slugify(input.name)
+  const slug = await ensureUniqueSlug(baseSlug)
   const baseRow = {
     name: input.name,
     slug,
@@ -300,7 +336,8 @@ export async function insertPlace(input: PlaceFormInput): Promise<{ id: string }
 }
 
 export async function updatePlace(id: string, input: PlaceFormInput): Promise<{ ok: true } | { ok: false; error: string }> {
-  const slug = slugify(input.name)
+  const baseSlug = slugify(input.name)
+  const slug = await ensureUniqueSlug(baseSlug, id)
   const baseUpdate = {
     name: input.name,
     slug,

@@ -249,7 +249,7 @@ export function MapView({ places, onPlaceSelect, selectedPlaceId, userLocation, 
           zIndex: selectedPlaceId === place.id ? 10 : 1,
         })
 
-      const placeUrl = `/hely/${place.id}`
+      const placeUrl = `/hely/${place.slug || place.id}`
       const content = getInfoWindowContent(place, placeUrl)
 
       marker.addListener('click', () => {

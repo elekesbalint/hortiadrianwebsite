@@ -333,7 +333,7 @@ export default function AdminPlacesPage() {
                     </div>
                   </td>
                   <td className="py-3 px-4">
-                    <Link href={`/hely/${place.id}`} className="font-medium text-[#2D7A4F] hover:underline">
+                    <Link href={`/hely/${place.slug || place.id}`} className="font-medium text-[#2D7A4F] hover:underline">
                       {place.name}
                     </Link>
                   </td>

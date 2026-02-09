@@ -207,7 +207,7 @@ export default function HomePage() {
                 <Link
                   key={place.id}
                   ref={(el) => { slideRefs.current[i] = el }}
-                  href={`/hely/${place.id}`}
+                  href={`/hely/${place.slug || place.id}`}
                   onClick={() => recordStatistic('place_click', place.id)}
                   className="flex-shrink-0 w-[min(100%,420px)] sm:w-[min(100%,480px)] lg:w-[520px] snap-center"
                 >

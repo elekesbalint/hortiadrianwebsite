@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/Button'
 import { Card, CardContent } from '@/components/ui/Card'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 import { useAuth } from '@/context/AuthContext'
-import { getPlaceById } from '@/lib/db/places'
+import { getPlaceBySlug } from '@/lib/db/places'
 import type { AppPlace } from '@/lib/db/places'
 import { getFavoritePlaceIds, addFavorite, removeFavorite } from '@/lib/db/favorites'
 import { getReviewsByPlaceId, addReview, uploadReviewImage, type AppReview } from '@/lib/db/reviews'
@@ -46,8 +46,8 @@ function getHeroImageUrl(url: string): string {
   return url
 }
 
-export default function PlaceDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = use(params)
+export default function PlaceDetailPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = use(params)
   const { isLoggedIn } = useAuth()
   const [place, setPlace] = useState<AppPlace | null>(null)
   const [loading, setLoading] = useState(true)
@@ -64,12 +64,12 @@ export default function PlaceDetailPage({ params }: { params: Promise<{ id: stri
   const [lightboxIndex, setLightboxIndex] = useState(0)
 
   useEffect(() => {
-    getPlaceById(id).then((p) => {
+    getPlaceBySlug(slug).then((p) => {
       setPlace(p)
       setNotFound(!p)
       setLoading(false)
     })
-  }, [id])
+  }, [slug])
 
   useEffect(() => {
     if (!isLoggedIn || !place?.id) return
@@ -77,9 +77,9 @@ export default function PlaceDetailPage({ params }: { params: Promise<{ id: stri
   }, [isLoggedIn, place?.id])
 
   useEffect(() => {
-    if (!id) return
-    getReviewsByPlaceId(id).then(setReviews)
-  }, [id])
+    if (!place?.id) return
+    getReviewsByPlaceId(place.id).then(setReviews)
+  }, [place?.id])
 
   // Hash alapú navigáció: #menu → Étlap fül
   useEffect(() => {
@@ -203,14 +203,14 @@ export default function PlaceDetailPage({ params }: { params: Promise<{ id: stri
               <button
                 onClick={async () => {
                   if (!isLoggedIn) {
-                    window.location.href = `/bejelentkezes?redirect=${encodeURIComponent(`/hely/${id}`)}`
+                    window.location.href = `/bejelentkezes?redirect=${encodeURIComponent(`/hely/${place.slug}`)}`
                     return
                   }
                   if (isFavorite) {
-                    const ok = await removeFavorite(id)
+                    const ok = await removeFavorite(place.id)
                     if (ok) setIsFavorite(false)
                   } else {
-                    const ok = await addFavorite(id)
+                    const ok = await addFavorite(place.id)
                     if (ok) setIsFavorite(true)
                   }
                 }}
@@ -427,7 +427,7 @@ export default function PlaceDetailPage({ params }: { params: Promise<{ id: stri
                   <h3 className="text-lg font-bold text-gray-900 mb-4">Értékelés írása</h3>
                   {!isLoggedIn ? (
                     <p className="text-gray-500 mb-4">
-                      A vélemény írásához <Link href={`/bejelentkezes?redirect=${encodeURIComponent(`/hely/${id}`)}`} className="text-[#2D7A4F] font-medium hover:underline">jelentkezz be</Link>.
+                      A vélemény írásához <Link href={`/bejelentkezes?redirect=${encodeURIComponent(`/hely/${place.slug}`)}`} className="text-[#2D7A4F] font-medium hover:underline">jelentkezz be</Link>.
                     </p>
                   ) : reviewSent ? (
                     <p className="text-[#2D7A4F] font-medium">Köszönjük az értékelést!</p>

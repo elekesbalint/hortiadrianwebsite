@@ -523,7 +523,7 @@ function MapPageContent() {
                 </p>
               </div>
               {placesWithDistance.map((place) => (
-                <Link key={place.id} href={`/hely/${place.id}`} onClick={() => recordStatistic('place_click', place.id)}>
+                <Link key={place.id} href={`/hely/${place.slug || place.id}`} onClick={() => recordStatistic('place_click', place.id)}>
                   <Card hover className="mb-4">
                     <CardContent className="p-5">
                       <div className="flex items-start gap-5">
