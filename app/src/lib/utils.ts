@@ -62,18 +62,20 @@ export async function getRouteDistanceAndTime(
         travelMode: google.maps.TravelMode.DRIVING,
       },
       (result, status) => {
-        if (status === google.maps.DirectionsStatus.OK && result) {
+        if (status === google.maps.DirectionsStatus.OK && result && result.routes?.[0]?.legs?.[0]) {
           const route = result.routes[0]
           const leg = route.legs[0]
-          const distanceKm = leg.distance.value / 1000 // méter -> km
-          const durationMinutes = Math.round(leg.duration.value / 60) // másodperc -> perc
-          resolve({ distanceKm, durationMinutes })
-        } else {
-          // Fallback: Ha az API hívás sikertelen, légvonalban számolunk
-          const distanceKm = calculateDistance(origin.lat, origin.lng, destination.lat, destination.lng)
-          const durationMinutes = estimateTravelTimeMinutes(distanceKm)
-          resolve({ distanceKm, durationMinutes })
+          if (leg.distance?.value && leg.duration?.value) {
+            const distanceKm = leg.distance.value / 1000 // méter -> km
+            const durationMinutes = Math.round(leg.duration.value / 60) // másodperc -> perc
+            resolve({ distanceKm, durationMinutes })
+            return
+          }
         }
+        // Fallback: Ha az API hívás sikertelen vagy hiányzó adatok, légvonalban számolunk
+        const distanceKm = calculateDistance(origin.lat, origin.lng, destination.lat, destination.lng)
+        const durationMinutes = estimateTravelTimeMinutes(distanceKm)
+        resolve({ distanceKm, durationMinutes })
       }
     )
   })
