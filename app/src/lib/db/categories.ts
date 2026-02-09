@@ -115,8 +115,10 @@ export async function deleteCategory(id: string): Promise<boolean> {
     console.error('deleteCategory: SUPABASE_SERVICE_ROLE_KEY hiányzik')
     return false
   }
+  // Soft delete: is_active = false (nem töröljük ténylegesen, mert vannak helyek, amelyek rá hivatkoznak)
+  // Ez biztonságosabb, mint a tényleges törlés, és nem veszélyezteti az adatokat
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { error } = await (admin.from('categories') as any).delete().eq('id', id)
+  const { error } = await (admin.from('categories') as any).update({ is_active: false }).eq('id', id)
   if (error) {
     console.error('deleteCategory error', error)
     return false
