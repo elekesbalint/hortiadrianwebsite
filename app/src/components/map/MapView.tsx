@@ -49,6 +49,7 @@ const PIN_ICONS: Record<string, string> = {
 export type MapPlace = {
   id: number | string
   name: string
+  slug?: string
   lat: number
   lng: number
   category?: string

@@ -472,6 +472,7 @@ function MapPageContent() {
                 places={placesWithDistance.map((p) => ({
                   id: p.id,
                   name: p.name,
+                  slug: p.slug,
                   lat: p.lat,
                   lng: p.lng,
                   category: p.category,
