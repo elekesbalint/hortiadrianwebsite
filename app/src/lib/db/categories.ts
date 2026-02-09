@@ -109,21 +109,37 @@ export async function updateCategory(
   return true
 }
 
-export async function deleteCategory(id: string): Promise<boolean> {
+export async function deleteCategory(id: string): Promise<{ ok: true } | { ok: false; error: string }> {
   const admin = getAdminClient()
   if (!admin) {
     console.error('deleteCategory: SUPABASE_SERVICE_ROLE_KEY hiányzik')
-    return false
+    return { ok: false, error: 'SUPABASE_SERVICE_ROLE_KEY hiányzik' }
   }
-  // Soft delete: is_active = false (nem töröljük ténylegesen, mert vannak helyek, amelyek rá hivatkoznak)
-  // Ez biztonságosabb, mint a tényleges törlés, és nem veszélyezteti az adatokat
+  
+  // Először ellenőrizzük, hogy vannak-e helyek, amelyek erre a kategóriára hivatkoznak
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { error } = await (admin.from('categories') as any).update({ is_active: false }).eq('id', id)
+  const { data: placesData, error: placesCheckError } = await (admin.from('places') as any)
+    .select('id')
+    .eq('category_id', id)
+    .limit(1)
+  
+  if (placesCheckError) {
+    console.error('deleteCategory: places check error', placesCheckError)
+    return { ok: false, error: 'Hiba a helyek ellenőrzése során' }
+  }
+  
+  if (placesData && placesData.length > 0) {
+    return { ok: false, error: 'Nem lehet törölni a kategóriát, mert vannak hozzá rendelve helyek. Először töröld vagy helyezd át a helyeket másik kategóriába.' }
+  }
+  
+  // Ha nincsenek helyek, törölhetjük a kategóriát
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { error } = await (admin.from('categories') as any).delete().eq('id', id)
   if (error) {
     console.error('deleteCategory error', error)
-    return false
+    return { ok: false, error: error.message || 'Hiba a kategória törlése során' }
   }
-  return true
+  return { ok: true }
 }
 
 /** Fel/Le: kategória sorrendjének cseréje a szomszédossal. */

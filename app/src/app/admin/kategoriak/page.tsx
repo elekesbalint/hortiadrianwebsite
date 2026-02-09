@@ -139,19 +139,15 @@ export default function AdminCategoriesPage() {
       setDeleteConfirm(id)
       return
     }
-    const count = placeCountByCategoryId(id)
-    if (count > 0 && !confirm(`Ez a kategória ${count} helyet tartalmaz. Törlöd?`)) {
-      setDeleteConfirm(null)
-      return
-    }
     setSaving(true)
-    const ok = await deleteCategory(id)
+    const result = await deleteCategory(id)
     setSaving(false)
-    if (ok) {
+    if (result.ok) {
       setDeleteConfirm(null)
       await load()
     } else {
-      alert('Hiba történt a törlés során.')
+      setDeleteConfirm(null)
+      alert(result.error || 'Hiba történt a törlés során.')
     }
   }
 
