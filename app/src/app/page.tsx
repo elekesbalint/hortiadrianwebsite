@@ -46,12 +46,15 @@ export default function HomePage() {
   const scrollRef = useRef<HTMLDivElement>(null)
   const slideRefs = useRef<(HTMLAnchorElement | null)[]>([])
   const count = featuredPlaces.length
-  const categoriesWithDisplay = categories.map((c) => ({
-    ...c,
-    icon: getCategoryIcon(c.slug, c.icon),
-    imageUrl: c.image || categoryImages[c.slug] || defaultCategoryImage,
-    count: places.filter((p) => p.category_id === c.id).length,
-  }))
+  // Csak azokat a kategóriákat jelenítjük meg, amelyek a headerben is megjelennek (show_in_header = true)
+  const categoriesWithDisplay = categories
+    .filter((c) => c.show_in_header)
+    .map((c) => ({
+      ...c,
+      icon: getCategoryIcon(c.slug, c.icon),
+      imageUrl: c.image || categoryImages[c.slug] || defaultCategoryImage,
+      count: places.filter((p) => p.category_id === c.id).length,
+    }))
 
   useEffect(() => {
     Promise.all([getPlaces(), getFeaturedPlaces(), getCategories()]).then(([pls, featured, cats]) => {

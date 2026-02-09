@@ -16,6 +16,7 @@ export async function getCategories(): Promise<AppCategory[]> {
   const { data, error } = await supabase
     .from('categories')
     .select('id, slug, name, show_in_header, "order", image, icon, detail_page_title')
+    .eq('is_active', true)
     .order('order', { ascending: true })
   if (error) {
     if (String(error.message || '').includes('show_in_header')) {
