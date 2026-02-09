@@ -62,11 +62,11 @@ async function ensureUniqueSlug(baseSlug: string, excludeId?: string): Promise<s
   let slug = baseSlug
   let counter = 2
   while (true) {
+    // UNIQUE constraint minden helyre vonatkozik (aktív és inaktív is), ezért minden helyet ellenőrizünk
     const query = supabase
       .from('places')
       .select('id')
       .eq('slug', slug)
-      .eq('is_active', true)
       .limit(1)
     if (excludeId) {
       query.neq('id', excludeId)
@@ -77,6 +77,12 @@ async function ensureUniqueSlug(baseSlug: string, excludeId?: string): Promise<s
     }
     slug = `${baseSlug}-${counter}`
     counter++
+    // Biztonsági limit, hogy ne legyen végtelen ciklus
+    if (counter > 1000) {
+      // Ha 1000 próbálkozás után sem találunk egyedi slug-ot, timestamp-et adunk hozzá
+      slug = `${baseSlug}-${Date.now()}`
+      return slug
+    }
   }
 }
 
