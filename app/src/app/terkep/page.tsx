@@ -13,7 +13,7 @@ import { getPlaces } from '@/lib/db/places'
 import { getCategories } from '@/lib/db/categories'
 import { getFilters, type AppFilter } from '@/lib/db/filters'
 import { recordStatistic } from '@/lib/db/statistics'
-import { calculateDistance, estimateTravelTimeMinutes, formatTravelTime } from '@/lib/utils'
+import { calculateDistance, estimateTravelTimeMinutes, formatTravelTime, getRouteDistanceAndTime } from '@/lib/utils'
 
 const BUDAPEST = { lat: 47.4979, lng: 19.0402 }
 
@@ -118,14 +118,47 @@ function MapPageContent() {
     )
   }, [places, activeSearchCircle])
 
-  const placesWithDistance = useMemo(() => {
+  // Először légvonalban számolunk (gyors)
+  const placesWithDistanceInitial = useMemo(() => {
     return [...placesInCircle]
       .map((p) => ({
         ...p,
         distanceFromCenter: calculateDistance(centerForDistance.lat, centerForDistance.lng, p.lat, p.lng),
+        travelTimeMinutes: estimateTravelTimeMinutes(calculateDistance(centerForDistance.lat, centerForDistance.lng, p.lat, p.lng)),
       }))
       .sort((a, b) => a.distanceFromCenter - b.distanceFromCenter)
   }, [placesInCircle, centerForDistance])
+
+  // Google Maps API-val pontosítjuk az első 10 hely távolságát és idejét (ha elérhető)
+  const [placesWithDistance, setPlacesWithDistance] = useState(placesWithDistanceInitial)
+  
+  useEffect(() => {
+    setPlacesWithDistance(placesWithDistanceInitial)
+    
+    // Csak akkor használjuk az API-t, ha a Google Maps elérhető és van userLocation
+    if (typeof window === 'undefined' || !window.google?.maps?.DirectionsService || !userLocation) return
+    
+    // Csak az első 10 helyre használjuk az API-t (hogy ne legyen túl sok hívás)
+    const topPlaces = placesWithDistanceInitial.slice(0, 10)
+    
+    // Aszinkron módon frissítjük a távolságokat és időket
+    Promise.all(
+      topPlaces.map(async (place) => {
+        const route = await getRouteDistanceAndTime(
+          centerForDistance,
+          { lat: place.lat, lng: place.lng }
+        )
+        if (route) {
+          return { ...place, distanceFromCenter: route.distanceKm, travelTimeMinutes: route.durationMinutes }
+        }
+        return place
+      })
+    ).then((updatedPlaces) => {
+      // Frissítjük csak az első 10 helyet, a többit meghagyjuk
+      const restPlaces = placesWithDistanceInitial.slice(10)
+      setPlacesWithDistance([...updatedPlaces, ...restPlaces])
+    })
+  }, [placesWithDistanceInitial, userLocation, centerForDistance])
 
   const handleMapClick = (lat: number, lng: number) => {
     if (circleCenterMode) {
@@ -551,7 +584,7 @@ function MapPageContent() {
                             </div>
                             <span className="text-gray-500 font-semibold">
                               {place.distanceFromCenter < 1 ? `${Math.round(place.distanceFromCenter * 1000)} m` : `${place.distanceFromCenter.toFixed(1)} km`}
-                              <span className="text-gray-400 font-normal ml-1">· {formatTravelTime(estimateTravelTimeMinutes(place.distanceFromCenter))}</span>
+                              <span className="text-gray-400 font-normal ml-1">· {formatTravelTime((place as any).travelTimeMinutes ?? estimateTravelTimeMinutes(place.distanceFromCenter))}</span>
                             </span>
                           </div>
                         </div>

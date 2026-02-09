@@ -40,7 +40,47 @@ export function formatRating(rating: number, count: number): string {
   return `${rating.toFixed(1)} (${count})`
 }
 
+// Google Maps Directions Service használata útvonal távolsághoz és időhöz
+// Ez pontosabb, mint a légvonalban számítás
+export async function getRouteDistanceAndTime(
+  origin: { lat: number; lng: number },
+  destination: { lat: number; lng: number }
+): Promise<{ distanceKm: number; durationMinutes: number } | null> {
+  if (typeof window === 'undefined' || !window.google?.maps?.DirectionsService) {
+    // Fallback: Ha nincs Google Maps API, légvonalban számolunk
+    const distanceKm = calculateDistance(origin.lat, origin.lng, destination.lat, destination.lng)
+    const durationMinutes = estimateTravelTimeMinutes(distanceKm)
+    return { distanceKm, durationMinutes }
+  }
+
+  return new Promise((resolve) => {
+    const directionsService = new google.maps.DirectionsService()
+    directionsService.route(
+      {
+        origin: new google.maps.LatLng(origin.lat, origin.lng),
+        destination: new google.maps.LatLng(destination.lat, destination.lng),
+        travelMode: google.maps.TravelMode.DRIVING,
+      },
+      (result, status) => {
+        if (status === google.maps.DirectionsStatus.OK && result) {
+          const route = result.routes[0]
+          const leg = route.legs[0]
+          const distanceKm = leg.distance.value / 1000 // méter -> km
+          const durationMinutes = Math.round(leg.duration.value / 60) // másodperc -> perc
+          resolve({ distanceKm, durationMinutes })
+        } else {
+          // Fallback: Ha az API hívás sikertelen, légvonalban számolunk
+          const distanceKm = calculateDistance(origin.lat, origin.lng, destination.lat, destination.lng)
+          const durationMinutes = estimateTravelTimeMinutes(distanceKm)
+          resolve({ distanceKm, durationMinutes })
+        }
+      }
+    )
+  })
+}
+
 // Utazási idő becslés autóval (~50 km/h átlag, városban ~35 km/h rövid távon)
+// Ez csak fallback, ha nincs Google Maps API
 export function estimateTravelTimeMinutes(km: number): number {
   if (km <= 0) return 0
   const avgSpeedKmh = km < 3 ? 35 : 50

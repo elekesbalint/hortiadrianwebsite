@@ -15,7 +15,7 @@ import { getCategories } from '@/lib/db/categories'
 import { getFilters, type AppFilter } from '@/lib/db/filters'
 import { getFavoritePlaceIds, addFavorite, removeFavorite } from '@/lib/db/favorites'
 import { recordStatistic } from '@/lib/db/statistics'
-import { formatTravelTime, estimateTravelTimeMinutes, calculateDistance } from '@/lib/utils'
+import { formatTravelTime, estimateTravelTimeMinutes, calculateDistance, getRouteDistanceAndTime } from '@/lib/utils'
 import { useAuth } from '@/context/AuthContext'
 
 const BUDAPEST = { lat: 47.4979, lng: 19.0402 }
@@ -119,10 +119,12 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
 
   const centerForDistance = userLocation ?? BUDAPEST
   
-  const filteredPlaces = useMemo(() => {
+  // Először légvonalban számolunk (gyors)
+  const filteredPlacesInitial = useMemo(() => {
     let list = placesInCategory.map((p) => ({
       ...p,
       distanceFromCenter: calculateDistance(centerForDistance.lat, centerForDistance.lng, p.lat, p.lng),
+      travelTimeMinutes: estimateTravelTimeMinutes(calculateDistance(centerForDistance.lat, centerForDistance.lng, p.lat, p.lng)),
     }))
     // Kereső
     if (searchQuery.trim()) {
@@ -188,6 +190,37 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
     })
     return list
   }, [placesInCategory, searchQuery, filterCity, filterRatingMin, filterPriceLevel, filterMaxDistance, filterOpenOnly, filterSortBy, filters, filterEvszak, filterIdoszak, filterTer, filterKivelMesz, filterMegkozelites, centerForDistance])
+
+  // Google Maps API-val pontosítjuk az első 10 hely távolságát és idejét (ha elérhető)
+  const [filteredPlaces, setFilteredPlaces] = useState(filteredPlacesInitial)
+  
+  useEffect(() => {
+    setFilteredPlaces(filteredPlacesInitial)
+    
+    // Csak akkor használjuk az API-t, ha a Google Maps elérhető és van userLocation
+    if (typeof window === 'undefined' || !window.google?.maps?.DirectionsService || !userLocation) return
+    
+    // Csak az első 10 helyre használjuk az API-t (hogy ne legyen túl sok hívás)
+    const topPlaces = filteredPlacesInitial.slice(0, 10)
+    
+    // Aszinkron módon frissítjük a távolságokat és időket
+    Promise.all(
+      topPlaces.map(async (place) => {
+        const route = await getRouteDistanceAndTime(
+          centerForDistance,
+          { lat: place.lat, lng: place.lng }
+        )
+        if (route) {
+          return { ...place, distanceFromCenter: route.distanceKm, travelTimeMinutes: route.durationMinutes }
+        }
+        return place
+      })
+    ).then((updatedPlaces) => {
+      // Frissítjük csak az első 10 helyet, a többit meghagyjuk
+      const restPlaces = filteredPlacesInitial.slice(10)
+      setFilteredPlaces([...updatedPlaces, ...restPlaces])
+    })
+  }, [filteredPlacesInitial, userLocation, centerForDistance])
 
   const resetFilters = () => {
     setFilterCity('')
@@ -536,7 +569,7 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
                       <span className="font-bold">{place.rating}</span>
                       <span className="text-gray-400">({place.ratingCount})</span>
                     </div>
-                    <span className="text-sm text-gray-500 font-medium">{place.distanceFromCenter.toFixed(1)} km · {formatTravelTime(estimateTravelTimeMinutes(place.distanceFromCenter))}</span>
+                    <span className="text-sm text-gray-500 font-medium">{place.distanceFromCenter.toFixed(1)} km · {formatTravelTime((place as any).travelTimeMinutes ?? estimateTravelTimeMinutes(place.distanceFromCenter))}</span>
                   </div>
 
                   <CardTitle className="text-xl mb-2 group-hover:text-[#2D7A4F] transition-colors">
