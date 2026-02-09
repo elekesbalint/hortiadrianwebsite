@@ -64,7 +64,9 @@ export default function PlaceDetailPage({ params }: { params: Promise<{ slug: st
   const [lightboxIndex, setLightboxIndex] = useState(0)
 
   useEffect(() => {
-    getPlaceBySlug(slug).then((p) => {
+    // URL-decode a slug-ot, ha szükséges (Next.js automatikusan decode-ol, de biztosra megyünk)
+    const decodedSlug = decodeURIComponent(slug)
+    getPlaceBySlug(decodedSlug).then((p) => {
       setPlace(p)
       setNotFound(!p)
       setLoading(false)

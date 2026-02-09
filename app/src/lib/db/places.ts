@@ -213,12 +213,31 @@ export async function getPlaceById(id: string): Promise<AppPlace | null> {
 
 /** Hely lekérése slug alapján (SEO-barát URL-hez). */
 export async function getPlaceBySlug(slug: string): Promise<AppPlace | null> {
-  const { data, error } = await supabase
+  // URL-decode, ha szükséges
+  const decodedSlug = decodeURIComponent(slug)
+  
+  // Először próbáljuk meg a decode-olt slug-gal
+  let { data, error } = await supabase
     .from('places')
     .select('*, categories(name, slug)')
-    .eq('slug', slug)
+    .eq('slug', decodedSlug)
     .eq('is_active', true)
     .single()
+  
+  // Ha nem található, próbáljuk meg az eredeti slug-gal is (hátha már decode-olva volt)
+  if (error && decodedSlug !== slug) {
+    const { data: data2, error: error2 } = await supabase
+      .from('places')
+      .select('*, categories(name, slug)')
+      .eq('slug', slug)
+      .eq('is_active', true)
+      .single()
+    if (!error2 && data2) {
+      data = data2
+      error = null
+    }
+  }
+  
   if (error || !data) return null
   return rowToAppPlace(data as PlaceRowWithCategory)
 }
@@ -395,8 +414,10 @@ export async function deletePlace(id: string): Promise<boolean> {
     console.error('deletePlace: SUPABASE_SERVICE_ROLE_KEY hiányzik')
     return false
   }
+  // Tényleges törlés az adatbázisból (CASCADE miatt automatikusan törlődnek a kapcsolódó rekordok is:
+  // favorites, reviews, place_filters. A statistics táblában a place_id SET NULL lesz.)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { error } = await (admin.from('places') as any).update({ is_active: false }).eq('id', id)
+  const { error } = await (admin.from('places') as any).delete().eq('id', id)
   if (error) {
     console.error('deletePlace error', error)
     return false
