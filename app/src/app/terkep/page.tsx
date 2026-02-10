@@ -105,9 +105,13 @@ function MapPageContent() {
   const [isCirclePanelOpen, setIsCirclePanelOpen] = useState(false)
 
   const centerForDistance = userLocation ?? BUDAPEST
-  const activeSearchCircle: SearchCircle | null = circleCenter
-    ? { center: circleCenter, radiusKm: circleRadiusKm }
-    : null
+  const activeSearchCircle: SearchCircle | null = useMemo(
+    () =>
+      circleCenter
+        ? { center: circleCenter, radiusKm: circleRadiusKm }
+        : null,
+    [circleCenter, circleRadiusKm]
+  )
 
   const placesInCircle = useMemo(() => {
     if (!activeSearchCircle) return places

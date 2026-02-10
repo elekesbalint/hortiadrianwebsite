@@ -337,33 +337,48 @@ export function MapView({ places, onPlaceSelect, selectedPlaceId, userLocation, 
     }
   }, [isLoaded, mapReady, places, onPlaceSelect, selectedPlaceId, onMapClick])
 
-  // Keresési kör: rajzolás / törlés
+  // Keresési kör: rajzolás / frissítés / törlés
   useEffect(() => {
-    if (!mapRef.current || !isLoaded) return
+    if (!isLoaded || !mapReady || !mapRef.current) return
+
+    const map = mapRef.current
+
+    // Ha nincs aktív keresési kör: töröljük az esetleges meglévő kört
+    if (!searchCircle) {
+      if (circleRef.current) {
+        circleRef.current.setMap(null)
+        circleRef.current = null
+      }
+      return
+    }
+
+    // Ha már létezik kör, csak frissítjük a középpontot és sugarat
     if (circleRef.current) {
-      circleRef.current.setMap(null)
-      circleRef.current = null
+      circleRef.current.setCenter(searchCircle.center)
+      circleRef.current.setRadius(searchCircle.radiusKm * 1000)
+      return
     }
-    if (searchCircle) {
-      const circle = new google.maps.Circle({
-        map: mapRef.current,
-        center: searchCircle.center,
-        radius: searchCircle.radiusKm * 1000,
-        fillColor: '#2D7A4F',
-        fillOpacity: 0.12,
-        strokeColor: '#2D7A4F',
-        strokeWeight: 2,
-        strokeOpacity: 0.8,
-        clickable: false,
-        zIndex: 0,
-      })
-      circleRef.current = circle
-    }
+
+    // Új kör létrehozása
+    const circle = new google.maps.Circle({
+      map,
+      center: searchCircle.center,
+      radius: searchCircle.radiusKm * 1000,
+      fillColor: '#2D7A4F',
+      fillOpacity: 0.12,
+      strokeColor: '#2D7A4F',
+      strokeWeight: 2,
+      strokeOpacity: 0.8,
+      clickable: false,
+      zIndex: 0,
+    })
+    circleRef.current = circle
+
     return () => {
       circleRef.current?.setMap(null)
       circleRef.current = null
     }
-  }, [isLoaded, searchCircle])
+  }, [isLoaded, mapReady, searchCircle])
 
   // Saját helyzet: térkép középre igazít és zoomol
   useEffect(() => {
