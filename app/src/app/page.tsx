@@ -5,11 +5,13 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { Button } from '@/components/ui/Button'
 import { Card, CardContent, CardTitle, CardDescription } from '@/components/ui/Card'
-import { MapPin, Utensils, Bed, Star, Heart, Wine, Camera, Bath, Baby, Sparkles, ArrowRight, Landmark, ChevronLeft, ChevronRight } from 'lucide-react'
+import { MapPin, Utensils, Bed, Star, Heart, Wine, Camera, Bath, Baby, Sparkles, ArrowRight, Landmark, ChevronLeft, ChevronRight, Users, Eye } from 'lucide-react'
 import { getPlaces, getFeaturedPlaces } from '@/lib/db/places'
 import { getCategories } from '@/lib/db/categories'
 import { recordStatistic } from '@/lib/db/statistics'
 import { getCategoryIconComponent } from '@/lib/categoryIcons'
+import { getSiteStatistics } from '@/lib/db/siteStatistics'
+import { AnimatedCounter } from '@/components/ui/AnimatedCounter'
 
 /** Ikon a kategóriához: ha van mentett icon a DB-ben, azt; különben slug alapján (ugyanaz, mint headerben és részletes nézetben). */
 function getCategoryIcon(slug: string, iconFromDb: string | null) {
@@ -42,6 +44,7 @@ export default function HomePage() {
   const [places, setPlaces] = useState<Awaited<ReturnType<typeof getPlaces>>>([])
   const [featuredPlaces, setFeaturedPlaces] = useState<Awaited<ReturnType<typeof getFeaturedPlaces>>>([])
   const [categories, setCategories] = useState<Awaited<ReturnType<typeof getCategories>>>([])
+  const [siteStats, setSiteStats] = useState<Awaited<ReturnType<typeof getSiteStatistics>>>([])
   const [featuredPaused, setFeaturedPaused] = useState(false)
   const scrollRef = useRef<HTMLDivElement>(null)
   const slideRefs = useRef<(HTMLAnchorElement | null)[]>([])
@@ -58,10 +61,11 @@ export default function HomePage() {
     }))
 
   useEffect(() => {
-    Promise.all([getPlaces(), getFeaturedPlaces(), getCategories()]).then(([pls, featured, cats]) => {
+    Promise.all([getPlaces(), getFeaturedPlaces(), getCategories(), getSiteStatistics()]).then(([pls, featured, cats, stats]) => {
       setPlaces(pls)
       setFeaturedPlaces(featured.length > 0 ? featured : pls.slice(0, 8))
       setCategories(cats)
+      setSiteStats(stats)
     })
   }, [])
 
@@ -308,6 +312,67 @@ export default function HomePage() {
                   aria-label={`Slide ${i + 1}`}
                 />
               ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Térkép és statisztikák */}
+      <section className="py-20 md:py-28 bg-gradient-to-b from-white to-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            {/* Térkép */}
+            <div className="relative h-[400px] md:h-[500px] rounded-2xl overflow-hidden shadow-2xl border-2 border-gray-200">
+              <iframe
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d109740.5!2d19.0402!3d47.4979!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x4741c334d1d4cfc9%3A0x400c4290c1e1160!2sBudapest!5e0!3m2!1shu!2shu!4v1234567890"
+                width="100%"
+                height="100%"
+                style={{ border: 0 }}
+                allowFullScreen
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                className="w-full h-full"
+                title="Magyarország térképe"
+              />
+            </div>
+
+            {/* Statisztikák */}
+            <div className="space-y-8">
+              <div>
+                <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
+                  Csatlakozz közösségünkhöz
+                </h2>
+                <p className="text-lg text-gray-600">
+                  Több ezer partner és százezres megtekintések – fedezd fel Magyarország legjobb helyeit velünk!
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                {siteStats.map((stat) => {
+                  const isPartners = stat.key === 'partners'
+                  const Icon = isPartners ? Users : Eye
+                  return (
+                    <div
+                      key={stat.key}
+                      className="bg-white rounded-2xl p-6 shadow-lg border-2 border-gray-100 hover:border-[#2D7A4F] transition-all hover:shadow-xl"
+                    >
+                      <div className="flex items-center gap-4 mb-4">
+                        <div className="w-14 h-14 rounded-full bg-[#E8F5E9] flex items-center justify-center">
+                          <Icon className="h-7 w-7 text-[#2D7A4F]" />
+                        </div>
+                        <div>
+                          <h3 className="text-2xl md:text-3xl font-bold text-gray-900">
+                            <AnimatedCounter value={stat.value} />
+                          </h3>
+                          <p className="text-sm text-gray-600 mt-1">
+                            {stat.display_label || (isPartners ? 'Partner' : 'Megtekintés')}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
             </div>
           </div>
         </div>
