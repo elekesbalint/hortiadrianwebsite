@@ -49,8 +49,8 @@ export async function updateSiteStatistic(
   try {
     const supabase = getAdminClient()
     
-    const { error } = await supabase
-      .from('site_statistics')
+    const { error } = await (supabase
+      .from('site_statistics') as any)
       .upsert(
         {
           key,
