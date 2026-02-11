@@ -275,7 +275,20 @@ export default function HomePage() {
                           {place.name}
                         </CardTitle>
                         <div className="flex items-center gap-1.5 mt-2">
-                          <Star className="h-5 w-5 text-yellow-400 fill-yellow-400" />
+                          {Array.from({ length: 5 }, (_, i) => {
+                            const starNum = i + 1
+                            const isFilled = starNum <= Math.round(place.rating)
+                            return (
+                              <Star
+                                key={starNum}
+                                className={`h-5 w-5 ${
+                                  isFilled
+                                    ? 'text-yellow-400 fill-yellow-400'
+                                    : 'text-gray-300'
+                                }`}
+                              />
+                            )
+                          })}
                           <span className="font-bold">{place.rating}</span>
                           <span className="text-white/80">({place.ratingCount})</span>
                         </div>
