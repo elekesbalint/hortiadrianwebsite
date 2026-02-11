@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/Button'
 import { Card, CardContent, CardTitle } from '@/components/ui/Card'
 import { MapView, type SearchCircle } from '@/components/map/MapView'
 import { MapPin, List, Filter, Navigation, Star, ChevronDown, Sliders, RotateCcw, X, CircleDot, Calendar, Clock, Users, Route, Tag, Gauge, Award, CheckCircle } from 'lucide-react'
+import { SearchableSelect, type SearchableSelectOption } from '@/components/ui/SearchableSelect'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 import { getPlaces } from '@/lib/db/places'
 import { getCategories } from '@/lib/db/categories'
@@ -325,19 +326,19 @@ function MapPageContent() {
                     <MapPin className="h-3.5 w-3.5 text-[#2D7A4F]" />
                     Hol?
                   </label>
-                  <div className="relative">
-                    <select 
-                      value={filterHol}
-                      onChange={(e) => setFilterHol(e.target.value)}
-                      className="w-full px-4 py-3 pr-10 bg-white border-2 border-gray-200 rounded-xl outline-none focus:border-[#2D7A4F] focus:ring-4 focus:ring-[#2D7A4F]/10 transition-all text-sm font-medium text-gray-900 appearance-none cursor-pointer hover:border-gray-300 group-hover:shadow-md"
-                    >
-                      <option value="">Teljes ország</option>
-                      <option value="megye">Megye</option>
-                      <option value="varos">Város</option>
-                      <option value="budapest">Budapest</option>
-                    </select>
-                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
-                  </div>
+                  <SearchableSelect
+                    options={[
+                      { value: '', label: 'Teljes ország' },
+                      { value: 'megye', label: 'Megye' },
+                      { value: 'varos', label: 'Város' },
+                      { value: 'budapest', label: 'Budapest' },
+                    ]}
+                    value={filterHol}
+                    onChange={setFilterHol}
+                    placeholder="Teljes ország"
+                    searchPlaceholder="Keresés város vagy régió..."
+                    hasValue={!!filterHol}
+                  />
                 </div>
               
                 {/* Dinamikusan generált szűrők az adatbázisból */}
@@ -393,27 +394,22 @@ function MapPageContent() {
                             </span>
                           )}
                         </label>
-                        <div className="relative">
-                          <select
-                            value={getValue()}
-                            onChange={(e) => setValue(e.target.value)}
-                            className={`w-full px-4 py-3 pr-10 bg-white border-2 rounded-xl outline-none focus:ring-4 transition-all text-sm font-medium appearance-none cursor-pointer hover:shadow-md ${
-                              hasValue 
-                                ? 'border-[#2D7A4F] text-[#1B5E20] focus:border-[#2D7A4F] focus:ring-[#2D7A4F]/10' 
-                                : 'border-gray-200 text-gray-900 focus:border-[#2D7A4F] focus:ring-[#2D7A4F]/10 group-hover:border-gray-300'
-                            }`}
-                          >
-                            <option value="">Mind</option>
-                            {items
+                        <SearchableSelect
+                          options={[
+                            { value: '', label: 'Mind' },
+                            ...items
                               .sort((a, b) => a.order - b.order)
-                              .map((filter) => (
-                                <option key={filter.id} value={filter.slug}>
-                                  {filter.name}
-                                </option>
-                              ))}
-                          </select>
-                          <ChevronDown className={`absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 pointer-events-none transition-colors ${hasValue ? 'text-[#2D7A4F]' : 'text-gray-400'}`} />
-                        </div>
+                              .map((filter) => ({
+                                value: filter.slug,
+                                label: filter.name,
+                              })),
+                          ]}
+                          value={getValue()}
+                          onChange={setValue}
+                          placeholder="Mind"
+                          searchPlaceholder={`Keresés ${groupName.toLowerCase()}...`}
+                          hasValue={hasValue}
+                        />
                       </div>
                     )
                   })}

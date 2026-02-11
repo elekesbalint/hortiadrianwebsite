@@ -8,6 +8,7 @@ import { usePathname } from 'next/navigation'
 import { Button } from '@/components/ui/Button'
 import { Card, CardContent, CardTitle } from '@/components/ui/Card'
 import { MapPin, Star, Heart, ChevronDown, Map, Sliders, RotateCcw, Search, Utensils, Home, Landmark, Calendar, Clock, Users, Route, Tag, Gauge, Award, CheckCircle } from 'lucide-react'
+import { SearchableSelect, type SearchableSelectOption } from '@/components/ui/SearchableSelect'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 import { getCategoryIconComponent } from '@/lib/categoryIcons'
 import { getPlaces } from '@/lib/db/places'
@@ -425,31 +426,27 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
                         </span>
                       )}
                     </label>
-                    <div className="relative">
-                      <select
-                        value={filterCity}
-                        onChange={(e) => setFilterCity(e.target.value)}
-                        className={`w-full px-4 py-3 pr-10 bg-white border-2 rounded-xl outline-none focus:ring-4 transition-all text-sm font-medium appearance-none cursor-pointer hover:shadow-md ${
-                          filterCity 
-                            ? 'border-[#2D7A4F] text-[#1B5E20] focus:border-[#2D7A4F] focus:ring-[#2D7A4F]/10' 
-                            : 'border-gray-200 text-gray-900 focus:border-[#2D7A4F] focus:ring-[#2D7A4F]/10 group-hover:border-gray-300'
-                        }`}
-                      >
-                        <option value="">Teljes ország</option>
-                        <option value="Budapest">Budapest</option>
-                        <option value="Debrecen">Debrecen</option>
-                        <option value="Pécs">Pécs</option>
-                        <option value="Szeged">Szeged</option>
-                        <option value="Győr">Győr</option>
-                        <option value="Eger">Eger</option>
-                        <option value="Sopron">Sopron</option>
-                        <option value="Veszprém">Veszprém</option>
-                        <option value="Siófok">Siófok</option>
-                        <option value="Hollókő">Hollókő</option>
-                        <option value="Tokaj">Tokaj</option>
-                      </select>
-                      <ChevronDown className={`absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 pointer-events-none transition-colors ${filterCity ? 'text-[#2D7A4F]' : 'text-gray-400'}`} />
-                    </div>
+                    <SearchableSelect
+                      options={[
+                        { value: '', label: 'Teljes ország' },
+                        { value: 'Budapest', label: 'Budapest' },
+                        { value: 'Debrecen', label: 'Debrecen' },
+                        { value: 'Pécs', label: 'Pécs' },
+                        { value: 'Szeged', label: 'Szeged' },
+                        { value: 'Győr', label: 'Győr' },
+                        { value: 'Eger', label: 'Eger' },
+                        { value: 'Sopron', label: 'Sopron' },
+                        { value: 'Veszprém', label: 'Veszprém' },
+                        { value: 'Siófok', label: 'Siófok' },
+                        { value: 'Hollókő', label: 'Hollókő' },
+                        { value: 'Tokaj', label: 'Tokaj' },
+                      ]}
+                      value={filterCity}
+                      onChange={setFilterCity}
+                      placeholder="Teljes ország"
+                      searchPlaceholder="Keresés város..."
+                      hasValue={!!filterCity}
+                    />
                   </div>
 
                   {/* Dinamikusan generált szűrők az adatbázisból */}
@@ -505,27 +502,22 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
                               </span>
                             )}
                           </label>
-                          <div className="relative">
-                            <select
-                              value={getValue()}
-                              onChange={(e) => setValue(e.target.value)}
-                              className={`w-full px-4 py-3 pr-10 bg-white border-2 rounded-xl outline-none focus:ring-4 transition-all text-sm font-medium appearance-none cursor-pointer hover:shadow-md ${
-                                hasValue 
-                                  ? 'border-[#2D7A4F] text-[#1B5E20] focus:border-[#2D7A4F] focus:ring-[#2D7A4F]/10' 
-                                  : 'border-gray-200 text-gray-900 focus:border-[#2D7A4F] focus:ring-[#2D7A4F]/10 group-hover:border-gray-300'
-                              }`}
-                            >
-                              <option value="">Mind</option>
-                              {items
+                          <SearchableSelect
+                            options={[
+                              { value: '', label: 'Mind' },
+                              ...items
                                 .sort((a, b) => a.order - b.order)
-                                .map((filter) => (
-                                  <option key={filter.id} value={filter.slug}>
-                                    {filter.name}
-                                  </option>
-                                ))}
-                            </select>
-                            <ChevronDown className={`absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 pointer-events-none transition-colors ${hasValue ? 'text-[#2D7A4F]' : 'text-gray-400'}`} />
-                          </div>
+                                .map((filter) => ({
+                                  value: filter.slug,
+                                  label: filter.name,
+                                })),
+                            ]}
+                            value={getValue()}
+                            onChange={setValue}
+                            placeholder="Mind"
+                            searchPlaceholder={`Keresés ${groupName.toLowerCase()}...`}
+                            hasValue={hasValue}
+                          />
                         </div>
                       )
                     })}
