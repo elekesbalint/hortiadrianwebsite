@@ -23,6 +23,12 @@ export const metadata: Metadata = {
   },
 }
 
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
+}
+
 export default function RootLayout({
   children,
 }: {
@@ -34,7 +40,7 @@ export default function RootLayout({
         <AuthProviderWrapper>
           <StatisticsTracker />
           <Header />
-          <main className="flex-1">
+          <main className="flex-1 min-w-0 w-full">
             {children}
           </main>
           <Footer />

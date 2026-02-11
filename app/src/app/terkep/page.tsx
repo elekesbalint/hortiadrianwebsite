@@ -209,10 +209,10 @@ function MapPageContent() {
   }
 
   return (
-    <div className="h-[calc(100vh-80px)] flex flex-col bg-gray-50">
+    <div className="h-[calc(100vh-80px)] flex flex-col bg-gray-50 w-full min-w-0 overflow-x-hidden">
       {/* Top Bar */}
-      <div className="bg-white border-b border-gray-100 px-4 py-4 shadow-sm">
-        <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
+      <div className="bg-white border-b border-gray-100 px-4 py-4 shadow-sm flex-shrink-0 w-full min-w-0">
+        <div className="w-full max-w-7xl mx-auto flex items-center justify-between gap-2 sm:gap-4 min-w-0">
           {/* Search */}
           <div className="flex-1 max-w-xl">
             <div className="relative">
@@ -613,11 +613,11 @@ function MapPageContent() {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex relative overflow-hidden">
+      <div className="flex-1 flex relative overflow-hidden min-h-0 min-w-0 w-full">
         {viewMode === 'map' ? (
           <>
             {/* Map Container */}
-            <div className="flex-1 min-h-[400px] relative">
+            <div className="flex-1 min-h-[400px] min-w-0 w-full relative">
               <MapView
                 places={placesWithDistance.map((p) => ({
                   id: p.id,
