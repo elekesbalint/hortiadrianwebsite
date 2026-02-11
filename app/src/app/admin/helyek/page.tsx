@@ -44,6 +44,7 @@ const defaultForm: PlaceFormInput = {
   tiktok: null,
   email: null,
   eventDate: null,
+  openingHours: null,
 }
 
 export default function AdminPlacesPage() {
@@ -133,6 +134,7 @@ export default function AdminPlacesPage() {
       tiktok: place.tiktok ?? null,
       email: place.email ?? null,
       eventDate: place.eventDate ?? null,
+      openingHours: place.openingHours ?? null,
     })
     // Betöltjük a helyhez rendelt szűrőket
     const placeFilterIds = await getPlaceFilters(place.id)
@@ -155,8 +157,17 @@ export default function AdminPlacesPage() {
     let finalMenuUrl = form.menuUrl ?? null
     let placeId: string | null = null
     
+    // Tisztítjuk az openingHours objektumot az üres értékektől
+    let cleanedOpeningHours: Record<string, string> | null = null
+    if (form.openingHours) {
+      const cleaned = Object.fromEntries(
+        Object.entries(form.openingHours).filter(([_, v]) => v && v.trim() !== '')
+      )
+      cleanedOpeningHours = Object.keys(cleaned).length > 0 ? cleaned : null
+    }
+    
     if (modalOpen === 'add') {
-      const res = await insertPlace({ ...form, menuUrl: finalMenuUrl })
+      const res = await insertPlace({ ...form, menuUrl: finalMenuUrl, openingHours: cleanedOpeningHours })
       if ('error' in res) {
         alert('Hiba a mentés során: ' + res.error)
         setSaving(false)
@@ -165,7 +176,7 @@ export default function AdminPlacesPage() {
       placeId = res.id
       if (menuFile) {
         const url = await uploadMenuFile(res.id, menuFile)
-        if (url) await updatePlace(res.id, { ...form, menuUrl: url })
+        if (url) await updatePlace(res.id, { ...form, menuUrl: url, openingHours: cleanedOpeningHours })
       }
     } else if (editingPlace) {
       placeId = editingPlace.id
@@ -174,7 +185,7 @@ export default function AdminPlacesPage() {
         if (url) finalMenuUrl = url
       }
       const images = [form.imageUrl, ...galleryImages].filter(Boolean)
-      const result = await updatePlace(editingPlace.id, { ...form, menuUrl: finalMenuUrl, images })
+      const result = await updatePlace(editingPlace.id, { ...form, menuUrl: finalMenuUrl, images, openingHours: cleanedOpeningHours })
       if (!result.ok) {
         alert('Hiba a mentés során: ' + result.error)
         setSaving(false)
@@ -548,6 +559,46 @@ export default function AdminPlacesPage() {
                 </div>
                 <p className="text-xs text-gray-500 mt-1">A hely részletes oldalán a Linkek sorban megjelennek (ha kitöltve).</p>
               </div>
+              
+              {/* Nyitvatartás */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-3">Nyitvatartás</label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-4 bg-gray-50 rounded-xl">
+                  {[
+                    { key: 'monday', label: 'Hétfő' },
+                    { key: 'tuesday', label: 'Kedd' },
+                    { key: 'wednesday', label: 'Szerda' },
+                    { key: 'thursday', label: 'Csütörtök' },
+                    { key: 'friday', label: 'Péntek' },
+                    { key: 'saturday', label: 'Szombat' },
+                    { key: 'sunday', label: 'Vasárnap' },
+                  ].map(({ key, label }) => (
+                    <div key={key} className="flex items-center gap-3">
+                      <label className="w-24 text-sm font-medium text-gray-700">{label}</label>
+                      <input
+                        type="text"
+                        value={form.openingHours?.[key] || ''}
+                        onChange={(e) => {
+                          const value = e.target.value.trim()
+                          setForm((f) => ({
+                            ...f,
+                            openingHours: {
+                              ...(f.openingHours || {}),
+                              [key]: value,
+                            },
+                          }))
+                        }}
+                        placeholder="pl. 09:00-17:00 vagy Zárva"
+                        className="flex-1 px-3 py-2 border border-gray-200 rounded-lg outline-none focus:border-[#2D7A4F] text-sm"
+                      />
+                    </div>
+                  ))}
+                </div>
+                <p className="text-xs text-gray-500 mt-2">
+                  Formátum: HH:MM-HH:MM (pl. 09:00-17:00). Ha üresen hagyod, akkor "Zárva" jelenik meg.
+                </p>
+              </div>
+              
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Értékelés</label>

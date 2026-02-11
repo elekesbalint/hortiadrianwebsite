@@ -310,6 +310,7 @@ export type PlaceFormInput = {
   tiktok?: string | null
   email?: string | null
   eventDate?: string | null
+  openingHours?: Record<string, string> | null
 }
 
 export async function insertPlace(input: PlaceFormInput): Promise<{ id: string } | { error: string }> {
@@ -332,7 +333,7 @@ export async function insertPlace(input: PlaceFormInput): Promise<{ id: string }
     facebook: input.facebook ?? null,
     youtube: input.youtube ?? null,
     tiktok: input.tiktok ?? null,
-    opening_hours: null,
+    opening_hours: input.openingHours || null,
     is_open: input.isOpen,
     is_premium: input.isPremium,
     price_level: input.priceLevel,
@@ -385,6 +386,7 @@ export async function updatePlace(id: string, input: PlaceFormInput): Promise<{ 
     rating_count: input.ratingCount,
     images: input.images !== undefined ? input.images : (input.imageUrl ? [input.imageUrl] : []),
     menu_url: input.menuUrl ?? null,
+    opening_hours: input.openingHours || null,
     website: input.website ?? null,
     instagram: input.instagram ?? null,
     facebook: input.facebook ?? null,
