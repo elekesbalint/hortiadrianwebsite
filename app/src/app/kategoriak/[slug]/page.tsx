@@ -703,20 +703,20 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
           </div>
       )}
 
-      {/* Places Grid */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {/* Places Grid – mobilnézetben kisebb kártyák */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
           {filteredPlaces.map((place) => (
             <Link key={place.id} href={`/hely/${place.slug || place.id}`} onClick={() => recordStatistic('place_click', place.id)}>
               <Card hover className="h-full group relative">
                 {/* Favorite Button – csak bejelentkezés után adható kedvencnek */}
                 <button
                   onClick={(e) => toggleFavorite(e, place.id)}
-                  className="absolute top-4 right-4 z-10 p-2.5 bg-white/90 backdrop-blur-sm rounded-xl shadow-sm hover:bg-white hover:scale-110 transition-all duration-200"
+                  className="absolute top-2 right-2 md:top-4 md:right-4 z-10 p-2 md:p-2.5 bg-white/90 backdrop-blur-sm rounded-lg md:rounded-xl shadow-sm hover:bg-white hover:scale-110 transition-all duration-200"
                   title={isLoggedIn ? (favorites.includes(place.id) ? 'Eltávolítás a kedvencekből' : 'Hozzáadás a kedvencekhez') : 'Bejelentkezés szükséges a kedvencekhez adáshoz'}
                 >
                   <Heart 
-                    className={`h-5 w-5 transition-colors ${
+                    className={`h-4 w-4 md:h-5 md:w-5 transition-colors ${
                       favorites.includes(place.id) 
                         ? 'fill-red-500 text-red-500' 
                         : 'text-gray-400 group-hover:text-gray-500'
@@ -724,8 +724,8 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
                   />
                 </button>
 
-                {/* Image */}
-                <div className="relative h-52 overflow-hidden bg-gray-200">
+                {/* Image – mobilnézetben alacsonyabb */}
+                <div className="relative h-40 md:h-52 overflow-hidden bg-gray-200">
                   <Image
                     src={place.imageUrl}
                     alt={place.name}
@@ -734,26 +734,26 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
                     sizes="(max-width: 768px) 100vw, 33vw"
                   />
                   {/* Badges */}
-                  <div className="absolute top-4 left-4 flex gap-2">
-                    <span className={`badge ${place.isOpen ? 'badge-success' : 'badge-danger'}`}>
+                  <div className="absolute top-2 left-2 md:top-4 md:left-4 flex gap-1.5 md:gap-2">
+                    <span className={`badge text-xs md:text-sm ${place.isOpen ? 'badge-success' : 'badge-danger'}`}>
                       {place.isOpen ? 'Nyitva' : 'Zárva'}
                     </span>
                     {place.isPremium && (
-                      <span className="badge badge-premium">Prémium</span>
+                      <span className="badge badge-premium text-xs md:text-sm">Prémium</span>
                     )}
                   </div>
                 </div>
 
-                <CardContent className="p-5">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-1.5">
+                <CardContent className="p-3 md:p-5">
+                  <div className="flex items-center justify-between gap-2 mb-1.5 md:mb-2">
+                    <div className="flex items-center gap-1 md:gap-1.5 min-w-0">
                       {Array.from({ length: 5 }, (_, i) => {
                         const starNum = i + 1
                         const isFilled = starNum <= Math.round(place.rating)
                         return (
                           <Star
                             key={starNum}
-                            className={`h-5 w-5 ${
+                            className={`h-4 w-4 md:h-5 md:w-5 flex-shrink-0 ${
                               isFilled
                                 ? 'text-yellow-400 fill-yellow-400'
                                 : 'text-gray-300'
@@ -761,20 +761,20 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
                           />
                         )
                       })}
-                      <span className="font-bold">{place.rating}</span>
-                      <span className="text-gray-400">({place.ratingCount})</span>
+                      <span className="font-bold text-sm md:text-base">{place.rating}</span>
+                      <span className="text-gray-400 text-xs md:text-sm">({place.ratingCount})</span>
                     </div>
-                    <span className="text-sm text-gray-500 font-medium">{place.distanceFromCenter.toFixed(1)} km · {formatTravelTime((place as any).travelTimeMinutes ?? estimateTravelTimeMinutes(place.distanceFromCenter))}</span>
+                    <span className="text-xs md:text-sm text-gray-500 font-medium shrink-0">{place.distanceFromCenter.toFixed(1)} km · {formatTravelTime((place as any).travelTimeMinutes ?? estimateTravelTimeMinutes(place.distanceFromCenter))}</span>
                   </div>
 
-                  <CardTitle className="text-xl mb-2 group-hover:text-[#2D7A4F] transition-colors">
+                  <CardTitle className="text-lg md:text-xl mb-1.5 md:mb-2 group-hover:text-[#2D7A4F] transition-colors line-clamp-1">
                     {place.name}
                   </CardTitle>
-                  <p className="text-gray-500 text-sm mb-3 line-clamp-2">{place.description}</p>
+                  <p className="text-gray-500 text-xs md:text-sm mb-2 md:mb-3 line-clamp-2">{place.description}</p>
                   
-                  <div className="flex items-center justify-between pt-3 border-t border-gray-100">
-                    <span className="text-sm text-gray-500">{place.address}</span>
-                    <span className="text-sm text-gray-400 font-medium">
+                  <div className="flex items-center justify-between pt-2 md:pt-3 border-t border-gray-100">
+                    <span className="text-xs md:text-sm text-gray-500 truncate mr-2">{place.address}</span>
+                    <span className="text-xs md:text-sm text-gray-400 font-medium shrink-0">
                       {'$'.repeat(place.priceLevel)}
                     </span>
                   </div>
