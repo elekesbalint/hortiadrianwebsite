@@ -633,6 +633,7 @@ function MapPageContent() {
                   imageUrl: p.imageUrl,
                   isOpen: p.isOpen,
                   isPremium: p.isPremium,
+                  menuUrl: p.menuUrl || null,
                 }))}
                 userLocation={userLocation}
                 searchCircle={activeSearchCircle}
