@@ -17,7 +17,7 @@ import { uploadMenuFile } from '@/lib/db/menuUpload'
 import { uploadPlacePhoto } from '@/lib/db/placePhotoUpload'
 import { getCategories, type AppCategory } from '@/lib/db/categories'
 import { getFilters, getPlaceFilters, setPlaceFilters, type AppFilter } from '@/lib/db/filters'
-import { Pencil, Trash2, Plus, Search, X, Image as ImageIcon, FileText, Upload } from 'lucide-react'
+import { Pencil, Trash2, Plus, Search, X, Image as ImageIcon, FileText, Upload, Clock } from 'lucide-react'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 
 const GOOGLE_MAPS_LIBS: ('places')[] = ['places']
@@ -562,37 +562,42 @@ export default function AdminPlacesPage() {
               
               {/* Nyitvatartás */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-3">Nyitvatartás</label>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-4 bg-gray-50 rounded-xl">
-                  {[
-                    { key: 'monday', label: 'Hétfő' },
-                    { key: 'tuesday', label: 'Kedd' },
-                    { key: 'wednesday', label: 'Szerda' },
-                    { key: 'thursday', label: 'Csütörtök' },
-                    { key: 'friday', label: 'Péntek' },
-                    { key: 'saturday', label: 'Szombat' },
-                    { key: 'sunday', label: 'Vasárnap' },
-                  ].map(({ key, label }) => (
-                    <div key={key} className="flex items-center gap-3">
-                      <label className="w-24 text-sm font-medium text-gray-700">{label}</label>
-                      <input
-                        type="text"
-                        value={form.openingHours?.[key] || ''}
-                        onChange={(e) => {
-                          const value = e.target.value.trim()
-                          setForm((f) => ({
-                            ...f,
-                            openingHours: {
-                              ...(f.openingHours || {}),
-                              [key]: value,
-                            },
-                          }))
-                        }}
-                        placeholder="pl. 09:00-17:00 vagy Zárva"
-                        className="flex-1 px-3 py-2 border border-gray-200 rounded-lg outline-none focus:border-[#2D7A4F] text-sm"
-                      />
-                    </div>
-                  ))}
+                <label className="block text-sm font-medium text-gray-700 mb-3 flex items-center gap-2">
+                  <Clock className="h-4 w-4 text-[#2D7A4F]" />
+                  Nyitvatartás
+                </label>
+                <div className="bg-white border-2 border-gray-200 rounded-xl overflow-hidden">
+                  <div className="divide-y divide-gray-100">
+                    {[
+                      { key: 'monday', label: 'Hétfő' },
+                      { key: 'tuesday', label: 'Kedd' },
+                      { key: 'wednesday', label: 'Szerda' },
+                      { key: 'thursday', label: 'Csütörtök' },
+                      { key: 'friday', label: 'Péntek' },
+                      { key: 'saturday', label: 'Szombat' },
+                      { key: 'sunday', label: 'Vasárnap' },
+                    ].map(({ key, label }) => (
+                      <div key={key} className="flex items-center gap-4 px-4 py-3 hover:bg-gray-50 transition-colors">
+                        <label className="w-28 text-sm font-semibold text-gray-700 flex-shrink-0">{label}</label>
+                        <input
+                          type="text"
+                          value={form.openingHours?.[key] || ''}
+                          onChange={(e) => {
+                            const value = e.target.value.trim()
+                            setForm((f) => ({
+                              ...f,
+                              openingHours: {
+                                ...(f.openingHours || {}),
+                                [key]: value,
+                              },
+                            }))
+                          }}
+                          placeholder="pl. 09:00-17:00 vagy Zárva"
+                          className="flex-1 px-4 py-2 bg-white border-2 border-gray-200 rounded-lg outline-none focus:border-[#2D7A4F] focus:ring-2 focus:ring-[#2D7A4F]/10 text-sm transition-all"
+                        />
+                      </div>
+                    ))}
+                  </div>
                 </div>
                 <p className="text-xs text-gray-500 mt-2">
                   Formátum: HH:MM-HH:MM (pl. 09:00-17:00). Ha üresen hagyod, akkor "Zárva" jelenik meg.
