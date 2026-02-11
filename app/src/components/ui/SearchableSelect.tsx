@@ -32,8 +32,10 @@ export function SearchableSelect({
   const [isOpen, setIsOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [isSearchOpen, setIsSearchOpen] = useState(false)
+  const [dropdownPosition, setDropdownPosition] = useState<'bottom' | 'top'>('bottom')
   const containerRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
+  const dropdownRef = useRef<HTMLDivElement>(null)
 
   const selectedOption = options.find((opt) => opt.value === value)
   const displayValue = selectedOption?.label || placeholder
@@ -42,6 +44,23 @@ export function SearchableSelect({
   const filteredOptions = options.filter((opt) =>
     opt.label.toLowerCase().includes(searchQuery.toLowerCase())
   )
+
+  // Dropdown pozíció számítása: ha nincs elég hely lefelé, akkor felfelé nyíljon meg
+  useEffect(() => {
+    if (isOpen && containerRef.current && dropdownRef.current) {
+      const rect = containerRef.current.getBoundingClientRect()
+      const spaceBelow = window.innerHeight - rect.bottom
+      const spaceAbove = rect.top
+      const dropdownHeight = 300 // max-h-60 ≈ 240px + padding
+      
+      // Ha nincs elég hely lefelé, de van felfelé, akkor felfelé nyíljon meg
+      if (spaceBelow < dropdownHeight && spaceAbove > spaceBelow) {
+        setDropdownPosition('top')
+      } else {
+        setDropdownPosition('bottom')
+      }
+    }
+  }, [isOpen])
 
   // Kattintás kívülre: bezárás
   useEffect(() => {
@@ -126,7 +145,17 @@ export function SearchableSelect({
 
       {/* Dropdown Panel */}
       {isOpen && (
-        <div className="absolute z-50 w-full mt-2 bg-white border-2 border-gray-200 rounded-xl shadow-xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+        <div 
+          ref={dropdownRef}
+          className={`absolute z-50 w-full bg-white border-2 border-gray-200 rounded-xl shadow-xl overflow-hidden animate-in fade-in duration-200 ${
+            dropdownPosition === 'top' 
+              ? 'bottom-full mb-2 slide-in-from-bottom-2' 
+              : 'top-full mt-2 slide-in-from-top-2'
+          }`}
+          style={{
+            maxHeight: 'min(60vh, 400px)',
+          }}
+        >
           {/* Header: kereső ikon */}
           <div className="p-2 border-b border-gray-200 bg-gray-50 flex-shrink-0 flex items-center justify-end">
             <button
@@ -167,14 +196,19 @@ export function SearchableSelect({
 
           {/* Opciók lista */}
           <div 
-            className="max-h-60 overflow-y-auto overscroll-contain"
+            className="overflow-y-auto overscroll-contain"
             style={{
+              maxHeight: 'calc(min(60vh, 400px) - 80px)', // Kereső mező + header magasság
               scrollbarWidth: 'thin',
               scrollbarColor: '#cbd5e1 #f1f5f9',
               WebkitOverflowScrolling: 'touch',
             }}
             onWheel={(e) => {
               // Biztosítjuk, hogy a görgetés működjön
+              e.stopPropagation()
+            }}
+            onTouchMove={(e) => {
+              // Touch görgetés engedélyezése
               e.stopPropagation()
             }}
           >
