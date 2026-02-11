@@ -399,18 +399,14 @@ export default function HomePage() {
       <section className="py-20 md:py-28 bg-gradient-to-b from-white to-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            {/* Térkép */}
-            <div className="relative h-[400px] md:h-[500px] rounded-2xl overflow-hidden shadow-2xl border-2 border-gray-200">
-              <iframe
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d109740.5!2d19.0402!3d47.4979!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x4741c334d1d4cfc9%3A0x400c4290c1e1160!2sBudapest!5e0!3m2!1shu!2shu!4v1234567890"
-                width="100%"
-                height="100%"
-                style={{ border: 0 }}
-                allowFullScreen
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-                className="w-full h-full"
-                title="Magyarország térképe"
+            {/* Stylized map – Magyarország pinekkel (nem Google Maps) */}
+            <div className="relative h-[400px] md:h-[500px] rounded-2xl overflow-hidden shadow-2xl border-2 border-gray-200 bg-gray-50">
+              <Image
+                src="/images/magyarorszag-pinek.png"
+                alt="Magyarország – fedezd fel a helyeket"
+                fill
+                className="object-contain"
+                sizes="(max-width: 1024px) 100vw, 50vw"
               />
             </div>
 

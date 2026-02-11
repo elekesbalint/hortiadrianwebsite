@@ -163,9 +163,9 @@ function getInfoWindowContent(place: MapPlace, placeUrl: string): string {
   const isRestaurant = (place.category || '').toLowerCase().includes('étterem') || (place.category || '').toLowerCase().includes('gastro')
 
   return `
-    <div class="map-info-window" style="font-family:system-ui,sans-serif;width:100%;min-width:260px;max-width:380px;box-sizing:border-box;overflow:hidden;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,0.12);border:2px solid ${borderColor};background:#fff;">
-      <div class="map-info-window-img" style="height:140px;background:linear-gradient(135deg,${style.color},#fff);background-image:url('${img}');background-size:cover;background-position:center;flex-shrink:0;"></div>
-      <div class="map-info-window-body" style="padding:16px;box-sizing:border-box;">
+    <div style="font-family:system-ui,sans-serif;width:100%;min-width:300px;max-width:380px;box-sizing:border-box;overflow:hidden;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,0.12);border:2px solid ${borderColor};background:#fff;">
+      <div style="height:140px;background:linear-gradient(135deg,${style.color},#fff);background-image:url('${img}');background-size:cover;background-position:center;flex-shrink:0;"></div>
+      <div style="padding:16px;box-sizing:border-box;">
         <div style="font-weight:700;font-size:16px;color:#1a1a1a;margin-bottom:4px;word-wrap:break-word;overflow-wrap:break-word;">${place.name}</div>
         <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;font-size:13px;flex-wrap:wrap;">
           ${Array.from({ length: 5 }, (_, i) => {
@@ -263,8 +263,6 @@ export function MapView({ places, onPlaceSelect, selectedPlaceId, userLocation, 
         setTimeout(() => { ignoreNextMapClick = false }, 100)
         infoWindow.close()
         infoWindow.setContent(content)
-        const isNarrow = typeof window !== 'undefined' && window.innerWidth <= 480
-        infoWindow.setOptions({ maxWidth: isNarrow ? Math.max(280, window.innerWidth - 32) : 500 })
         infoWindow.open(map, marker)
         onPlaceSelect?.(place)
         // Részletek / Étlap / Útvonal linkek: a DOM-ból vesszük a href-et, így mindig a megfelelő helyre visz

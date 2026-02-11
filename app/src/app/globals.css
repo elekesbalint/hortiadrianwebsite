@@ -85,23 +85,6 @@ body {
   background-clip: text;
 }
 
-/* Térkép info window (helykártya) – mobilnézetben kisebb, ne lehessen jobbra-balra húzni */
-@media (max-width: 480px) {
-  .map-info-window {
-    min-width: 0 !important;
-    max-width: calc(100vw - 32px) !important;
-    width: calc(100vw - 32px) !important;
-    overflow: hidden !important;
-    touch-action: pan-y !important;
-  }
-  .map-info-window-img {
-    height: 100px !important;
-  }
-  .map-info-window-body {
-    padding: 12px !important;
-  }
-}
-
 /* Glass effect */
 .glass {
   background: rgba(255, 255, 255, 0.9);
