@@ -253,7 +253,16 @@ export default function PlaceDetailPage({ params }: { params: Promise<{ slug: st
                 <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-3">{place.name}</h1>
                 <div className="flex flex-wrap items-center gap-4 mb-6">
                   <div className="flex items-center gap-1.5">
-                    <Star className="h-6 w-6 text-yellow-400 fill-yellow-400" />
+                    {Array.from({ length: 5 }, (_, i) => {
+                      const starNum = i + 1
+                      const isFilled = starNum <= Math.round(place.rating ?? 0)
+                      return (
+                        <Star
+                          key={starNum}
+                          className={`h-6 w-6 ${isFilled ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'}`}
+                        />
+                      )
+                    })}
                     <span className="text-xl font-bold">{place.rating}</span>
                     <span className="text-gray-400">({place.ratingCount} értékelés)</span>
                   </div>
@@ -475,7 +484,16 @@ export default function PlaceDetailPage({ params }: { params: Promise<{ slug: st
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-gray-100">
                   <div className="flex items-center gap-3">
                     <div className="flex items-center gap-1.5">
-                      <Star className="h-8 w-8 text-yellow-400 fill-yellow-400" />
+                      {Array.from({ length: 5 }, (_, i) => {
+                        const starNum = i + 1
+                        const isFilled = starNum <= Math.round(place.rating ?? 0)
+                        return (
+                          <Star
+                            key={starNum}
+                            className={`h-8 w-8 ${isFilled ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'}`}
+                          />
+                        )
+                      })}
                       <span className="text-4xl font-bold">{place.rating}</span>
                     </div>
                     <div>

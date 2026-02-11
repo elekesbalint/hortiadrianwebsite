@@ -96,7 +96,16 @@ export default function FiokGyujtemenyekPage() {
                 </div>
                 <CardContent className="p-5">
                   <div className="flex items-center gap-1.5 mb-2">
-                    <Star className="h-5 w-5 text-yellow-400 fill-yellow-400" />
+                    {Array.from({ length: 5 }, (_, i) => {
+                      const starNum = i + 1
+                      const isFilled = starNum <= Math.round(place.rating ?? 0)
+                      return (
+                        <Star
+                          key={starNum}
+                          className={`h-5 w-5 ${isFilled ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'}`}
+                        />
+                      )
+                    })}
                     <span className="font-bold">{place.rating}</span>
                     <span className="text-gray-400">({place.ratingCount})</span>
                   </div>
