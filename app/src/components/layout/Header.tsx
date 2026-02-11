@@ -19,6 +19,8 @@ import {
   LogOut,
   ExternalLink,
   MapPin,
+  Calendar,
+  CloudRain,
 } from 'lucide-react'
 import { getCategoryIconComponent } from '@/lib/categoryIcons'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
@@ -41,6 +43,13 @@ function getHeaderCategoryIcon(cat: HeaderCategory) {
 }
 
 const NOTIFICATIONS_READ_AT_KEY = 'programlaz_notifications_read_at'
+
+/** Fix header kategória ikonok: Pároknak, Hétvégére, Esős napra */
+const EXTRA_HEADER_ITEMS = [
+  { href: '/kategoriak/paroknak', label: 'Pároknak', icon: Heart },
+  { href: '/kategoriak/hetvegere', label: 'Hétvégére', icon: Calendar },
+  { href: '/kategoriak/esos-napra', label: 'Esős napra', icon: CloudRain },
+] as const
 
 type SentNotification = { id: string; title: string; body: string; url: string | null; created_at: string }
 
@@ -207,6 +216,16 @@ export function Header() {
                 </Link>
               )
             })}
+            {EXTRA_HEADER_ITEMS.map(({ href, label, icon: Icon }) => (
+              <Link
+                key={href}
+                href={href}
+                className="inline-flex items-center gap-1 xl:gap-2 px-2 lg:px-2.5 xl:px-4 py-1.5 lg:py-2 xl:py-2.5 text-sm xl:text-base text-gray-700 hover:text-[#2D7A4F] font-medium rounded-lg xl:rounded-xl bg-gray-100/80 hover:bg-[#E8F5E9]/70 transition-all duration-200 shrink-0"
+              >
+                <Icon className="h-3.5 w-3.5 xl:h-4 xl:w-4 shrink-0 text-[#2D7A4F]/80 flex-shrink-0" />
+                <span className="whitespace-nowrap">{label}</span>
+              </Link>
+            ))}
           </nav>
 
           {/* Desktop Actions – tableten kisebb ikonok, hogy kiférjen */}
@@ -405,6 +424,17 @@ export function Header() {
                   </Link>
                 )
               })}
+              {EXTRA_HEADER_ITEMS.map(({ href, label, icon: Icon }) => (
+                <Link
+                  key={href}
+                  href={href}
+                  className="flex items-center gap-3 px-4 py-3 text-gray-700 hover:text-[#2D7A4F] hover:bg-[#E8F5E9]/50 rounded-xl font-medium transition-all duration-200"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  <Icon className="h-5 w-5 shrink-0 text-[#2D7A4F]/80" />
+                  {label}
+                </Link>
+              ))}
               {isAdmin && (
                 <Link 
                   href="/admin" 
