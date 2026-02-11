@@ -677,12 +677,12 @@ function MapPageContent() {
               {placesWithDistance.map((place) => (
                 <Link key={place.id} href={`/hely/${place.slug || place.id}`} onClick={() => recordStatistic('place_click', place.id)}>
                   <Card hover className="mb-4">
-                    <CardContent className="p-5">
-                      <div className="flex items-start gap-5">
-                        <div className="relative w-28 h-28 rounded-2xl overflow-hidden flex-shrink-0 bg-gray-200">
+                    <CardContent className="px-3 py-4 sm:p-5">
+                      <div className="flex items-start gap-3 sm:gap-5">
+                        <div className="relative w-20 h-20 sm:w-28 sm:h-28 rounded-xl sm:rounded-2xl overflow-hidden flex-shrink-0 bg-gray-200">
                           <Image src={place.imageUrl} alt={place.name} fill className="object-cover" sizes="112px" />
                         </div>
-                        <div className="flex-1 min-w-0">
+                        <div className="flex-1 min-w-0 overflow-hidden">
                           <div className="flex items-center gap-2 mb-2">
                             <span className="text-sm text-gray-500 font-medium">{place.category}</span>
                             <span className={`badge ${place.isOpen ? 'badge-success' : 'badge-danger'}`}>
@@ -692,10 +692,10 @@ function MapPageContent() {
                               <span className="badge badge-premium">Prémium</span>
                             )}
                           </div>
-                          <CardTitle className="text-xl mb-1">{place.name}</CardTitle>
-                          <p className="text-gray-500 mb-3">{place.address}</p>
-                          <div className="flex items-center justify-between gap-3 min-w-0">
-                            <div className="flex items-center gap-1 sm:gap-1.5 flex-shrink-0">
+                          <CardTitle className="text-lg sm:text-xl mb-1 truncate">{place.name}</CardTitle>
+                          <p className="text-gray-500 text-sm sm:text-base mb-2 sm:mb-3 truncate">{place.address}</p>
+                          <div className="flex items-center justify-between gap-2 min-w-0 -mx-0.5">
+                            <div className="flex items-center gap-0.5 sm:gap-1.5 flex-shrink-0">
                               {Array.from({ length: 5 }, (_, i) => {
                                 const starNum = i + 1
                                 const isFilled = starNum <= Math.round(place.rating)
