@@ -120,7 +120,7 @@ export default function HomePage() {
   return (
     <div className="overflow-hidden">
       {/* Hero – professzionális overlay, típográfia, animáció */}
-      <section className="relative min-h-[60vh] flex items-center justify-center">
+      <section className="relative min-h-[50vh] flex items-center justify-center">
         {/* Háttérkép + gradiens overlay (lapos sötét helyett) */}
         <div className="absolute inset-0">
           <Image
@@ -159,7 +159,7 @@ export default function HomePage() {
       </section>
 
       {/* Kategóriakártyák – referencia: képek + ikonok, négyzetes kártyák */}
-      <section className="py-20 md:py-28 bg-white">
+      <section className="pt-12 pb-20 md:pt-16 md:pb-28 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-12 text-center">
             <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-3">
