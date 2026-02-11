@@ -14,7 +14,7 @@ import { getFavoritePlaceIds, addFavorite, removeFavorite } from '@/lib/db/favor
 import { getReviewsByPlaceId, addReview, uploadReviewImage, type AppReview } from '@/lib/db/reviews'
 import { recordStatistic } from '@/lib/db/statistics'
 import {
-  MapPin, Star, Heart, Share2, Navigation, ChevronLeft, ChevronRight, Image as ImageIcon, FileText, MessageSquare, X, Globe, Mail, Clock
+  MapPin, Star, Heart, Share2, Navigation, ChevronLeft, ChevronRight, Image as ImageIcon, FileText, MessageSquare, X, Globe, Mail, Clock, CheckCircle2
 } from 'lucide-react'
 
 const tabs = [
@@ -356,24 +356,55 @@ export default function PlaceDetailPage({ params }: { params: Promise<{ slug: st
                 {/* Nyitvatartás */}
                 {place.openingHours && Object.keys(place.openingHours).length > 0 && (
                   <div>
-                    <h3 className="text-lg font-bold text-gray-900 mb-4">Nyitvatartás</h3>
-                    <div className="p-4 bg-gray-50 rounded-xl">
-                      <div className="space-y-2">
-                        {Object.entries(place.openingHours).map(([day, hours]) => {
-                          const dayNames: Record<string, string> = {
-                            monday: 'Hétfő',
-                            tuesday: 'Kedd',
-                            wednesday: 'Szerda',
-                            thursday: 'Csütörtök',
-                            friday: 'Péntek',
-                            saturday: 'Szombat',
-                            sunday: 'Vasárnap',
-                          }
-                          const dayName = dayNames[day.toLowerCase()] || day
+                    <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                      <Clock className="h-5 w-5 text-[#2D7A4F]" />
+                      Nyitvatartás
+                    </h3>
+                    <div className="bg-white border-2 border-gray-200 rounded-xl overflow-hidden shadow-sm">
+                      <div className="divide-y divide-gray-100">
+                        {[
+                          { key: 'monday', label: 'Hétfő' },
+                          { key: 'tuesday', label: 'Kedd' },
+                          { key: 'wednesday', label: 'Szerda' },
+                          { key: 'thursday', label: 'Csütörtök' },
+                          { key: 'friday', label: 'Péntek' },
+                          { key: 'saturday', label: 'Szombat' },
+                          { key: 'sunday', label: 'Vasárnap' },
+                        ].map(({ key, label }) => {
+                          const hours = place.openingHours?.[key]
+                          const isToday = (() => {
+                            const today = new Date().getDay()
+                            const dayMap: Record<number, string> = {
+                              1: 'monday',
+                              2: 'tuesday',
+                              3: 'wednesday',
+                              4: 'thursday',
+                              5: 'friday',
+                              6: 'saturday',
+                              0: 'sunday',
+                            }
+                            return dayMap[today] === key.toLowerCase()
+                          })()
                           return (
-                            <div key={day} className="flex items-center justify-between py-2 border-b border-gray-200 last:border-b-0">
-                              <span className="text-gray-700 font-medium">{dayName}</span>
-                              <span className="text-gray-600">{hours || 'Zárva'}</span>
+                            <div
+                              key={key}
+                              className={`flex items-center justify-between px-4 py-3 transition-colors ${
+                                isToday ? 'bg-[#E8F5E9]/50' : 'hover:bg-gray-50'
+                              }`}
+                            >
+                              <div className="flex items-center gap-2">
+                                <span className={`text-sm font-semibold ${isToday ? 'text-[#2D7A4F]' : 'text-gray-700'}`}>
+                                  {label}
+                                </span>
+                                {isToday && (
+                                  <span className="px-2 py-0.5 bg-[#2D7A4F] text-white text-xs font-semibold rounded-full">
+                                    Ma
+                                  </span>
+                                )}
+                              </div>
+                              <span className={`text-sm ${hours ? 'text-gray-900 font-medium' : 'text-gray-400'}`}>
+                                {hours || 'Zárva'}
+                              </span>
                             </div>
                           )
                         })}
