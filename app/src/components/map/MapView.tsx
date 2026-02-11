@@ -169,7 +169,7 @@ function getInfoWindowContent(place: MapPlace, placeUrl: string): string {
           <span style="color:#fff;font-size:18px;font-weight:bold;line-height:1;">×</span>
         </button>
       </div>
-      <div style="padding:12px;box-sizing:border-box;">
+      <div style="padding:8px;box-sizing:border-box;">
         <div style="font-weight:700;font-size:16px;color:#1a1a1a;margin-bottom:4px;word-wrap:break-word;overflow-wrap:break-word;">${place.name}</div>
         <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;font-size:13px;flex-wrap:wrap;">
           ${Array.from({ length: 5 }, (_, i) => {
@@ -278,6 +278,7 @@ export function MapView({ places, onPlaceSelect, selectedPlaceId, userLocation, 
               .gm-style-iw-d { padding: 0 !important; }
               .gm-style-iw-c { padding: 0 !important; }
               .gm-ui-hover-effect { display: none !important; }
+              .gm-style-iw-t::after { background: transparent !important; }
             `
             if (!document.head.querySelector('style[data-info-window-style]')) {
               style.setAttribute('data-info-window-style', 'true')
