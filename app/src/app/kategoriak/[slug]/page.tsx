@@ -7,7 +7,7 @@ import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { Button } from '@/components/ui/Button'
 import { Card, CardContent, CardTitle } from '@/components/ui/Card'
-import { MapPin, Star, Heart, ChevronDown, Map, Sliders, RotateCcw, Search, Utensils, Home, Landmark, Calendar } from 'lucide-react'
+import { MapPin, Star, Heart, ChevronDown, Map, Sliders, RotateCcw, Search, Utensils, Home, Landmark, Calendar, Clock, Users, Route, Tag, Gauge, Award, CheckCircle } from 'lucide-react'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 import { getCategoryIconComponent } from '@/lib/categoryIcons'
 import { getPlaces } from '@/lib/db/places'
@@ -383,137 +383,262 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
             </Link>
           </div>
 
-          {/* Szűrők – diagram szerint: Hol?, Évszak, Időszak, Tér, Kivel mész?, Megközelítés + meglévők */}
+          {/* Szűrők – modern, felújított dizájn */}
           {isFilterOpen && (
-            <div className="mt-4 p-6 bg-gray-50 rounded-2xl border border-gray-100 animate-in slide-in-from-top-2 duration-200">
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Hol?</label>
-                  <select
-                    value={filterCity}
-                    onChange={(e) => setFilterCity(e.target.value)}
-                    className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl outline-none focus:border-[#2D7A4F] focus:ring-2 focus:ring-[#2D7A4F]/20 transition-all"
+            <div className="mt-4 bg-gradient-to-br from-white via-gray-50/50 to-white rounded-3xl border border-gray-200/80 shadow-xl shadow-gray-900/5 overflow-hidden animate-in slide-in-from-top-2 duration-300">
+              {/* Header */}
+              <div className="px-6 py-5 bg-gradient-to-r from-[#2D7A4F]/5 to-[#1B5E20]/5 border-b border-gray-200/50">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#2D7A4F] to-[#1B5E20] flex items-center justify-center shadow-lg shadow-[#2D7A4F]/20">
+                      <Sliders className="h-5 w-5 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-bold text-gray-900">Szűrők</h3>
+                      <p className="text-xs text-gray-500 mt-0.5">Szűkítsd le a keresési eredményeket</p>
+                    </div>
+                  </div>
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={resetFilters}
+                    disabled={!hasActiveFilters}
+                    className="text-gray-600 hover:text-[#2D7A4F] hover:bg-[#E8F5E9]/50 disabled:opacity-40 disabled:cursor-not-allowed"
                   >
-                    <option value="">Teljes ország</option>
-                    <option value="Budapest">Budapest</option>
-                    <option value="Debrecen">Debrecen</option>
-                    <option value="Pécs">Pécs</option>
-                    <option value="Szeged">Szeged</option>
-                    <option value="Győr">Győr</option>
-                    <option value="Eger">Eger</option>
-                    <option value="Sopron">Sopron</option>
-                    <option value="Veszprém">Veszprém</option>
-                    <option value="Siófok">Siófok</option>
-                    <option value="Hollókő">Hollókő</option>
-                    <option value="Tokaj">Tokaj</option>
-                  </select>
-                </div>
-                {/* Dinamikusan generált szűrők az adatbázisból */}
-                {Object.entries(
-                  filters.reduce<Record<string, AppFilter[]>>((acc, f) => {
-                    const key = f.group_slug || 'egyeb'
-                    if (!acc[key]) acc[key] = []
-                    acc[key].push(f)
-                    return acc
-                  }, {})
-                )
-                  .filter(([groupSlug]) => 
-                    ['evszak', 'idoszak', 'ter', 'kivel-mesz', 'megkozelites'].includes(groupSlug)
-                  )
-                  .map(([groupSlug, items]) => {
-                    const groupName = items[0]?.group_name || groupSlug
-                    const getValue = () => {
-                      if (groupSlug === 'evszak') return filterEvszak
-                      if (groupSlug === 'idoszak') return filterIdoszak
-                      if (groupSlug === 'ter') return filterTer
-                      if (groupSlug === 'kivel-mesz') return filterKivelMesz
-                      if (groupSlug === 'megkozelites') return filterMegkozelites
-                      return ''
-                    }
-                    const setValue = (val: string) => {
-                      if (groupSlug === 'evszak') setFilterEvszak(val)
-                      else if (groupSlug === 'idoszak') setFilterIdoszak(val)
-                      else if (groupSlug === 'ter') setFilterTer(val)
-                      else if (groupSlug === 'kivel-mesz') setFilterKivelMesz(val)
-                      else if (groupSlug === 'megkozelites') setFilterMegkozelites(val)
-                    }
-                    
-                    return (
-                      <div key={groupSlug}>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">{groupName}</label>
-                        <select
-                          value={getValue()}
-                          onChange={(e) => setValue(e.target.value)}
-                          className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl outline-none focus:border-[#2D7A4F] focus:ring-2 focus:ring-[#2D7A4F]/20 transition-all"
-                        >
-                          <option value="">Mind</option>
-                          {items
-                            .sort((a, b) => a.order - b.order)
-                            .map((filter) => (
-                              <option key={filter.id} value={filter.slug}>
-                                {filter.name}
-                              </option>
-                            ))}
-                        </select>
-                      </div>
-                    )
-                  })}
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Távolság</label>
-                  <select
-                    value={filterMaxDistance}
-                    onChange={(e) => setFilterMaxDistance(e.target.value)}
-                    className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl outline-none focus:border-[#2D7A4F] focus:ring-2 focus:ring-[#2D7A4F]/20 transition-all"
-                  >
-                    <option value="">Mind</option>
-                    <option value="1">1 km</option>
-                    <option value="5">5 km</option>
-                    <option value="10">10 km</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Értékelés</label>
-                  <select
-                    value={filterRatingMin}
-                    onChange={(e) => setFilterRatingMin(e.target.value)}
-                    className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl outline-none focus:border-[#2D7A4F] focus:ring-2 focus:ring-[#2D7A4F]/20 transition-all"
-                  >
-                    <option value="">Mind</option>
-                    <option value="4">4+ csillag</option>
-                    <option value="4.5">4.5+ csillag</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Árkategória</label>
-                  <select
-                    value={filterPriceLevel}
-                    onChange={(e) => setFilterPriceLevel(e.target.value)}
-                    className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl outline-none focus:border-[#2D7A4F] focus:ring-2 focus:ring-[#2D7A4F]/20 transition-all"
-                  >
-                    <option value="">Mind</option>
-                    <option value="1">$</option>
-                    <option value="2">$$</option>
-                    <option value="3">$$$</option>
-                    <option value="4">$$$$</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Rendezés</label>
-                  <select
-                    value={filterSortBy}
-                    onChange={(e) => setFilterSortBy(e.target.value as 'distance' | 'rating' | 'name')}
-                    className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl outline-none focus:border-[#2D7A4F] focus:ring-2 focus:ring-[#2D7A4F]/20 transition-all"
-                  >
-                    <option value="distance">Távolság</option>
-                    <option value="rating">Értékelés</option>
-                    <option value="name">Név</option>
-                  </select>
-                </div>
-                <div className="flex items-end">
-                  <Button variant="ghost" className="w-full" onClick={resetFilters} disabled={!hasActiveFilters}>
-                    <RotateCcw className="h-4 w-4" />
-                    Törlés
+                    <RotateCcw className="h-4 w-4 mr-1.5" />
+                    Összes törlése
                   </Button>
+                </div>
+              </div>
+
+              {/* Szűrő mezők */}
+              <div className="p-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+                  {/* Hol? */}
+                  <div className="group">
+                    <label className="flex items-center gap-2 text-xs font-bold text-gray-600 uppercase tracking-wider mb-3">
+                      <MapPin className={`h-3.5 w-3.5 ${filterCity ? 'text-[#2D7A4F]' : 'text-gray-400'}`} />
+                      Hol?
+                      {filterCity && (
+                        <span className="ml-auto px-2 py-0.5 bg-[#2D7A4F] text-white text-[10px] font-bold rounded-full">
+                          Aktív
+                        </span>
+                      )}
+                    </label>
+                    <div className="relative">
+                      <select
+                        value={filterCity}
+                        onChange={(e) => setFilterCity(e.target.value)}
+                        className={`w-full px-4 py-3 pr-10 bg-white border-2 rounded-xl outline-none focus:ring-4 transition-all text-sm font-medium appearance-none cursor-pointer hover:shadow-md ${
+                          filterCity 
+                            ? 'border-[#2D7A4F] text-[#1B5E20] focus:border-[#2D7A4F] focus:ring-[#2D7A4F]/10' 
+                            : 'border-gray-200 text-gray-900 focus:border-[#2D7A4F] focus:ring-[#2D7A4F]/10 group-hover:border-gray-300'
+                        }`}
+                      >
+                        <option value="">Teljes ország</option>
+                        <option value="Budapest">Budapest</option>
+                        <option value="Debrecen">Debrecen</option>
+                        <option value="Pécs">Pécs</option>
+                        <option value="Szeged">Szeged</option>
+                        <option value="Győr">Győr</option>
+                        <option value="Eger">Eger</option>
+                        <option value="Sopron">Sopron</option>
+                        <option value="Veszprém">Veszprém</option>
+                        <option value="Siófok">Siófok</option>
+                        <option value="Hollókő">Hollókő</option>
+                        <option value="Tokaj">Tokaj</option>
+                      </select>
+                      <ChevronDown className={`absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 pointer-events-none transition-colors ${filterCity ? 'text-[#2D7A4F]' : 'text-gray-400'}`} />
+                    </div>
+                  </div>
+
+                  {/* Dinamikusan generált szűrők az adatbázisból */}
+                  {Object.entries(
+                    filters.reduce<Record<string, AppFilter[]>>((acc, f) => {
+                      const key = f.group_slug || 'egyeb'
+                      if (!acc[key]) acc[key] = []
+                      acc[key].push(f)
+                      return acc
+                    }, {})
+                  )
+                    .filter(([groupSlug]) => 
+                      ['evszak', 'idoszak', 'ter', 'kivel-mesz', 'megkozelites'].includes(groupSlug)
+                    )
+                    .map(([groupSlug, items]) => {
+                      const groupName = items[0]?.group_name || groupSlug
+                      const getValue = () => {
+                        if (groupSlug === 'evszak') return filterEvszak
+                        if (groupSlug === 'idoszak') return filterIdoszak
+                        if (groupSlug === 'ter') return filterTer
+                        if (groupSlug === 'kivel-mesz') return filterKivelMesz
+                        if (groupSlug === 'megkozelites') return filterMegkozelites
+                        return ''
+                      }
+                      const setValue = (val: string) => {
+                        if (groupSlug === 'evszak') setFilterEvszak(val)
+                        else if (groupSlug === 'idoszak') setFilterIdoszak(val)
+                        else if (groupSlug === 'ter') setFilterTer(val)
+                        else if (groupSlug === 'kivel-mesz') setFilterKivelMesz(val)
+                        else if (groupSlug === 'megkozelites') setFilterMegkozelites(val)
+                      }
+                      
+                      // Ikonok a szűrő típusokhoz
+                      const getIcon = () => {
+                        if (groupSlug === 'evszak') return Calendar
+                        if (groupSlug === 'idoszak') return Clock
+                        if (groupSlug === 'ter') return MapPin
+                        if (groupSlug === 'kivel-mesz') return Users
+                        if (groupSlug === 'megkozelites') return Route
+                        return Sliders
+                      }
+                      const Icon = getIcon()
+                      const hasValue = getValue() !== ''
+                      
+                      return (
+                        <div key={groupSlug} className="group">
+                          <label className="flex items-center gap-2 text-xs font-bold text-gray-600 uppercase tracking-wider mb-3">
+                            <Icon className={`h-3.5 w-3.5 ${hasValue ? 'text-[#2D7A4F]' : 'text-gray-400'}`} />
+                            {groupName}
+                            {hasValue && (
+                              <span className="ml-auto px-2 py-0.5 bg-[#2D7A4F] text-white text-[10px] font-bold rounded-full">
+                                Aktív
+                              </span>
+                            )}
+                          </label>
+                          <div className="relative">
+                            <select
+                              value={getValue()}
+                              onChange={(e) => setValue(e.target.value)}
+                              className={`w-full px-4 py-3 pr-10 bg-white border-2 rounded-xl outline-none focus:ring-4 transition-all text-sm font-medium appearance-none cursor-pointer hover:shadow-md ${
+                                hasValue 
+                                  ? 'border-[#2D7A4F] text-[#1B5E20] focus:border-[#2D7A4F] focus:ring-[#2D7A4F]/10' 
+                                  : 'border-gray-200 text-gray-900 focus:border-[#2D7A4F] focus:ring-[#2D7A4F]/10 group-hover:border-gray-300'
+                              }`}
+                            >
+                              <option value="">Mind</option>
+                              {items
+                                .sort((a, b) => a.order - b.order)
+                                .map((filter) => (
+                                  <option key={filter.id} value={filter.slug}>
+                                    {filter.name}
+                                  </option>
+                                ))}
+                            </select>
+                            <ChevronDown className={`absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 pointer-events-none transition-colors ${hasValue ? 'text-[#2D7A4F]' : 'text-gray-400'}`} />
+                          </div>
+                        </div>
+                      )
+                    })}
+                  
+                  {/* Távolság */}
+                  <div className="group">
+                    <label className="flex items-center gap-2 text-xs font-bold text-gray-600 uppercase tracking-wider mb-3">
+                      <Gauge className={`h-3.5 w-3.5 ${filterMaxDistance ? 'text-[#2D7A4F]' : 'text-gray-400'}`} />
+                      Távolság
+                      {filterMaxDistance && (
+                        <span className="ml-auto px-2 py-0.5 bg-[#2D7A4F] text-white text-[10px] font-bold rounded-full">
+                          Aktív
+                        </span>
+                      )}
+                    </label>
+                    <div className="relative">
+                      <select
+                        value={filterMaxDistance}
+                        onChange={(e) => setFilterMaxDistance(e.target.value)}
+                        className={`w-full px-4 py-3 pr-10 bg-white border-2 rounded-xl outline-none focus:ring-4 transition-all text-sm font-medium appearance-none cursor-pointer hover:shadow-md ${
+                          filterMaxDistance 
+                            ? 'border-[#2D7A4F] text-[#1B5E20] focus:border-[#2D7A4F] focus:ring-[#2D7A4F]/10' 
+                            : 'border-gray-200 text-gray-900 focus:border-[#2D7A4F] focus:ring-[#2D7A4F]/10 group-hover:border-gray-300'
+                        }`}
+                      >
+                        <option value="">Mind</option>
+                        <option value="1">1 km</option>
+                        <option value="5">5 km</option>
+                        <option value="10">10 km</option>
+                      </select>
+                      <ChevronDown className={`absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 pointer-events-none transition-colors ${filterMaxDistance ? 'text-[#2D7A4F]' : 'text-gray-400'}`} />
+                    </div>
+                  </div>
+                  
+                  {/* Értékelés */}
+                  <div className="group">
+                    <label className="flex items-center gap-2 text-xs font-bold text-gray-600 uppercase tracking-wider mb-3">
+                      <Award className={`h-3.5 w-3.5 ${filterRatingMin ? 'text-[#2D7A4F]' : 'text-gray-400'}`} />
+                      Értékelés
+                      {filterRatingMin && (
+                        <span className="ml-auto px-2 py-0.5 bg-[#2D7A4F] text-white text-[10px] font-bold rounded-full">
+                          Aktív
+                        </span>
+                      )}
+                    </label>
+                    <div className="relative">
+                      <select
+                        value={filterRatingMin}
+                        onChange={(e) => setFilterRatingMin(e.target.value)}
+                        className={`w-full px-4 py-3 pr-10 bg-white border-2 rounded-xl outline-none focus:ring-4 transition-all text-sm font-medium appearance-none cursor-pointer hover:shadow-md ${
+                          filterRatingMin 
+                            ? 'border-[#2D7A4F] text-[#1B5E20] focus:border-[#2D7A4F] focus:ring-[#2D7A4F]/10' 
+                            : 'border-gray-200 text-gray-900 focus:border-[#2D7A4F] focus:ring-[#2D7A4F]/10 group-hover:border-gray-300'
+                        }`}
+                      >
+                        <option value="">Mind</option>
+                        <option value="4">4+ csillag</option>
+                        <option value="4.5">4.5+ csillag</option>
+                      </select>
+                      <ChevronDown className={`absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 pointer-events-none transition-colors ${filterRatingMin ? 'text-[#2D7A4F]' : 'text-gray-400'}`} />
+                    </div>
+                  </div>
+                  
+                  {/* Árkategória */}
+                  <div className="group">
+                    <label className="flex items-center gap-2 text-xs font-bold text-gray-600 uppercase tracking-wider mb-3">
+                      <Tag className={`h-3.5 w-3.5 ${filterPriceLevel ? 'text-[#2D7A4F]' : 'text-gray-400'}`} />
+                      Árkategória
+                      {filterPriceLevel && (
+                        <span className="ml-auto px-2 py-0.5 bg-[#2D7A4F] text-white text-[10px] font-bold rounded-full">
+                          Aktív
+                        </span>
+                      )}
+                    </label>
+                    <div className="relative">
+                      <select
+                        value={filterPriceLevel}
+                        onChange={(e) => setFilterPriceLevel(e.target.value)}
+                        className={`w-full px-4 py-3 pr-10 bg-white border-2 rounded-xl outline-none focus:ring-4 transition-all text-sm font-medium appearance-none cursor-pointer hover:shadow-md ${
+                          filterPriceLevel 
+                            ? 'border-[#2D7A4F] text-[#1B5E20] focus:border-[#2D7A4F] focus:ring-[#2D7A4F]/10' 
+                            : 'border-gray-200 text-gray-900 focus:border-[#2D7A4F] focus:ring-[#2D7A4F]/10 group-hover:border-gray-300'
+                        }`}
+                      >
+                        <option value="">Mind</option>
+                        <option value="1">$</option>
+                        <option value="2">$$</option>
+                        <option value="3">$$$</option>
+                        <option value="4">$$$$</option>
+                      </select>
+                      <ChevronDown className={`absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 pointer-events-none transition-colors ${filterPriceLevel ? 'text-[#2D7A4F]' : 'text-gray-400'}`} />
+                    </div>
+                  </div>
+                  
+                  {/* Rendezés */}
+                  <div className="group">
+                    <label className="flex items-center gap-2 text-xs font-bold text-gray-600 uppercase tracking-wider mb-3">
+                      <Sliders className="h-3.5 w-3.5 text-gray-400" />
+                      Rendezés
+                    </label>
+                    <div className="relative">
+                      <select
+                        value={filterSortBy}
+                        onChange={(e) => setFilterSortBy(e.target.value as 'distance' | 'rating' | 'name')}
+                        className="w-full px-4 py-3 pr-10 bg-white border-2 border-gray-200 rounded-xl outline-none focus:border-[#2D7A4F] focus:ring-4 focus:ring-[#2D7A4F]/10 transition-all text-sm font-medium text-gray-900 appearance-none cursor-pointer hover:border-gray-300 group-hover:shadow-md"
+                      >
+                        <option value="distance">Távolság</option>
+                        <option value="rating">Értékelés</option>
+                        <option value="name">Név</option>
+                      </select>
+                      <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
