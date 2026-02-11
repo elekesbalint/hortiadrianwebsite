@@ -42,6 +42,7 @@ export type AppPlace = {
   tiktok?: string | null
   email?: string | null
   featured_order?: number | null
+  eventDate?: string | null
   distance?: number
   /** Helyhez rendelt szűrők ID-k */
   filterIds?: string[]
@@ -114,6 +115,7 @@ function rowToAppPlace(row: PlaceRowWithCategory): AppPlace {
     tiktok: row.tiktok ?? null,
     email: row.email ?? null,
     featured_order: (row as PlaceRowWithCategory & { featured_order?: number | null }).featured_order ?? null,
+    eventDate: (row as PlaceRowWithCategory & { event_date?: string | null }).event_date ?? null,
   }
 }
 
@@ -305,6 +307,7 @@ export type PlaceFormInput = {
   youtube?: string | null
   tiktok?: string | null
   email?: string | null
+  eventDate?: string | null
 }
 
 export async function insertPlace(input: PlaceFormInput): Promise<{ id: string } | { error: string }> {
@@ -337,6 +340,7 @@ export async function insertPlace(input: PlaceFormInput): Promise<{ id: string }
     menu_url: input.menuUrl || null,
     features: [],
     is_active: true,
+    event_date: input.eventDate || null,
   }
   const rowWithFeatured = {
     ...baseRow,
@@ -385,6 +389,7 @@ export async function updatePlace(id: string, input: PlaceFormInput): Promise<{ 
     youtube: input.youtube ?? null,
     tiktok: input.tiktok ?? null,
     email: input.email ?? null,
+    event_date: input.eventDate || null,
   }
   const updateWithFeatured = {
     ...baseUpdate,

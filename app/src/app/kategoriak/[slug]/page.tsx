@@ -77,6 +77,7 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
   const [filterTer, setFilterTer] = useState('')
   const [filterKivelMesz, setFilterKivelMesz] = useState('')
   const [filterMegkozelites, setFilterMegkozelites] = useState('')
+  const [filterEventDate, setFilterEventDate] = useState<string>('')
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null)
 
   useEffect(() => {
@@ -160,6 +161,21 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
     // Nyitva most
     if (filterOpenOnly) list = list.filter((p) => p.isOpen)
     
+    // Dátum szerinti szűrés (csak programokhoz)
+    if (filterEventDate && slug === 'programok') {
+      const selectedDate = new Date(filterEventDate)
+      selectedDate.setHours(0, 0, 0, 0)
+      const nextDay = new Date(selectedDate)
+      nextDay.setDate(nextDay.getDate() + 1)
+      
+      list = list.filter((p) => {
+        if (!p.eventDate) return false
+        const eventDate = new Date(p.eventDate)
+        eventDate.setHours(0, 0, 0, 0)
+        return eventDate >= selectedDate && eventDate < nextDay
+      })
+    }
+    
     // Új szűrők (Évszak, Időszak, Tér, Kivel mész?, Megközelítés)
     const activeFilterSlugs: string[] = []
     if (filterEvszak) activeFilterSlugs.push(filterEvszak)
@@ -190,7 +206,7 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
       return a.name.localeCompare(b.name)
     })
     return list
-  }, [placesInCategory, searchQuery, filterCity, filterRatingMin, filterPriceLevel, filterMaxDistance, filterOpenOnly, filterSortBy, filters, filterEvszak, filterIdoszak, filterTer, filterKivelMesz, filterMegkozelites, centerForDistance])
+  }, [placesInCategory, searchQuery, filterCity, filterRatingMin, filterPriceLevel, filterMaxDistance, filterOpenOnly, filterSortBy, filters, filterEvszak, filterIdoszak, filterTer, filterKivelMesz, filterMegkozelites, filterEventDate, slug, centerForDistance])
 
   // Google Maps API-val pontosítjuk az első 10 hely távolságát és idejét (ha elérhető)
   const [filteredPlaces, setFilteredPlaces] = useState(filteredPlacesInitial)
@@ -235,9 +251,10 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
     setFilterMaxDistance('')
     setFilterOpenOnly(false)
     setFilterSortBy('distance')
+    setFilterEventDate('')
   }
 
-  const hasActiveFilters = filterCity || filterRatingMin || filterPriceLevel || filterMaxDistance || filterOpenOnly || filterSortBy !== 'distance' || filterEvszak || filterIdoszak || filterTer || filterKivelMesz || filterMegkozelites
+  const hasActiveFilters = filterCity || filterRatingMin || filterPriceLevel || filterMaxDistance || filterOpenOnly || filterSortBy !== 'distance' || filterEvszak || filterIdoszak || filterTer || filterKivelMesz || filterMegkozelites || filterEventDate
 
   const toggleFavorite = async (e: React.MouseEvent, id: string) => {
     e.preventDefault()
@@ -459,6 +476,27 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
                       hasValue={!!filterCity}
                     />
                   </div>
+
+                {/* Esemény dátuma (csak programokhoz) */}
+                {slug === 'programok' && (
+                  <div className="group">
+                    <label className="flex items-center gap-2 text-xs font-bold text-gray-600 uppercase tracking-wider mb-3">
+                      <Calendar className={`h-3.5 w-3.5 ${filterEventDate ? 'text-[#2D7A4F]' : 'text-gray-400'}`} />
+                      Esemény dátuma
+                      {filterEventDate && (
+                        <span className="ml-auto px-2 py-0.5 bg-[#2D7A4F] text-white text-[10px] font-bold rounded-full">
+                          Aktív
+                        </span>
+                      )}
+                    </label>
+                    <input
+                      type="date"
+                      value={filterEventDate}
+                      onChange={(e) => setFilterEventDate(e.target.value)}
+                      className="w-full px-4 py-3 bg-white border-2 rounded-xl outline-none transition-all text-sm font-medium appearance-none cursor-pointer hover:shadow-md focus:border-[#2D7A4F] focus:ring-[#2D7A4F]/10"
+                    />
+                  </div>
+                )}
 
                 {/* Dinamikusan generált szűrők az adatbázisból */}
                 {Object.entries(
