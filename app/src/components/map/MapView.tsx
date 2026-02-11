@@ -206,6 +206,22 @@ export function MapView({ places, onPlaceSelect, selectedPlaceId, userLocation, 
     libraries: ['places'],
   })
 
+  // Globális függvény beállítása az étlap modal megnyitásához
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      (window as any).openMenuModal = (url: string, name: string) => {
+        setMenuUrl(url)
+        setMenuPlaceName(name)
+        setMenuModalOpen(true)
+      }
+    }
+    return () => {
+      if (typeof window !== 'undefined') {
+        delete (window as any).openMenuModal
+      }
+    }
+  }, [])
+
   const onLoad = useCallback((map: google.maps.Map) => {
     mapRef.current = map
     setMapReady(true)
@@ -276,17 +292,19 @@ export function MapView({ places, onPlaceSelect, selectedPlaceId, userLocation, 
           const container = infoWindow.getContent()
           if (container && typeof container === 'object') {
             const el = container as HTMLElement
-            // Étlap modal megnyitása
+            // Étlap modal megnyitása - globális függvény használata
             el.querySelectorAll('a.menu-link').forEach((a) => {
               const anchor = a as HTMLAnchorElement
               anchor.addEventListener('click', (e) => {
                 e.preventDefault()
+                e.stopPropagation()
                 const menuUrlAttr = anchor.getAttribute('data-menu-url')
                 const placeName = anchor.getAttribute('data-place-name') || ''
                 if (menuUrlAttr) {
-                  setMenuUrl(menuUrlAttr)
-                  setMenuPlaceName(placeName)
-                  setMenuModalOpen(true)
+                  // Globális függvény meghívása a React state frissítéséhez
+                  if (typeof window !== 'undefined' && (window as any).openMenuModal) {
+                    (window as any).openMenuModal(menuUrlAttr, placeName)
+                  }
                 }
               })
             })
