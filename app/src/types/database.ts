@@ -45,6 +45,7 @@ export type Database = {
           is_active: boolean
           show_in_header: boolean
           detail_page_title: string | null
+          featured_order: number | null
           created_at: string
         }
         Insert: {
@@ -58,6 +59,7 @@ export type Database = {
           is_active?: boolean
           show_in_header?: boolean
           detail_page_title?: string | null
+          featured_order?: number | null
           created_at?: string
         }
         Update: {
@@ -71,6 +73,7 @@ export type Database = {
           is_active?: boolean
           show_in_header?: boolean
           detail_page_title?: string | null
+          featured_order?: number | null
           created_at?: string
         }
       }

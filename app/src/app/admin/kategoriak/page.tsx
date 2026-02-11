@@ -32,6 +32,7 @@ export default function AdminCategoriesPage() {
   const [editImage, setEditImage] = useState('')
   const [editIcon, setEditIcon] = useState<string | null>(null)
   const [editDetailPageTitle, setEditDetailPageTitle] = useState('')
+  const [editFeaturedOrder, setEditFeaturedOrder] = useState<string>('')
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
   const [uploadingBanner, setUploadingBanner] = useState(false)
   const [uploadingEditBanner, setUploadingEditBanner] = useState(false)
@@ -75,12 +76,13 @@ export default function AdminCategoriesPage() {
     }
   }
 
-  const startEdit = (id: string, name: string, image: string | null, icon: string | null, detail_page_title: string | null) => {
+  const startEdit = (id: string, name: string, image: string | null, icon: string | null, detail_page_title: string | null, featured_order: number | null) => {
     setEditingId(id)
     setEditName(name)
     setEditImage(image ?? '')
     setEditIcon(icon ?? null)
     setEditDetailPageTitle(detail_page_title ?? '')
+    setEditFeaturedOrder(featured_order ? featured_order.toString() : '')
   }
 
   const saveEdit = async () => {
@@ -88,7 +90,7 @@ export default function AdminCategoriesPage() {
     const c = categories.find((x) => x.id === editingId)
     if (!c) return
     setSaving(true)
-    const ok = await updateCategory(editingId, c.slug, editName.trim(), { show_in_header: c.show_in_header, image: editImage.trim() || null, icon: editIcon || null, detail_page_title: editDetailPageTitle.trim() || null })
+    const ok = await updateCategory(editingId, c.slug, editName.trim(), { show_in_header: c.show_in_header, image: editImage.trim() || null, icon: editIcon || null, detail_page_title: editDetailPageTitle.trim() || null, featured_order: editFeaturedOrder ? Number(editFeaturedOrder) : null })
     setSaving(false)
     if (ok) {
       setEditingId(null)
@@ -96,6 +98,7 @@ export default function AdminCategoriesPage() {
       setEditImage('')
       setEditIcon(null)
       setEditDetailPageTitle('')
+      setEditFeaturedOrder('')
       await load()
     } else {
       alert('Hiba történt a mentés során.')
@@ -116,6 +119,7 @@ export default function AdminCategoriesPage() {
     setEditImage('')
     setEditIcon(null)
     setEditDetailPageTitle('')
+    setEditFeaturedOrder('')
   }
 
   const handleMoveUp = async (id: string) => {
@@ -357,6 +361,18 @@ export default function AdminCategoriesPage() {
                             className="px-3 py-1.5 border border-gray-200 rounded-lg outline-none focus:border-[#2D7A4F] w-48 text-sm"
                           />
                         </div>
+                        <div>
+                          <label className="block text-xs text-gray-500 mb-0.5">Felkapott sorrend (opcionális)</label>
+                          <input
+                            type="number"
+                            min="1"
+                            value={editFeaturedOrder}
+                            onChange={(e) => setEditFeaturedOrder(e.target.value)}
+                            placeholder="1, 2, 3... (NULL = nem felkapott)"
+                            className="px-3 py-1.5 border border-gray-200 rounded-lg outline-none focus:border-[#2D7A4F] w-48 text-sm"
+                          />
+                          <p className="text-xs text-gray-400 mt-0.5">Ha megadva, megjelenik a főoldal "Felkapott kategóriák" szekciójában</p>
+                        </div>
                       </div>
                     ) : (
                       <span className="font-medium text-[#1A1A1A]">{c.name}</span>
@@ -448,7 +464,7 @@ export default function AdminCategoriesPage() {
                       <div className="flex items-center justify-end gap-1">
                         <button
                           type="button"
-                          onClick={() => startEdit(c.id, c.name, c.image, c.icon, c.detail_page_title)}
+                          onClick={() => startEdit(c.id, c.name, c.image, c.icon, c.detail_page_title, c.featured_order)}
                           className="p-2 rounded-lg text-gray-500 hover:bg-[#E8F5E9] hover:text-[#2D7A4F] transition-colors"
                           title="Szerkesztés"
                         >

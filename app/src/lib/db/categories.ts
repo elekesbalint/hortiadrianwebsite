@@ -2,7 +2,7 @@
 
 import { supabase, createServerSupabaseClient } from '@/lib/supabase'
 
-export type AppCategory = { id: string; slug: string; name: string; show_in_header: boolean; order: number; image: string | null; icon: string | null; detail_page_title: string | null }
+export type AppCategory = { id: string; slug: string; name: string; show_in_header: boolean; order: number; image: string | null; icon: string | null; detail_page_title: string | null; featured_order: number | null }
 
 function getAdminClient() {
   try {
@@ -15,19 +15,19 @@ function getAdminClient() {
 export async function getCategories(): Promise<AppCategory[]> {
   const { data, error } = await supabase
     .from('categories')
-    .select('id, slug, name, show_in_header, "order", image, icon, detail_page_title')
+    .select('id, slug, name, show_in_header, "order", image, icon, detail_page_title, featured_order')
     .eq('is_active', true)
     .order('order', { ascending: true })
   if (error) {
-    if (String(error.message || '').includes('show_in_header')) {
+    if (String(error.message || '').includes('show_in_header') || String(error.message || '').includes('featured_order')) {
       const fallback = await supabase.from('categories').select('id, slug, name, "order", icon, detail_page_title').order('order', { ascending: true })
       const rows = (fallback.data ?? []) as { id: string; slug: string; name: string; order?: number; icon?: string | null; detail_page_title?: string | null }[]
-      return rows.map((r) => ({ ...r, show_in_header: true, order: r.order ?? 0, image: null, icon: r.icon ?? null, detail_page_title: r.detail_page_title ?? null }))
+      return rows.map((r) => ({ ...r, show_in_header: true, order: r.order ?? 0, image: null, icon: r.icon ?? null, detail_page_title: r.detail_page_title ?? null, featured_order: null }))
     }
     console.error('getCategories error', error)
     return []
   }
-  return ((data ?? []) as { id: string; slug: string; name: string; show_in_header?: boolean; order?: number; image?: string | null; icon?: string | null; detail_page_title?: string | null }[]).map((r) => ({
+  return ((data ?? []) as { id: string; slug: string; name: string; show_in_header?: boolean; order?: number; image?: string | null; icon?: string | null; detail_page_title?: string | null; featured_order?: number | null }[]).map((r) => ({
     id: r.id,
     slug: r.slug,
     name: r.name,
@@ -36,6 +36,36 @@ export async function getCategories(): Promise<AppCategory[]> {
     image: r.image ?? null,
     icon: r.icon ?? null,
     detail_page_title: r.detail_page_title ?? null,
+    featured_order: r.featured_order ?? null,
+  }))
+}
+
+/** Felkapott kategóriák a kezdőlaphoz: featured_order szerint, max 8. */
+export async function getFeaturedCategories(): Promise<AppCategory[]> {
+  const { data, error } = await supabase
+    .from('categories')
+    .select('id, slug, name, show_in_header, "order", image, icon, detail_page_title, featured_order')
+    .eq('is_active', true)
+    .not('featured_order', 'is', null)
+    .order('featured_order', { ascending: true })
+    .limit(8)
+  if (error) {
+    if (String(error.message || '').includes('featured_order')) {
+      return []
+    }
+    console.error('getFeaturedCategories error', error)
+    return []
+  }
+  return ((data ?? []) as { id: string; slug: string; name: string; show_in_header?: boolean; order?: number; image?: string | null; icon?: string | null; detail_page_title?: string | null; featured_order?: number | null }[]).map((r) => ({
+    id: r.id,
+    slug: r.slug,
+    name: r.name,
+    show_in_header: r.show_in_header ?? true,
+    order: r.order ?? 0,
+    image: r.image ?? null,
+    icon: r.icon ?? null,
+    detail_page_title: r.detail_page_title ?? null,
+    featured_order: r.featured_order ?? null,
   }))
 }
 
@@ -84,23 +114,24 @@ export async function updateCategory(
   id: string,
   slug: string,
   name: string,
-  opts?: { show_in_header?: boolean; image?: string | null; icon?: string | null; detail_page_title?: string | null; order?: number }
+  opts?: { show_in_header?: boolean; image?: string | null; icon?: string | null; detail_page_title?: string | null; order?: number; featured_order?: number | null }
 ): Promise<boolean> {
   const admin = getAdminClient()
   if (!admin) {
     console.error('updateCategory: SUPABASE_SERVICE_ROLE_KEY hiányzik')
     return false
   }
-  const update: { slug: string; name: string; show_in_header?: boolean; image?: string | null; icon?: string | null; detail_page_title?: string | null; order?: number } = { slug, name }
+  const update: { slug: string; name: string; show_in_header?: boolean; image?: string | null; icon?: string | null; detail_page_title?: string | null; order?: number; featured_order?: number | null } = { slug, name }
   if (opts?.show_in_header !== undefined) update.show_in_header = opts.show_in_header
   if (opts?.image !== undefined) update.image = opts.image
   if (opts?.icon !== undefined) update.icon = opts.icon
   if (opts?.detail_page_title !== undefined) update.detail_page_title = opts.detail_page_title
   if (opts?.order !== undefined) update.order = opts.order
+  if (opts?.featured_order !== undefined) update.featured_order = opts.featured_order && opts.featured_order > 0 ? opts.featured_order : null
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let result = await (admin.from('categories') as any).update(update).eq('id', id)
-  if (result.error && String(result.error.message || '').includes('show_in_header')) {
-    result = await (admin.from('categories') as any).update({ slug, name, ...(opts?.image !== undefined && { image: opts.image }), ...(opts?.icon !== undefined && { icon: opts.icon }), ...(opts?.detail_page_title !== undefined && { detail_page_title: opts.detail_page_title }), ...(opts?.order !== undefined && { order: opts.order }) }).eq('id', id)
+  if (result.error && (String(result.error.message || '').includes('show_in_header') || String(result.error.message || '').includes('featured_order'))) {
+    result = await (admin.from('categories') as any).update({ slug, name, ...(opts?.image !== undefined && { image: opts.image }), ...(opts?.icon !== undefined && { icon: opts.icon }), ...(opts?.detail_page_title !== undefined && { detail_page_title: opts.detail_page_title }), ...(opts?.order !== undefined && { order: opts.order }), ...(opts?.featured_order !== undefined && { featured_order: opts.featured_order && opts.featured_order > 0 ? opts.featured_order : null }) }).eq('id', id)
   }
   if (result.error) {
     console.error('updateCategory error', result.error)

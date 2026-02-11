@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/Button'
 import { Card, CardContent, CardTitle, CardDescription } from '@/components/ui/Card'
 import { MapPin, Utensils, Bed, Star, Heart, Wine, Camera, Bath, Baby, Sparkles, ArrowRight, Landmark, ChevronLeft, ChevronRight, Users, Eye } from 'lucide-react'
 import { getPlaces, getFeaturedPlaces } from '@/lib/db/places'
-import { getCategories } from '@/lib/db/categories'
+import { getCategories, getFeaturedCategories } from '@/lib/db/categories'
 import { recordStatistic } from '@/lib/db/statistics'
 import { getCategoryIconComponent } from '@/lib/categoryIcons'
 import { getSiteStatistics } from '@/lib/db/siteStatistics'
@@ -43,6 +43,7 @@ export default function HomePage() {
   const [carouselIndex, setCarouselIndex] = useState(0)
   const [places, setPlaces] = useState<Awaited<ReturnType<typeof getPlaces>>>([])
   const [featuredPlaces, setFeaturedPlaces] = useState<Awaited<ReturnType<typeof getFeaturedPlaces>>>([])
+  const [featuredCategories, setFeaturedCategories] = useState<Awaited<ReturnType<typeof getFeaturedCategories>>>([])
   const [categories, setCategories] = useState<Awaited<ReturnType<typeof getCategories>>>([])
   const [siteStats, setSiteStats] = useState<Awaited<ReturnType<typeof getSiteStatistics>>>([])
   const [featuredPaused, setFeaturedPaused] = useState(false)
@@ -61,9 +62,10 @@ export default function HomePage() {
     }))
 
   useEffect(() => {
-    Promise.all([getPlaces(), getFeaturedPlaces(), getCategories(), getSiteStatistics()]).then(([pls, featured, cats, stats]) => {
+    Promise.all([getPlaces(), getFeaturedPlaces(), getFeaturedCategories(), getCategories(), getSiteStatistics()]).then(([pls, featured, featuredCats, cats, stats]) => {
       setPlaces(pls)
       setFeaturedPlaces(featured.length > 0 ? featured : pls.slice(0, 8))
+      setFeaturedCategories(featuredCats)
       setCategories(cats)
       setSiteStats(stats)
     })
@@ -209,6 +211,69 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* Felkapott kategóriák */}
+      {featuredCategories.length > 0 && (
+        <section className="py-20 md:py-28 bg-gradient-to-b from-white to-gray-50">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 mb-12">
+              <div>
+                <span className="inline-flex items-center gap-2 bg-yellow-100 text-yellow-700 text-sm font-semibold px-4 py-2 rounded-full mb-4">
+                  <Sparkles className="h-4 w-4" />
+                  Kiemelt kategóriák
+                </span>
+                <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-2">
+                  Felkapott kategóriák
+                </h2>
+                <p className="text-lg text-gray-500">
+                  A legnépszerűbb kategóriák most
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+              {featuredCategories.map((category) => {
+                const Icon = getCategoryIcon(category.slug, category.icon)
+                const imageUrl = category.image || categoryImages[category.slug] || defaultCategoryImage
+                const count = places.filter((p) => p.category_id === category.id).length
+                return (
+                  <Link key={category.id} href={`/kategoriak/${category.slug}`}>
+                    <Card hover className="h-full group overflow-hidden">
+                      <div className="relative aspect-square overflow-hidden">
+                        {(imageUrl.startsWith('https://images.unsplash.com') || imageUrl.includes('supabase.co/storage/')) ? (
+                          <Image
+                            src={imageUrl}
+                            alt={category.name}
+                            fill
+                            className="object-cover group-hover:scale-105 transition-transform duration-300"
+                            sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                          />
+                        ) : (
+                          <img src={imageUrl} alt={category.name} className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                        )}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                        <div className="absolute inset-0 flex flex-col items-center justify-center p-4">
+                          <div className="w-14 h-14 md:w-16 md:h-16 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center mb-3 group-hover:scale-110 group-hover:shadow-xl transition-all duration-300 border-2 border-white/50">
+                            <Icon className="h-7 w-7 md:h-8 md:w-8 text-[#2D7A4F]" />
+                          </div>
+                          <span className="text-white font-semibold text-center text-sm md:text-base drop-shadow-lg">
+                            {category.name}
+                          </span>
+                        </div>
+                      </div>
+                      <CardContent className="py-3 px-4">
+                        <CardDescription className="font-medium text-gray-600 text-sm">
+                          {count > 0 ? `${count} helyszín` : 'Hamarosan'}
+                        </CardDescription>
+                      </CardContent>
+                    </Card>
+                  </Link>
+                )
+              })}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Felkapott helyek */}
       <section className="py-20 md:py-28 bg-white">
