@@ -120,7 +120,7 @@ export default function HomePage() {
   return (
     <div className="overflow-hidden">
       {/* Hero – professzionális overlay, típográfia, animáció */}
-      <section className="relative min-h-[85vh] flex items-center justify-center">
+      <section className="relative min-h-[60vh] flex items-center justify-center">
         {/* Háttérkép + gradiens overlay (lapos sötét helyett) */}
         <div className="absolute inset-0">
           <Image
