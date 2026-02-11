@@ -399,8 +399,8 @@ export default function HomePage() {
       <section className="py-20 md:py-28 bg-gradient-to-b from-white to-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            {/* Stylized map – Magyarország pinekkel (nem Google Maps) */}
-            <div className="relative h-[400px] md:h-[500px] rounded-2xl overflow-hidden shadow-2xl border-2 border-gray-200 bg-gray-50">
+            {/* Stylized map – Magyarország pinekkel (háttér nélküli, keret nélkül) */}
+            <div className="relative h-[400px] md:h-[500px] overflow-hidden">
               <Image
                 src="/images/magyarorszag-pinek.png"
                 alt="Magyarország – fedezd fel a helyeket"
