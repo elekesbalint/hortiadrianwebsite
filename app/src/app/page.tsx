@@ -171,7 +171,7 @@ export default function HomePage() {
               Válassz egy kategóriát és találd meg a legjobb helyeket Magyarországon
             </p>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+          <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-4">
             {categoriesWithDisplay.map((category, index) => {
               const Icon = category.icon
               return (
@@ -184,23 +184,23 @@ export default function HomePage() {
                           alt={category.name}
                           fill
                           className="object-cover group-hover:scale-110 transition-transform duration-500"
-                          sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                          sizes="(max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"
                         />
                       ) : (
                         <img src={category.imageUrl} alt={category.name} className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
                       )}
                       <div className="absolute inset-0 bg-black/30 group-hover:bg-black/20 transition-colors duration-300" />
-                      <div className="absolute inset-0 flex flex-col items-center justify-center p-4">
-                        <div className="w-14 h-14 md:w-16 md:h-16 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center mb-3 group-hover:scale-110 group-hover:shadow-xl transition-all duration-300 border-2 border-white/50">
-                          <Icon className="h-7 w-7 md:h-8 md:w-8 text-[#2D7A4F]" />
+                      <div className="absolute inset-0 flex flex-col items-center justify-center p-3">
+                        <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center mb-2 group-hover:scale-110 group-hover:shadow-xl transition-all duration-300 border-2 border-white/50">
+                          <Icon className="h-5 w-5 md:h-6 md:w-6 text-[#2D7A4F]" />
                         </div>
-                        <span className="text-white font-semibold text-center text-sm md:text-base drop-shadow-lg">
+                        <span className="text-white font-semibold text-center text-xs md:text-sm drop-shadow-lg">
                           {category.name}
                         </span>
                       </div>
                     </div>
-                    <CardContent className="py-3 px-4">
-                      <CardDescription className="font-medium text-gray-600 text-sm">
+                    <CardContent className="py-2 px-3">
+                      <CardDescription className="font-medium text-gray-600 text-xs">
                         {category.count > 0 ? `${category.count} helyszín` : 'Hamarosan'}
                       </CardDescription>
                     </CardContent>
@@ -351,7 +351,7 @@ export default function HomePage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+            <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-4">
               {featuredCategories.map((category) => {
                 const Icon = getCategoryIcon(category.slug, category.icon)
                 const imageUrl = category.image || categoryImages[category.slug] || defaultCategoryImage
@@ -366,23 +366,23 @@ export default function HomePage() {
                             alt={category.name}
                             fill
                             className="object-cover group-hover:scale-105 transition-transform duration-300"
-                            sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                            sizes="(max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"
                           />
                         ) : (
                           <img src={imageUrl} alt={category.name} className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                         )}
                         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-                        <div className="absolute inset-0 flex flex-col items-center justify-center p-4">
-                          <div className="w-14 h-14 md:w-16 md:h-16 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center mb-3 group-hover:scale-110 group-hover:shadow-xl transition-all duration-300 border-2 border-white/50">
-                            <Icon className="h-7 w-7 md:h-8 md:w-8 text-[#2D7A4F]" />
+                        <div className="absolute inset-0 flex flex-col items-center justify-center p-3">
+                          <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center mb-2 group-hover:scale-110 group-hover:shadow-xl transition-all duration-300 border-2 border-white/50">
+                            <Icon className="h-5 w-5 md:h-6 md:w-6 text-[#2D7A4F]" />
                           </div>
-                          <span className="text-white font-semibold text-center text-sm md:text-base drop-shadow-lg">
+                          <span className="text-white font-semibold text-center text-xs md:text-sm drop-shadow-lg">
                             {category.name}
                           </span>
                         </div>
                       </div>
-                      <CardContent className="py-3 px-4">
-                        <CardDescription className="font-medium text-gray-600 text-sm">
+                      <CardContent className="py-2 px-3">
+                        <CardDescription className="font-medium text-gray-600 text-xs">
                           {count > 0 ? `${count} helyszín` : 'Hamarosan'}
                         </CardDescription>
                       </CardContent>
