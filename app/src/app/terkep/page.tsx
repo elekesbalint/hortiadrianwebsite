@@ -664,7 +664,7 @@ function MapPageContent() {
           </>
         ) : (
           /* List View */
-          <div className="flex-1 overflow-auto p-6">
+          <div className="flex-1 overflow-auto p-2 sm:p-6">
             <div className="max-w-3xl mx-auto space-y-4">
               <div className="flex items-center justify-between mb-6">
                 <p className="text-gray-500 font-medium">
@@ -677,7 +677,7 @@ function MapPageContent() {
               {placesWithDistance.map((place) => (
                 <Link key={place.id} href={`/hely/${place.slug || place.id}`} onClick={() => recordStatistic('place_click', place.id)}>
                   <Card hover className="mb-4">
-                    <CardContent className="px-3 py-4 sm:p-5">
+                    <CardContent className="px-1.5 py-4 sm:p-5">
                       <div className="flex items-start gap-3 sm:gap-5">
                         <div className="relative w-20 h-20 sm:w-28 sm:h-28 rounded-xl sm:rounded-2xl overflow-hidden flex-shrink-0 bg-gray-200">
                           <Image src={place.imageUrl} alt={place.name} fill className="object-cover" sizes="112px" />
