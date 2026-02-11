@@ -45,6 +45,7 @@ export default function HomePage() {
   const [featuredPaused, setFeaturedPaused] = useState(false)
   const scrollRef = useRef<HTMLDivElement>(null)
   const slideRefs = useRef<(HTMLAnchorElement | null)[]>([])
+  const isUserInteractionRef = useRef(false) // Jelzi, hogy a változás felhasználói interakcióból jött-e
   const count = featuredPlaces.length
   // Csak azokat a kategóriákat jelenítjük meg, amelyek a headerben is megjelennek (show_in_header = true)
   const categoriesWithDisplay = categories
@@ -66,11 +67,43 @@ export default function HomePage() {
 
   useEffect(() => {
     const slide = slideRefs.current[carouselIndex]
-    if (slide) slide.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' })
+    if (!slide) {
+      isUserInteractionRef.current = false
+      return
+    }
+    
+    // Csak akkor scrollolunk, ha felhasználói interakció történt (nem automatikus változás)
+    if (!isUserInteractionRef.current) {
+      isUserInteractionRef.current = false
+      return
+    }
+    
+    // Csak akkor scrollolunk, ha a carousel látható a viewportban
+    const carouselSection = slide.closest('section')
+    if (!carouselSection) {
+      isUserInteractionRef.current = false
+      return
+    }
+    
+    const rect = carouselSection.getBoundingClientRect()
+    const isVisible = rect.top < window.innerHeight && rect.bottom > 0
+    
+    // Csak vízszintesen scrollolunk (inline), nem függőlegesen (block), hogy ne ugorjon az oldal
+    if (isVisible) {
+      slide.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' })
+    }
+    
+    isUserInteractionRef.current = false
   }, [carouselIndex])
 
-  const goPrev = () => setCarouselIndex((i) => (count <= 1 ? 0 : i === 0 ? count - 1 : i - 1))
-  const goNext = () => setCarouselIndex((i) => (count <= 1 ? 0 : i === count - 1 ? 0 : i + 1))
+  const goPrev = () => {
+    isUserInteractionRef.current = true
+    setCarouselIndex((i) => (count <= 1 ? 0 : i === 0 ? count - 1 : i - 1))
+  }
+  const goNext = () => {
+    isUserInteractionRef.current = true
+    setCarouselIndex((i) => (count <= 1 ? 0 : i === count - 1 ? 0 : i + 1))
+  }
 
   useEffect(() => {
     if (count <= 1 || featuredPaused) return
@@ -267,7 +300,10 @@ export default function HomePage() {
                 <button
                   key={i}
                   type="button"
-                  onClick={() => setCarouselIndex(i)}
+                  onClick={() => {
+                    isUserInteractionRef.current = true
+                    setCarouselIndex(i)
+                  }}
                   className={`w-2.5 h-2.5 rounded-full transition-all ${i === carouselIndex ? 'bg-[#2D7A4F] scale-125' : 'bg-gray-300 hover:bg-gray-400'}`}
                   aria-label={`Slide ${i + 1}`}
                 />

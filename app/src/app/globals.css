@@ -3,6 +3,8 @@
 /* Base styles */
 html {
   scroll-behavior: smooth;
+  /* Kikapcsoljuk a scroll-anchoring-ot, hogy ne ugorjon az oldal amikor fel/letekerünk */
+  overflow-anchor: none;
 }
 
 body {
