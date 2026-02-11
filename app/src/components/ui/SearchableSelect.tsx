@@ -112,7 +112,7 @@ export function SearchableSelect({
       {isOpen && (
         <div className="absolute z-50 w-full mt-2 bg-white border-2 border-gray-200 rounded-xl shadow-xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
           {/* Kereső mező */}
-          <div className="p-3 border-b border-gray-200 bg-gray-50">
+          <div className="p-3 border-b border-gray-200 bg-gray-50 flex-shrink-0">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
               <input
@@ -123,12 +123,30 @@ export function SearchableSelect({
                 placeholder={searchPlaceholder}
                 className="w-full pl-10 pr-3 py-2 bg-white border border-gray-200 rounded-lg outline-none focus:border-[#2D7A4F] focus:ring-2 focus:ring-[#2D7A4F]/20 text-sm"
                 onClick={(e) => e.stopPropagation()}
+                onKeyDown={(e) => {
+                  // Enter vagy Escape kezelése
+                  if (e.key === 'Escape') {
+                    setIsOpen(false)
+                    setSearchQuery('')
+                  }
+                }}
               />
             </div>
           </div>
 
           {/* Opciók lista */}
-          <div className="max-h-60 overflow-y-auto">
+          <div 
+            className="max-h-60 overflow-y-auto overscroll-contain"
+            style={{
+              scrollbarWidth: 'thin',
+              scrollbarColor: '#cbd5e1 #f1f5f9',
+              WebkitOverflowScrolling: 'touch',
+            }}
+            onWheel={(e) => {
+              // Biztosítjuk, hogy a görgetés működjön
+              e.stopPropagation()
+            }}
+          >
             {filteredOptions.length === 0 ? (
               <div className="px-4 py-8 text-center text-sm text-gray-500">
                 Nincs találat
