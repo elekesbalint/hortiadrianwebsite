@@ -163,7 +163,7 @@ function getInfoWindowContent(place: MapPlace, placeUrl: string): string {
   const isRestaurant = (place.category || '').toLowerCase().includes('étterem') || (place.category || '').toLowerCase().includes('gastro')
 
   return `
-    <div style="font-family:system-ui,sans-serif;width:100%;min-width:300px;max-width:380px;box-sizing:border-box;overflow:hidden;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,0.12);border:2px solid ${borderColor};background:#fff;padding:0 0 0 8px;margin:0;display:block;">
+    <div style="font-family:system-ui,sans-serif;width:100%;min-width:300px;max-width:380px;box-sizing:border-box;overflow:hidden;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,0.12);border:2px solid ${borderColor};background:#fff;padding:8px;margin:0;display:block;">
       <div style="position:relative;height:140px;width:100%;background:linear-gradient(135deg,${style.color},#fff);background-image:url('${img}');background-size:cover;background-position:center;flex-shrink:0;border-radius:8px;overflow:hidden;box-sizing:border-box;">
         <button onclick="if(typeof window.closeInfoWindow === 'function') { window.closeInfoWindow(); } return false;" class="info-window-close-btn" style="position:absolute;top:4px;right:4px;width:28px;height:28px;border-radius:50%;background:rgba(0,0,0,0.5);backdrop-filter:blur(4px);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:1000;transition:background 0.2s;pointer-events:auto;" onmouseover="this.style.background='rgba(0,0,0,0.7)'" onmouseout="this.style.background='rgba(0,0,0,0.5)'">
           <span style="color:#fff;font-size:18px;font-weight:bold;line-height:1;pointer-events:none;">×</span>
@@ -291,6 +291,10 @@ export function MapView({ places, onPlaceSelect, selectedPlaceId, userLocation, 
               .gm-style-iw-c > div { padding: 0 !important; margin: 0 !important; }
               .gm-style-iw-d * { box-sizing: border-box !important; }
               .gm-style-iw-c * { box-sizing: border-box !important; }
+              .gm-style-iw-d > div > div { padding: 0 !important; margin: 0 !important; }
+              .gm-style-iw-c > div > div { padding: 0 !important; margin: 0 !important; }
+              .gm-style-iw-d div[style*="padding"] { padding: 0 !important; }
+              .gm-style-iw-c div[style*="padding"] { padding: 0 !important; }
             `
             if (!document.head.querySelector('style[data-info-window-style]')) {
               style.setAttribute('data-info-window-style', 'true')
@@ -300,6 +304,12 @@ export function MapView({ places, onPlaceSelect, selectedPlaceId, userLocation, 
           const container = infoWindow.getContent()
           if (container && typeof container === 'object') {
             const el = container as HTMLElement
+            // További CSS alkalmazása közvetlenül az elemre
+            const rootDiv = el.querySelector('div[style*="padding"]') as HTMLElement
+            if (rootDiv) {
+              rootDiv.style.padding = '0'
+              rootDiv.style.margin = '0'
+            }
             // X gomb eseménykezelő - globális függvény használata
             const closeBtn = el.querySelector('.info-window-close-btn') as HTMLButtonElement
             if (closeBtn) {
