@@ -283,43 +283,52 @@ function MapPageContent() {
           </Button>
         </div>
 
-        {/* Szűrőpanel – modern, felújított dizájn */}
+        {/* Szűrő Modal – overlay ablak */}
         {isFilterOpen && (
-          <div className="max-w-7xl mx-auto mt-4 bg-gradient-to-br from-white via-gray-50/50 to-white rounded-3xl border border-gray-200/80 shadow-xl shadow-gray-900/5 overflow-hidden animate-in slide-in-from-top-2 duration-300">
-            {/* Header */}
-            <div className="px-6 py-5 bg-gradient-to-r from-[#2D7A4F]/5 to-[#1B5E20]/5 border-b border-gray-200/50">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#2D7A4F] to-[#1B5E20] flex items-center justify-center shadow-lg shadow-[#2D7A4F]/20">
-                    <Sliders className="h-5 w-5 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-bold text-gray-900">Szűrők</h3>
-                    <p className="text-xs text-gray-500 mt-0.5">Szűkítsd le a keresési eredményeket</p>
+          <div 
+            className="fixed inset-0 z-50 flex items-end md:items-center justify-center p-0 md:p-4 bg-black/50 animate-in fade-in duration-200"
+            onClick={() => setIsFilterOpen(false)}
+          >
+            <div 
+              className="w-full md:w-full md:max-w-4xl bg-white rounded-t-3xl md:rounded-3xl shadow-2xl flex flex-col max-h-[90vh] md:max-h-[85vh] animate-in slide-in-from-bottom-2 md:slide-in-from-top-2 duration-300"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Header */}
+              <div className="px-6 py-5 border-b border-gray-200 flex-shrink-0">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-xl font-bold text-gray-900">Szűrők</h3>
+                  <div className="flex items-center gap-3">
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      onClick={() => {
+                        setFilterHol('')
+                        setFilterEvszak('')
+                        setFilterIdoszak('')
+                        setFilterTer('')
+                        setFilterKivelMesz('')
+                        setFilterMegkozelites('')
+                      }}
+                      className="text-gray-600 hover:text-[#2D7A4F] hover:bg-[#E8F5E9]/50 text-sm"
+                    >
+                      <RotateCcw className="h-4 w-4 mr-1.5" />
+                      Törlés
+                    </Button>
+                    <button
+                      type="button"
+                      onClick={() => setIsFilterOpen(false)}
+                      className="p-2 rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors"
+                      aria-label="Bezárás"
+                    >
+                      <X className="h-5 w-5" />
+                    </button>
                   </div>
                 </div>
-                <Button 
-                  variant="ghost" 
-                  size="sm"
-                  onClick={() => {
-                    setFilterHol('')
-                    setFilterEvszak('')
-                    setFilterIdoszak('')
-                    setFilterTer('')
-                    setFilterKivelMesz('')
-                    setFilterMegkozelites('')
-                  }}
-                  className="text-gray-600 hover:text-[#2D7A4F] hover:bg-[#E8F5E9]/50"
-                >
-                  <RotateCcw className="h-4 w-4 mr-1.5" />
-                  Összes törlése
-                </Button>
               </div>
-            </div>
 
-            {/* Szűrő mezők */}
-            <div className="p-6">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+              {/* Szűrő mezők – scrollozható tartalom */}
+              <div className="flex-1 overflow-y-auto px-6 py-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 {/* Hol? - különleges, cím alapú szűrés */}
                 <div className="group">
                   <label className="flex items-center gap-2 text-xs font-bold text-gray-600 uppercase tracking-wider mb-3">
@@ -495,6 +504,23 @@ function MapPageContent() {
                     </select>
                     <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
                   </div>
+                </div>
+              </div>
+
+              {/* Footer – Mentés gomb */}
+              <div className="px-6 py-5 border-t border-gray-200 flex-shrink-0 bg-gray-50">
+                <div className="flex items-center justify-between">
+                  <p className="text-sm text-gray-600">
+                    <span className="font-bold text-gray-900">{placesInCircle.length}</span> találat
+                  </p>
+                  <Button
+                    variant="primary"
+                    size="lg"
+                    onClick={() => setIsFilterOpen(false)}
+                    className="px-8"
+                  >
+                    Szűrők alkalmazása
+                  </Button>
                 </div>
               </div>
             </div>
