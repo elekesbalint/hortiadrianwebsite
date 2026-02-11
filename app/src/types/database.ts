@@ -358,6 +358,32 @@ export type Database = {
           created_at?: string
         }
       }
+      site_statistics: {
+        Row: {
+          id: string
+          key: string
+          value: number
+          display_label: string | null
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          id?: string
+          key: string
+          value?: number
+          display_label?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          id?: string
+          key?: string
+          value?: number
+          display_label?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+      }
     }
   }
 }

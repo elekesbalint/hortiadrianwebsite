@@ -51,12 +51,17 @@ export async function updateSiteStatistic(
     
     const { error } = await supabase
       .from('site_statistics')
-      .upsert({
-        key,
-        value,
-        display_label: displayLabel || null,
-        updated_at: new Date().toISOString(),
-      })
+      .upsert(
+        {
+          key,
+          value,
+          display_label: displayLabel || null,
+          updated_at: new Date().toISOString(),
+        },
+        {
+          onConflict: 'key',
+        }
+      )
     
     if (error) {
       return { ok: false, error: error.message }
