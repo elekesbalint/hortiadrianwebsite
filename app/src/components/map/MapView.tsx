@@ -167,7 +167,11 @@ function getInfoWindowContent(place: MapPlace, placeUrl: string): string {
       <div style="padding:16px;box-sizing:border-box;">
         <div style="font-weight:700;font-size:16px;color:#1a1a1a;margin-bottom:4px;word-wrap:break-word;overflow-wrap:break-word;">${place.name}</div>
         <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;font-size:13px;flex-wrap:wrap;">
-          <span style="color:#f59e0b;">★</span>
+          ${Array.from({ length: 5 }, (_, i) => {
+            const starNum = i + 1
+            const isFilled = starNum <= Math.round(rating)
+            return `<span style="color:${isFilled ? '#f59e0b' : '#d1d5db'};font-size:14px;">${isFilled ? '★' : '☆'}</span>`
+          }).join('')}
           <span style="font-weight:600;">${rating}</span>
           <span style="color:#6b7280;">(${ratingCount})</span>
           ${distance ? `<span style="color:#6b7280;">• ${distance}</span>` : ''}
