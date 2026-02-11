@@ -31,6 +31,7 @@ export function SearchableSelect({
 }: SearchableSelectProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
+  const [isSearchOpen, setIsSearchOpen] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -48,24 +49,28 @@ export function SearchableSelect({
       if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
         setIsOpen(false)
         setSearchQuery('')
+        setIsSearchOpen(false)
       }
     }
 
     if (isOpen) {
       document.addEventListener('mousedown', handleClickOutside)
-      // Fókusz a kereső mezőre amikor megnyílik
-      setTimeout(() => inputRef.current?.focus(), 100)
+      // Fókusz a kereső mezőre amikor megnyílik a kereső
+      if (isSearchOpen) {
+        setTimeout(() => inputRef.current?.focus(), 100)
+      }
     }
 
     return () => {
       document.removeEventListener('mousedown', handleClickOutside)
     }
-  }, [isOpen])
+  }, [isOpen, isSearchOpen])
 
   const handleSelect = (optionValue: string) => {
     onChange(optionValue)
     setIsOpen(false)
     setSearchQuery('')
+    setIsSearchOpen(false)
   }
 
   const handleClear = (e: React.MouseEvent) => {
@@ -73,6 +78,17 @@ export function SearchableSelect({
     onChange('')
     setIsOpen(false)
     setSearchQuery('')
+    setIsSearchOpen(false)
+  }
+
+  const handleToggleSearch = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    setIsSearchOpen(!isSearchOpen)
+    if (!isSearchOpen) {
+      setTimeout(() => inputRef.current?.focus(), 100)
+    } else {
+      setSearchQuery('')
+    }
   }
 
   return (
@@ -111,28 +127,43 @@ export function SearchableSelect({
       {/* Dropdown Panel */}
       {isOpen && (
         <div className="absolute z-50 w-full mt-2 bg-white border-2 border-gray-200 rounded-xl shadow-xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
-          {/* Kereső mező */}
-          <div className="p-3 border-b border-gray-200 bg-gray-50 flex-shrink-0">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <input
-                ref={inputRef}
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder={searchPlaceholder}
-                className="w-full pl-10 pr-3 py-2 bg-white border border-gray-200 rounded-lg outline-none focus:border-[#2D7A4F] focus:ring-2 focus:ring-[#2D7A4F]/20 text-sm"
-                onClick={(e) => e.stopPropagation()}
-                onKeyDown={(e) => {
-                  // Enter vagy Escape kezelése
-                  if (e.key === 'Escape') {
-                    setIsOpen(false)
-                    setSearchQuery('')
-                  }
-                }}
-              />
-            </div>
+          {/* Header: kereső ikon */}
+          <div className="p-2 border-b border-gray-200 bg-gray-50 flex-shrink-0 flex items-center justify-end">
+            <button
+              type="button"
+              onClick={handleToggleSearch}
+              className="p-2 hover:bg-gray-200 rounded-lg transition-colors"
+              aria-label="Keresés"
+              title="Keresés"
+            >
+              <Search className={`h-4 w-4 transition-colors ${isSearchOpen ? 'text-[#2D7A4F]' : 'text-gray-400'}`} />
+            </button>
           </div>
+
+          {/* Kereső mező - csak akkor látható, ha megnyitották */}
+          {isSearchOpen && (
+            <div className="p-3 border-b border-gray-200 bg-gray-50 flex-shrink-0 animate-in slide-in-from-top-2 duration-200">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <input
+                  ref={inputRef}
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder={searchPlaceholder}
+                  className="w-full pl-10 pr-3 py-2 bg-white border border-gray-200 rounded-lg outline-none focus:border-[#2D7A4F] focus:ring-2 focus:ring-[#2D7A4F]/20 text-sm"
+                  onClick={(e) => e.stopPropagation()}
+                  onKeyDown={(e) => {
+                    // Escape kezelése: bezárja a keresőt
+                    if (e.key === 'Escape') {
+                      setIsSearchOpen(false)
+                      setSearchQuery('')
+                    }
+                  }}
+                />
+              </div>
+            </div>
+          )}
 
           {/* Opciók lista */}
           <div 
