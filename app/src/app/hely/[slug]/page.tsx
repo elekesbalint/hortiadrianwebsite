@@ -14,7 +14,7 @@ import { getFavoritePlaceIds, addFavorite, removeFavorite } from '@/lib/db/favor
 import { getReviewsByPlaceId, addReview, uploadReviewImage, type AppReview } from '@/lib/db/reviews'
 import { recordStatistic } from '@/lib/db/statistics'
 import {
-  MapPin, Star, Heart, Share2, Navigation, ChevronLeft, ChevronRight, Image as ImageIcon, FileText, MessageSquare, X, Globe, Mail
+  MapPin, Star, Heart, Share2, Navigation, ChevronLeft, ChevronRight, Image as ImageIcon, FileText, MessageSquare, X, Globe, Mail, Clock
 } from 'lucide-react'
 
 const tabs = [
@@ -352,6 +352,35 @@ export default function PlaceDetailPage({ params }: { params: Promise<{ slug: st
                     <span className="text-gray-600">{place.address}</span>
                   </div>
                 </div>
+
+                {/* Nyitvatartás */}
+                {place.openingHours && Object.keys(place.openingHours).length > 0 && (
+                  <div>
+                    <h3 className="text-lg font-bold text-gray-900 mb-4">Nyitvatartás</h3>
+                    <div className="p-4 bg-gray-50 rounded-xl">
+                      <div className="space-y-2">
+                        {Object.entries(place.openingHours).map(([day, hours]) => {
+                          const dayNames: Record<string, string> = {
+                            monday: 'Hétfő',
+                            tuesday: 'Kedd',
+                            wednesday: 'Szerda',
+                            thursday: 'Csütörtök',
+                            friday: 'Péntek',
+                            saturday: 'Szombat',
+                            sunday: 'Vasárnap',
+                          }
+                          const dayName = dayNames[day.toLowerCase()] || day
+                          return (
+                            <div key={day} className="flex items-center justify-between py-2 border-b border-gray-200 last:border-b-0">
+                              <span className="text-gray-700 font-medium">{dayName}</span>
+                              <span className="text-gray-600">{hours || 'Zárva'}</span>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 </div>
             )}

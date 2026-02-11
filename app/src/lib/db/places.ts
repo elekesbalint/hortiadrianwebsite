@@ -43,6 +43,7 @@ export type AppPlace = {
   email?: string | null
   featured_order?: number | null
   eventDate?: string | null
+  openingHours?: Record<string, string> | null
   distance?: number
   /** Helyhez rendelt szűrők ID-k */
   filterIds?: string[]
@@ -116,6 +117,7 @@ function rowToAppPlace(row: PlaceRowWithCategory): AppPlace {
     email: row.email ?? null,
     featured_order: (row as PlaceRowWithCategory & { featured_order?: number | null }).featured_order ?? null,
     eventDate: (row as PlaceRowWithCategory & { event_date?: string | null }).event_date ?? null,
+    openingHours: (row as PlaceRowWithCategory & { opening_hours?: Record<string, string> | null }).opening_hours ?? null,
   }
 }
 
