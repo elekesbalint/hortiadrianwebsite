@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useJsApiLoader, GoogleMap } from '@react-google-maps/api'
 import { MarkerClusterer, SuperClusterAlgorithm } from '@googlemaps/markerclusterer'
-import { X, FileText } from 'lucide-react'
 
 const defaultCenter = { lat: 47.16, lng: 19.5 } // Magyarország középe (alapnézet)
 
@@ -162,8 +161,6 @@ function getInfoWindowContent(place: MapPlace, placeUrl: string): string {
     ? (place.distance < 1 ? `${Math.round(place.distance * 1000)} m` : `${place.distance.toFixed(1)} km`)
     : ''
   const isRestaurant = (place.category || '').toLowerCase().includes('étterem') || (place.category || '').toLowerCase().includes('gastro')
-  const hasMenu = place.menuUrl && place.menuUrl.trim() !== ''
-  const menuUrl = place.menuUrl || ''
 
   return `
     <div style="font-family:system-ui,sans-serif;width:100%;min-width:300px;max-width:380px;box-sizing:border-box;overflow:hidden;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,0.12);border:2px solid ${borderColor};background:#fff;">
@@ -182,7 +179,7 @@ function getInfoWindowContent(place: MapPlace, placeUrl: string): string {
         </div>
         <div style="display:flex;gap:8px;margin-top:12px;">
           <a href="${placeUrl}" style="flex:1;display:block;text-align:center;padding:10px 12px;background:#2D7A4F;color:#fff!important;text-decoration:none;border-radius:8px;font-size:13px;font-weight:600;box-sizing:border-box;white-space:nowrap;">Részletek</a>
-          ${isRestaurant && hasMenu ? '<a href="#" data-menu-url="' + menuUrl + '" data-place-name="' + place.name.replace(/"/g, '&quot;') + '" class="menu-link" style="flex:1;display:block;text-align:center;padding:10px 12px;background:#E8F5E9;color:#1B5E20!important;text-decoration:none;border-radius:8px;font-size:13px;font-weight:600;box-sizing:border-box;white-space:nowrap;cursor:pointer;">Étlap</a>' : isRestaurant ? '<a href="' + placeUrl + '#menu" style="flex:1;display:block;text-align:center;padding:10px 12px;background:#E8F5E9;color:#1B5E20!important;text-decoration:none;border-radius:8px;font-size:13px;font-weight:600;box-sizing:border-box;white-space:nowrap;">Étlap</a>' : '<a href="https://www.google.com/maps/dir/?api=1&destination=' + place.lat + ',' + place.lng + '" target="_blank" style="flex:1;display:block;text-align:center;padding:10px 12px;background:#E8F5E9;color:#1B5E20!important;text-decoration:none;border-radius:8px;font-size:13px;font-weight:600;box-sizing:border-box;white-space:nowrap;">Útvonal</a>'}
+          ${isRestaurant ? '<a href="' + placeUrl + '#menu" style="flex:1;display:block;text-align:center;padding:10px 12px;background:#E8F5E9;color:#1B5E20!important;text-decoration:none;border-radius:8px;font-size:13px;font-weight:600;box-sizing:border-box;white-space:nowrap;">Étlap</a>' : '<a href="https://www.google.com/maps/dir/?api=1&destination=' + place.lat + ',' + place.lng + '" target="_blank" style="flex:1;display:block;text-align:center;padding:10px 12px;background:#E8F5E9;color:#1B5E20!important;text-decoration:none;border-radius:8px;font-size:13px;font-weight:600;box-sizing:border-box;white-space:nowrap;">Útvonal</a>'}
         </div>
       </div>
     </div>
@@ -197,30 +194,11 @@ export function MapView({ places, onPlaceSelect, selectedPlaceId, userLocation, 
   const mapClickListenerRef = useRef<google.maps.MapsEventListener | null>(null)
   const circleRef = useRef<google.maps.Circle | null>(null)
   const [mapReady, setMapReady] = useState(false)
-  const [menuModalOpen, setMenuModalOpen] = useState(false)
-  const [menuUrl, setMenuUrl] = useState<string | null>(null)
-  const [menuPlaceName, setMenuPlaceName] = useState<string>('')
 
   const { isLoaded, loadError } = useJsApiLoader({
     googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '',
     libraries: ['places'],
   })
-
-  // Globális függvény beállítása az étlap modal megnyitásához
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      (window as any).openMenuModal = (url: string, name: string) => {
-        setMenuUrl(url)
-        setMenuPlaceName(name)
-        setMenuModalOpen(true)
-      }
-    }
-    return () => {
-      if (typeof window !== 'undefined') {
-        delete (window as any).openMenuModal
-      }
-    }
-  }, [])
 
   const onLoad = useCallback((map: google.maps.Map) => {
     mapRef.current = map
@@ -292,24 +270,7 @@ export function MapView({ places, onPlaceSelect, selectedPlaceId, userLocation, 
           const container = infoWindow.getContent()
           if (container && typeof container === 'object') {
             const el = container as HTMLElement
-            // Étlap modal megnyitása - globális függvény használata
-            el.querySelectorAll('a.menu-link').forEach((a) => {
-              const anchor = a as HTMLAnchorElement
-              anchor.addEventListener('click', (e) => {
-                e.preventDefault()
-                e.stopPropagation()
-                const menuUrlAttr = anchor.getAttribute('data-menu-url')
-                const placeName = anchor.getAttribute('data-place-name') || ''
-                if (menuUrlAttr) {
-                  // Globális függvény meghívása a React state frissítéséhez
-                  if (typeof window !== 'undefined' && (window as any).openMenuModal) {
-                    (window as any).openMenuModal(menuUrlAttr, placeName)
-                  }
-                }
-              })
-            })
-            // Egyéb linkek (Részletek, Útvonal)
-            el.querySelectorAll('a[href]:not(.menu-link)').forEach((a) => {
+            el.querySelectorAll('a[href]').forEach((a) => {
               const anchor = a as HTMLAnchorElement
               anchor.addEventListener('click', (e) => {
                 const href = anchor.getAttribute('href')
@@ -452,71 +413,13 @@ export function MapView({ places, onPlaceSelect, selectedPlaceId, userLocation, 
   }
 
   return (
-    <>
-      <GoogleMap
-        mapContainerStyle={mapContainerStyle}
-        center={defaultCenter}
-        zoom={7}
-        onLoad={onLoad}
-        onUnmount={onUnmount}
-        options={mapOptions}
-      />
-      
-      {/* Étlap Modal */}
-      {menuModalOpen && menuUrl && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 animate-in fade-in duration-200"
-          onClick={() => setMenuModalOpen(false)}
-        >
-          <div
-            className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col animate-in zoom-in-95 duration-200"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Header */}
-            <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gray-50">
-              <h3 className="text-lg font-bold text-gray-900">{menuPlaceName} - Étlap</h3>
-              <button
-                type="button"
-                onClick={() => setMenuModalOpen(false)}
-                className="p-2 rounded-lg text-gray-400 hover:bg-gray-200 hover:text-gray-600 transition-colors"
-                aria-label="Bezárás"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-            
-            {/* Content */}
-            <div className="flex-1 overflow-y-auto p-6">
-              {menuUrl && (menuUrl.toLowerCase().endsWith('.pdf') || menuUrl.includes('pdf')) ? (
-                <iframe
-                  src={menuUrl}
-                  title="Étlap"
-                  className="w-full h-[70vh] min-h-[400px] rounded-xl border border-gray-200 bg-white"
-                />
-              ) : menuUrl ? (
-                <img
-                  src={menuUrl}
-                  alt="Étlap"
-                  className="w-full max-w-2xl mx-auto rounded-xl border border-gray-200 shadow-sm"
-                />
-              ) : null}
-            </div>
-            
-            {/* Footer */}
-            <div className="p-4 border-t border-gray-200 bg-gray-50 flex justify-end">
-              <a
-                href={menuUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-4 py-2 bg-[#2D7A4F] text-white rounded-xl font-medium hover:bg-[#246b43] transition-colors"
-              >
-                <FileText className="h-4 w-4" />
-                Étlap megnyitása új ablakban
-              </a>
-            </div>
-          </div>
-        </div>
-      )}
-    </>
+    <GoogleMap
+      mapContainerStyle={mapContainerStyle}
+      center={defaultCenter}
+      zoom={7}
+      onLoad={onLoad}
+      onUnmount={onUnmount}
+      options={mapOptions}
+    />
   )
 }
