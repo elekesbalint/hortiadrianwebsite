@@ -151,7 +151,7 @@ export function SearchableSelect({
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder={searchPlaceholder}
-                  className="w-full pl-10 pr-3 py-2 bg-white border border-gray-200 rounded-lg outline-none focus:border-[#2D7A4F] focus:ring-2 focus:ring-[#2D7A4F]/20 text-sm"
+                  className="w-full pl-10 pr-3 py-2 bg-transparent outline-none focus:outline-none text-sm border-0 focus:ring-0"
                   onClick={(e) => e.stopPropagation()}
                   onKeyDown={(e) => {
                     // Escape kezelése: bezárja a keresőt
