@@ -7,7 +7,7 @@ import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { Button } from '@/components/ui/Button'
 import { Card, CardContent, CardTitle } from '@/components/ui/Card'
-import { MapPin, Star, Heart, ChevronDown, Map, Sliders, RotateCcw, Search, Utensils, Home, Landmark, Calendar, Clock, Users, Route, Tag, Gauge, Award, CheckCircle } from 'lucide-react'
+import { MapPin, Star, Heart, ChevronDown, Map, Sliders, RotateCcw, Search, Utensils, Home, Landmark, Calendar, Clock, Users, Route, Tag, Gauge, Award, CheckCircle, X } from 'lucide-react'
 import { SearchableSelect, type SearchableSelectOption } from '@/components/ui/SearchableSelect'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 import { getCategoryIconComponent } from '@/lib/categoryIcons'
@@ -383,49 +383,51 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
               </Button>
             </Link>
           </div>
+        </div>
+      </div>
 
-          {/* Szűrő Modal – overlay ablak */}
-          {isFilterOpen && (
-            <div 
-              className="fixed inset-0 z-50 flex items-end md:items-center justify-center p-0 md:p-4 bg-black/50 animate-in fade-in duration-200"
-              onClick={() => setIsFilterOpen(false)}
-            >
-              <div 
-                className="w-full md:w-full md:max-w-4xl bg-white rounded-t-3xl md:rounded-3xl shadow-2xl flex flex-col max-h-[90vh] md:max-h-[85vh] animate-in slide-in-from-bottom-2 md:slide-in-from-top-2 duration-300"
-                onClick={(e) => e.stopPropagation()}
-              >
-                {/* Header */}
-                <div className="px-6 py-5 border-b border-gray-200 flex-shrink-0">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-xl font-bold text-gray-900">Szűrők</h3>
-                    <div className="flex items-center gap-3">
-                      <Button 
-                        variant="ghost" 
-                        size="sm"
-                        onClick={resetFilters}
-                        disabled={!hasActiveFilters}
-                        className="text-gray-600 hover:text-[#2D7A4F] hover:bg-[#E8F5E9]/50 disabled:opacity-40 disabled:cursor-not-allowed text-sm"
-                      >
-                        <RotateCcw className="h-4 w-4 mr-1.5" />
-                        Törlés
-                      </Button>
-                      <button
-                        type="button"
-                        onClick={() => setIsFilterOpen(false)}
-                        className="p-2 rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors"
-                        aria-label="Bezárás"
-                      >
-                        <X className="h-5 w-5" />
-                      </button>
-                    </div>
-                  </div>
+      {/* Szűrő Modal – overlay ablak */}
+      {isFilterOpen && (
+        <div 
+          className="fixed inset-0 z-50 flex items-end md:items-center justify-center p-0 md:p-4 bg-black/50 animate-in fade-in duration-200"
+          onClick={() => setIsFilterOpen(false)}
+        >
+          <div 
+            className="w-full md:w-full md:max-w-4xl bg-white rounded-t-3xl md:rounded-3xl shadow-2xl flex flex-col max-h-[90vh] md:max-h-[85vh] animate-in slide-in-from-bottom-2 md:slide-in-from-top-2 duration-300"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="px-6 py-5 border-b border-gray-200 flex-shrink-0">
+              <div className="flex items-center justify-between">
+                <h3 className="text-xl font-bold text-gray-900">Szűrők</h3>
+                <div className="flex items-center gap-3">
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={resetFilters}
+                    disabled={!hasActiveFilters}
+                    className="text-gray-600 hover:text-[#2D7A4F] hover:bg-[#E8F5E9]/50 disabled:opacity-40 disabled:cursor-not-allowed text-sm"
+                  >
+                    <RotateCcw className="h-4 w-4 mr-1.5" />
+                    Törlés
+                  </Button>
+                  <button
+                    type="button"
+                    onClick={() => setIsFilterOpen(false)}
+                    className="p-2 rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors"
+                    aria-label="Bezárás"
+                  >
+                    <X className="h-5 w-5" />
+                  </button>
                 </div>
+              </div>
+            </div>
 
-                {/* Szűrő mezők – scrollozható tartalom */}
-                <div className="flex-1 overflow-y-auto px-6 py-6">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                  {/* Hol? */}
-                  <div className="group">
+            {/* Szűrő mezők – scrollozható tartalom */}
+            <div className="flex-1 overflow-y-auto px-6 py-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                {/* Hol? */}
+                <div className="group">
                     <label className="flex items-center gap-2 text-xs font-bold text-gray-600 uppercase tracking-wider mb-3">
                       <MapPin className={`h-3.5 w-3.5 ${filterCity ? 'text-[#2D7A4F]' : 'text-gray-400'}`} />
                       Hol?
@@ -458,8 +460,8 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
                     />
                   </div>
 
-                  {/* Dinamikusan generált szűrők az adatbázisból */}
-                  {Object.entries(
+                {/* Dinamikusan generált szűrők az adatbázisból */}
+                {Object.entries(
                     filters.reduce<Record<string, AppFilter[]>>((acc, f) => {
                       const key = f.group_slug || 'egyeb'
                       if (!acc[key]) acc[key] = []
@@ -530,9 +532,9 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
                         </div>
                       )
                     })}
-                  
-                  {/* Távolság */}
-                  <div className="group">
+                
+                {/* Távolság */}
+                <div className="group">
                     <label className="flex items-center gap-2 text-xs font-bold text-gray-600 uppercase tracking-wider mb-3">
                       <Gauge className={`h-3.5 w-3.5 ${filterMaxDistance ? 'text-[#2D7A4F]' : 'text-gray-400'}`} />
                       Távolság
@@ -560,9 +562,9 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
                       <ChevronDown className={`absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 pointer-events-none transition-colors ${filterMaxDistance ? 'text-[#2D7A4F]' : 'text-gray-400'}`} />
                     </div>
                   </div>
-                  
-                  {/* Értékelés */}
-                  <div className="group">
+                
+                {/* Értékelés */}
+                <div className="group">
                     <label className="flex items-center gap-2 text-xs font-bold text-gray-600 uppercase tracking-wider mb-3">
                       <Award className={`h-3.5 w-3.5 ${filterRatingMin ? 'text-[#2D7A4F]' : 'text-gray-400'}`} />
                       Értékelés
@@ -589,9 +591,9 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
                       <ChevronDown className={`absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 pointer-events-none transition-colors ${filterRatingMin ? 'text-[#2D7A4F]' : 'text-gray-400'}`} />
                     </div>
                   </div>
-                  
-                  {/* Árkategória */}
-                  <div className="group">
+                
+                {/* Árkategória */}
+                <div className="group">
                     <label className="flex items-center gap-2 text-xs font-bold text-gray-600 uppercase tracking-wider mb-3">
                       <Tag className={`h-3.5 w-3.5 ${filterPriceLevel ? 'text-[#2D7A4F]' : 'text-gray-400'}`} />
                       Árkategória
@@ -620,9 +622,9 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
                       <ChevronDown className={`absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 pointer-events-none transition-colors ${filterPriceLevel ? 'text-[#2D7A4F]' : 'text-gray-400'}`} />
                     </div>
                   </div>
-                  
-                  {/* Rendezés */}
-                  <div className="group">
+                
+                {/* Rendezés */}
+                <div className="group">
                     <label className="flex items-center gap-2 text-xs font-bold text-gray-600 uppercase tracking-wider mb-3">
                       <Sliders className="h-3.5 w-3.5 text-gray-400" />
                       Rendezés
@@ -641,28 +643,28 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
                     </div>
                   </div>
                 </div>
-
-                {/* Footer – Mentés gomb */}
-                <div className="px-6 py-5 border-t border-gray-200 flex-shrink-0 bg-gray-50">
-                  <div className="flex items-center justify-between">
-                    <p className="text-sm text-gray-600">
-                      <span className="font-bold text-gray-900">{filteredPlaces.length}</span> találat
-                    </p>
-                    <Button
-                      variant="primary"
-                      size="lg"
-                      onClick={() => setIsFilterOpen(false)}
-                      className="px-8"
-                    >
-                      Szűrők alkalmazása
-                    </Button>
-                  </div>
-                </div>
               </div>
             </div>
-          )}
+
+            {/* Footer – Mentés gomb */}
+            <div className="px-6 py-5 border-t border-gray-200 flex-shrink-0 bg-gray-50">
+              <div className="flex items-center justify-between">
+                <p className="text-sm text-gray-600">
+                  <span className="font-bold text-gray-900">{filteredPlaces.length}</span> találat
+                </p>
+                <Button
+                  variant="primary"
+                  size="lg"
+                  onClick={() => setIsFilterOpen(false)}
+                  className="px-8"
+                >
+                  Szűrők alkalmazása
+                </Button>
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Places Grid */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
