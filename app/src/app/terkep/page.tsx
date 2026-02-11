@@ -694,15 +694,15 @@ function MapPageContent() {
                           </div>
                           <CardTitle className="text-xl mb-1">{place.name}</CardTitle>
                           <p className="text-gray-500 mb-3">{place.address}</p>
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-1.5">
+                          <div className="flex items-center justify-between gap-3 min-w-0">
+                            <div className="flex items-center gap-1 sm:gap-1.5 flex-shrink-0">
                               {Array.from({ length: 5 }, (_, i) => {
                                 const starNum = i + 1
                                 const isFilled = starNum <= Math.round(place.rating)
                                 return (
                                   <Star
                                     key={starNum}
-                                    className={`h-5 w-5 ${
+                                    className={`h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 ${
                                       isFilled
                                         ? 'text-yellow-400 fill-yellow-400'
                                         : 'text-gray-300'
@@ -710,10 +710,10 @@ function MapPageContent() {
                                   />
                                 )
                               })}
-                              <span className="font-bold text-lg">{place.rating}</span>
-                              <span className="text-gray-400">({place.ratingCount})</span>
+                              <span className="font-bold text-sm sm:text-lg">{place.rating}</span>
+                              <span className="text-gray-400 text-xs sm:text-base">({place.ratingCount})</span>
                             </div>
-                            <span className="text-gray-500 font-semibold">
+                            <span className="text-gray-500 font-semibold text-xs sm:text-base flex-shrink-0 whitespace-nowrap">
                               {place.distanceFromCenter < 1 ? `${Math.round(place.distanceFromCenter * 1000)} m` : `${place.distanceFromCenter.toFixed(1)} km`}
                               <span className="text-gray-400 font-normal ml-1">· {formatTravelTime((place as any).travelTimeMinutes ?? estimateTravelTimeMinutes(place.distanceFromCenter))}</span>
                             </span>
