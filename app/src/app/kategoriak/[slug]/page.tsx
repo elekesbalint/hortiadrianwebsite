@@ -644,26 +644,25 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
                   </div>
                 </div>
               </div>
-            </div>
 
-            {/* Footer – Mentés gomb */}
-            <div className="px-6 py-5 border-t border-gray-200 flex-shrink-0 bg-gray-50">
-              <div className="flex items-center justify-between">
-                <p className="text-sm text-gray-600">
-                  <span className="font-bold text-gray-900">{filteredPlaces.length}</span> találat
-                </p>
-                <Button
-                  variant="primary"
-                  size="lg"
-                  onClick={() => setIsFilterOpen(false)}
-                  className="px-8"
-                >
-                  Szűrők alkalmazása
-                </Button>
+              {/* Footer – Mentés gomb */}
+              <div className="px-6 py-5 border-t border-gray-200 flex-shrink-0 bg-gray-50">
+                <div className="flex items-center justify-between">
+                  <p className="text-sm text-gray-600">
+                    <span className="font-bold text-gray-900">{filteredPlaces.length}</span> találat
+                  </p>
+                  <Button
+                    variant="primary"
+                    size="lg"
+                    onClick={() => setIsFilterOpen(false)}
+                    className="px-8"
+                  >
+                    Szűrők alkalmazása
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
-        </div>
       )}
 
       {/* Places Grid */}
