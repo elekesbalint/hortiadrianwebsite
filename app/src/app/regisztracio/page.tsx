@@ -96,34 +96,28 @@ function RegisztracioForm() {
                 </div>
                 <span className="text-xs text-gray-500 flex-1 text-center truncate">Programláz – Térkép</span>
               </div>
-              <div className="aspect-video bg-gradient-to-br from-[#E8F5E9] via-[#D4EDDA] to-[#C8E6C9] overflow-hidden flex items-center justify-center relative">
-                <div className="absolute inset-0 opacity-30" style={{ backgroundImage: 'linear-gradient(#2D7A4F 1px, transparent 1px), linear-gradient(90deg, #2D7A4F 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
-                <div className="relative text-center p-4">
-                  <Image src="/logo.png" alt="" width={48} height={48} className="mx-auto opacity-70 mb-2" />
-                  <p className="text-[#2D7A4F] font-semibold text-sm">Térkép</p>
-                  <p className="text-gray-500 text-xs mt-1">Helyek böngészése</p>
-                </div>
+              <div className="aspect-video overflow-hidden bg-gray-100">
+                <Image
+                  src="/images/terkep-laptop.png"
+                  alt="Programláz térkép"
+                  width={640}
+                  height={360}
+                  className="w-full h-full object-cover"
+                />
               </div>
               <div className="absolute bottom-0 left-0 right-0 h-4 bg-gray-700 rounded-b" />
             </div>
 
-            {/* Telefon mockup – lista nézet (a laptop előtt, kissé jobbra lent) */}
-            <div className="absolute -right-4 bottom-8 w-[160px] rounded-[2rem] border-[6px] border-gray-800 bg-gray-800 shadow-xl">
+            {/* Telefon mockup – lista nézet (valódi screenshot) */}
+            <div className="absolute -right-4 bottom-8 w-[160px] rounded-[2rem] border-[6px] border-gray-800 bg-gray-800 shadow-xl overflow-hidden">
               <div className="rounded-[1.25rem] overflow-hidden bg-white" style={{ height: '280px' }}>
-                <div className="bg-white p-2 h-full overflow-hidden">
-                  <div className="h-6 bg-gray-100 rounded mb-2" />
-                  <div className="space-y-2">
-                    {[1, 2, 3].map((i) => (
-                      <div key={i} className="flex gap-2 p-2 bg-gray-50 rounded-lg border border-gray-100">
-                        <div className="w-12 h-12 rounded-lg bg-gray-200 shrink-0" />
-                        <div className="flex-1 min-w-0">
-                          <div className="h-2.5 bg-gray-200 rounded w-3/4 mb-1" />
-                          <div className="h-2 bg-gray-100 rounded w-1/2" />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
+                <Image
+                  src="/images/lista-nezet-mobil.png"
+                  alt="Programláz lista nézet"
+                  width={320}
+                  height={560}
+                  className="w-full h-full object-cover object-top"
+                />
               </div>
             </div>
           </div>
