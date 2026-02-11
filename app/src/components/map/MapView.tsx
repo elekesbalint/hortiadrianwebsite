@@ -289,12 +289,14 @@ export function MapView({ places, onPlaceSelect, selectedPlaceId, userLocation, 
               .gm-style-iw-t::after { background: transparent !important; }
               .gm-style-iw-d > div { padding: 0 !important; margin: 0 !important; }
               .gm-style-iw-c > div { padding: 0 !important; margin: 0 !important; }
-              .gm-style-iw-d * { box-sizing: border-box !important; }
-              .gm-style-iw-c * { box-sizing: border-box !important; }
+              .gm-style-iw-d * { box-sizing: border-box !important; padding-right: 0 !important; padding-bottom: 0 !important; margin-right: 0 !important; margin-bottom: 0 !important; }
+              .gm-style-iw-c * { box-sizing: border-box !important; padding-right: 0 !important; padding-bottom: 0 !important; margin-right: 0 !important; margin-bottom: 0 !important; }
               .gm-style-iw-d > div > div { padding: 0 !important; margin: 0 !important; }
               .gm-style-iw-c > div > div { padding: 0 !important; margin: 0 !important; }
               .gm-style-iw-d div[style*="padding"] { padding: 0 !important; }
               .gm-style-iw-c div[style*="padding"] { padding: 0 !important; }
+              .gm-style-iw-d div[style*="margin"] { margin: 0 !important; }
+              .gm-style-iw-c div[style*="margin"] { margin: 0 !important; }
             `
             if (!document.head.querySelector('style[data-info-window-style]')) {
               style.setAttribute('data-info-window-style', 'true')
@@ -304,11 +306,21 @@ export function MapView({ places, onPlaceSelect, selectedPlaceId, userLocation, 
           const container = infoWindow.getContent()
           if (container && typeof container === 'object') {
             const el = container as HTMLElement
-            // További CSS alkalmazása közvetlenül az elemre
-            const rootDiv = el.querySelector('div[style*="padding"]') as HTMLElement
-            if (rootDiv) {
-              rootDiv.style.padding = '0'
-              rootDiv.style.margin = '0'
+            // További CSS alkalmazása közvetlenül az elemre - desktop padding/margin eltávolítása
+            const allDivs = el.querySelectorAll('div')
+            allDivs.forEach((div) => {
+              const computedStyle = window.getComputedStyle(div)
+              if (computedStyle.paddingRight !== '0px' || computedStyle.paddingBottom !== '0px' || 
+                  computedStyle.marginRight !== '0px' || computedStyle.marginBottom !== '0px') {
+                div.style.padding = '0'
+                div.style.margin = '0'
+              }
+            })
+            // Fő div padding ellenőrzése és javítása
+            if (el.style.paddingRight || el.style.paddingBottom || 
+                el.style.marginRight || el.style.marginBottom) {
+              el.style.padding = '0'
+              el.style.margin = '0'
             }
             // X gomb eseménykezelő - globális függvény használata
             const closeBtn = el.querySelector('.info-window-close-btn') as HTMLButtonElement
