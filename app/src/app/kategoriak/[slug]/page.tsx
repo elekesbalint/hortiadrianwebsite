@@ -77,7 +77,8 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
   const [filterTer, setFilterTer] = useState('')
   const [filterKivelMesz, setFilterKivelMesz] = useState('')
   const [filterMegkozelites, setFilterMegkozelites] = useState('')
-  const [filterEventDate, setFilterEventDate] = useState<string>('')
+  const [filterEventDateFrom, setFilterEventDateFrom] = useState<string>('')
+  const [filterEventDateTo, setFilterEventDateTo] = useState<string>('')
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null)
 
   useEffect(() => {
@@ -161,18 +162,23 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
     // Nyitva most
     if (filterOpenOnly) list = list.filter((p) => p.isOpen)
     
-    // Dátum szerinti szűrés (csak programokhoz)
-    if (filterEventDate && slug === 'programok') {
-      const selectedDate = new Date(filterEventDate)
-      selectedDate.setHours(0, 0, 0, 0)
-      const nextDay = new Date(selectedDate)
-      nextDay.setDate(nextDay.getDate() + 1)
+    // Dátum szerinti szűrés (csak programokhoz) - tól-ig tartomány
+    if ((filterEventDateFrom || filterEventDateTo) && slug === 'programok') {
+      const fromDate = filterEventDateFrom ? new Date(filterEventDateFrom) : null
+      const toDate = filterEventDateTo ? new Date(filterEventDateTo) : null
+      
+      if (fromDate) fromDate.setHours(0, 0, 0, 0)
+      if (toDate) {
+        toDate.setHours(23, 59, 59, 999) // A nap végéig
+      }
       
       list = list.filter((p) => {
         if (!p.eventDate) return false
         const eventDate = new Date(p.eventDate)
-        eventDate.setHours(0, 0, 0, 0)
-        return eventDate >= selectedDate && eventDate < nextDay
+        
+        if (fromDate && eventDate < fromDate) return false
+        if (toDate && eventDate > toDate) return false
+        return true
       })
     }
     
@@ -206,7 +212,7 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
       return a.name.localeCompare(b.name)
     })
     return list
-  }, [placesInCategory, searchQuery, filterCity, filterRatingMin, filterPriceLevel, filterMaxDistance, filterOpenOnly, filterSortBy, filters, filterEvszak, filterIdoszak, filterTer, filterKivelMesz, filterMegkozelites, filterEventDate, slug, centerForDistance])
+  }, [placesInCategory, searchQuery, filterCity, filterRatingMin, filterPriceLevel, filterMaxDistance, filterOpenOnly, filterSortBy, filters, filterEvszak, filterIdoszak, filterTer, filterKivelMesz, filterMegkozelites, filterEventDateFrom, filterEventDateTo, slug, centerForDistance])
 
   // Google Maps API-val pontosítjuk az első 10 hely távolságát és idejét (ha elérhető)
   const [filteredPlaces, setFilteredPlaces] = useState(filteredPlacesInitial)
@@ -251,10 +257,11 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
     setFilterMaxDistance('')
     setFilterOpenOnly(false)
     setFilterSortBy('distance')
-    setFilterEventDate('')
+    setFilterEventDateFrom('')
+    setFilterEventDateTo('')
   }
 
-  const hasActiveFilters = filterCity || filterRatingMin || filterPriceLevel || filterMaxDistance || filterOpenOnly || filterSortBy !== 'distance' || filterEvszak || filterIdoszak || filterTer || filterKivelMesz || filterMegkozelites || filterEventDate
+  const hasActiveFilters = filterCity || filterRatingMin || filterPriceLevel || filterMaxDistance || filterOpenOnly || filterSortBy !== 'distance' || filterEvszak || filterIdoszak || filterTer || filterKivelMesz || filterMegkozelites || filterEventDateFrom || filterEventDateTo
 
   const toggleFavorite = async (e: React.MouseEvent, id: string) => {
     e.preventDefault()
@@ -477,24 +484,40 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
                     />
                   </div>
 
-                {/* Esemény dátuma (csak programokhoz) */}
+                {/* Esemény dátuma (csak programokhoz) - tól-ig tartomány */}
                 {slug === 'programok' && (
                   <div className="group">
                     <label className="flex items-center gap-2 text-xs font-bold text-gray-600 uppercase tracking-wider mb-3">
-                      <Calendar className={`h-3.5 w-3.5 ${filterEventDate ? 'text-[#2D7A4F]' : 'text-gray-400'}`} />
+                      <Calendar className={`h-3.5 w-3.5 ${(filterEventDateFrom || filterEventDateTo) ? 'text-[#2D7A4F]' : 'text-gray-400'}`} />
                       Esemény dátuma
-                      {filterEventDate && (
+                      {(filterEventDateFrom || filterEventDateTo) && (
                         <span className="ml-auto px-2 py-0.5 bg-[#2D7A4F] text-white text-[10px] font-bold rounded-full">
                           Aktív
                         </span>
                       )}
                     </label>
-                    <input
-                      type="date"
-                      value={filterEventDate}
-                      onChange={(e) => setFilterEventDate(e.target.value)}
-                      className="w-full px-4 py-3 bg-white border-2 rounded-xl outline-none transition-all text-sm font-medium appearance-none cursor-pointer hover:shadow-md focus:border-[#2D7A4F] focus:ring-[#2D7A4F]/10"
-                    />
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs text-gray-500 mb-1.5">Tól</label>
+                        <input
+                          type="date"
+                          value={filterEventDateFrom}
+                          onChange={(e) => setFilterEventDateFrom(e.target.value)}
+                          max={filterEventDateTo || undefined}
+                          className="w-full px-4 py-3 bg-white border-2 border-gray-200 rounded-xl outline-none transition-all text-sm font-medium appearance-none cursor-pointer hover:shadow-md focus:border-[#2D7A4F] focus:ring-[#2D7A4F]/10"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs text-gray-500 mb-1.5">Ig</label>
+                        <input
+                          type="date"
+                          value={filterEventDateTo}
+                          onChange={(e) => setFilterEventDateTo(e.target.value)}
+                          min={filterEventDateFrom || undefined}
+                          className="w-full px-4 py-3 bg-white border-2 border-gray-200 rounded-xl outline-none transition-all text-sm font-medium appearance-none cursor-pointer hover:shadow-md focus:border-[#2D7A4F] focus:ring-[#2D7A4F]/10"
+                        />
+                      </div>
+                    </div>
                   </div>
                 )}
 
