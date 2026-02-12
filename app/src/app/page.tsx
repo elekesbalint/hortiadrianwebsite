@@ -161,7 +161,7 @@ export default function HomePage() {
       </section>
 
       {/* Kategóriakártyák – referencia: képek + ikonok, négyzetes kártyák */}
-      <section className="pt-12 pb-20 md:pt-16 md:pb-28 bg-white">
+      <section className="pt-12 pb-20 md:pt-16 md:pb-28 bg-[#F0F0F0]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-12 text-center">
             <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-3">
@@ -171,7 +171,7 @@ export default function HomePage() {
               Válassz egy kategóriát és találd meg a legjobb helyeket Magyarországon
             </p>
           </div>
-          <div className="grid grid-cols-2 gap-4 md:gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
             {categoriesWithDisplay.map((category, index) => {
               const Icon = category.icon
               return (
@@ -184,23 +184,23 @@ export default function HomePage() {
                           alt={category.name}
                           fill
                           className="object-cover group-hover:scale-110 transition-transform duration-500"
-                          sizes="(max-width: 768px) 50vw, 50vw"
+                          sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
                         />
                       ) : (
                         <img src={category.imageUrl} alt={category.name} className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
                       )}
                       <div className="absolute inset-0 bg-black/30 group-hover:bg-black/20 transition-colors duration-300" />
-                      <div className="absolute inset-0 flex flex-col items-center justify-center p-3">
-                        <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center mb-2 group-hover:scale-110 group-hover:shadow-xl transition-all duration-300 border-2 border-white/50">
-                          <Icon className="h-5 w-5 md:h-6 md:w-6 text-[#2D7A4F]" />
+                      <div className="absolute inset-0 flex flex-col items-center justify-center p-4">
+                        <div className="w-14 h-14 md:w-16 md:h-16 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center mb-2 group-hover:scale-110 group-hover:shadow-xl transition-all duration-300 border-2 border-white/50">
+                          <Icon className="h-7 w-7 md:h-8 md:w-8 text-[#2D7A4F]" />
                         </div>
-                        <span className="text-white font-semibold text-center text-xs md:text-sm drop-shadow-lg">
+                        <span className="text-white font-semibold text-center text-sm md:text-base drop-shadow-lg">
                           {category.name}
                         </span>
                       </div>
                     </div>
-                    <CardContent className="py-2 px-3">
-                      <CardDescription className="font-medium text-gray-600 text-xs">
+                    <CardContent className="py-3 px-4">
+                      <CardDescription className="font-medium text-gray-600 text-sm">
                         {category.count > 0 ? `${category.count} helyszín` : 'Hamarosan'}
                       </CardDescription>
                     </CardContent>
@@ -213,7 +213,7 @@ export default function HomePage() {
       </section>
 
       {/* Felkapott helyek */}
-      <section className="py-20 md:py-28 bg-white">
+      <section className="py-20 md:py-28 bg-[#F0F0F0]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 mb-12">
             <div>
@@ -334,7 +334,7 @@ export default function HomePage() {
 
       {/* Felkapott kategóriák */}
       {featuredCategories.length > 0 && (
-        <section className="py-20 md:py-28 bg-gradient-to-b from-white to-gray-50">
+        <section className="py-20 md:py-28 bg-gradient-to-b from-[#F0F0F0] to-gray-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 mb-12">
               <div>
@@ -396,13 +396,13 @@ export default function HomePage() {
       )}
 
       {/* Térkép és statisztikák */}
-      <section className="py-20 md:py-28 bg-gradient-to-b from-white to-gray-50">
+      <section className="py-20 md:py-28 bg-gradient-to-b from-[#F0F0F0] to-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            {/* Stylized map – Magyarország pinekkel (háttér nélküli, keret nélkül) */}
+            {/* Stylized map – Magyarország körvonal (megyék) */}
             <div className="relative h-[400px] md:h-[500px] overflow-hidden">
               <Image
-                src="/images/magyarorszag-pinek.png"
+                src="/images/magyarorszag-korvonal.png"
                 alt="Magyarország – fedezd fel a helyeket"
                 fill
                 className="object-contain"
