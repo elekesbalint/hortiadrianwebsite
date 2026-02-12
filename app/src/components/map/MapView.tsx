@@ -98,7 +98,7 @@ async function loadImageAsDataUrl(url: string): Promise<string | null> {
 
 // Buborék marker: kör képvel (base64) vagy ikonnal, keret zöld (nyitva) vagy piros (zárva)
 function createBubbleMarkerIcon(place: MapPlace, imageDataUrl: string | null): string {
-  const size = 52
+  const size = 42
   const r = size / 2 - 2
   const cx = size / 2
   const cy = size / 2
@@ -144,8 +144,8 @@ function animateMapTo(
 // Egyedi cluster buborék: zöld kör, szám arányosan benne
 function createClusterIcon(count: number): string {
   const color = count >= 10 ? '#1B5E20' : count >= 5 ? '#2D7A4F' : '#4CAF50'
-  const size = 30
-  const fontSize = 11
+  const size = 24
+  const fontSize = 9
   const svg = `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" xmlns="http://www.w3.org/2000/svg"><circle cx="${size / 2}" cy="${size / 2}" r="${size / 2 - 2}" fill="${color}" stroke="white" stroke-width="1.5"/><text x="50%" y="50%" dominant-baseline="central" text-anchor="middle" fill="white" font-size="${fontSize}" font-weight="bold" font-family="system-ui,sans-serif">${count}</text></svg>`
   return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`
 }
@@ -249,8 +249,8 @@ export function MapView({ places, onPlaceSelect, selectedPlaceId, userLocation, 
           title: place.name,
           icon: {
             url: createBubbleMarkerIcon(place, imageDataUrls[i] ?? null),
-            scaledSize: new google.maps.Size(52, 52),
-            anchor: new google.maps.Point(26, 52),
+            scaledSize: new google.maps.Size(42, 42),
+            anchor: new google.maps.Point(21, 42),
           },
           zIndex: selectedPlaceId === place.id ? 10 : 1,
         })
@@ -308,8 +308,8 @@ export function MapView({ places, onPlaceSelect, selectedPlaceId, userLocation, 
               position,
               icon: {
                 url: iconUrl,
-                scaledSize: new google.maps.Size(30, 30),
-                anchor: new google.maps.Point(15, 15),
+                scaledSize: new google.maps.Size(24, 24),
+                anchor: new google.maps.Point(12, 12),
               },
               zIndex: Number(google.maps.Marker.MAX_ZINDEX) + count,
             })
