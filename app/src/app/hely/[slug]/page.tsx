@@ -278,6 +278,16 @@ export default function PlaceDetailPage({ params }: { params: Promise<{ slug: st
                     <Navigation className="h-5 w-5" />
                     Útvonal
                   </Button>
+                  {place.category === 'Étterem' && place.menuUrl && (
+                    <Button
+                      onClick={() => window.open(place.menuUrl!, '_blank', 'noopener,noreferrer')}
+                      size={place.category === 'Étterem' ? 'md' : 'lg'}
+                      variant="outline"
+                    >
+                      <FileText className="h-5 w-5" />
+                      Étlap
+                    </Button>
+                  )}
                 </div>
                 {(hasSocialLink(place.website) || hasSocialLink(place.instagram) || hasSocialLink(place.facebook) || hasSocialLink(place.youtube) || hasSocialLink(place.tiktok) || hasSocialLink(place.email)) && (
                 <div className="flex flex-wrap items-center gap-2 border-l border-gray-200 pl-4">
@@ -429,49 +439,35 @@ export default function PlaceDetailPage({ params }: { params: Promise<{ slug: st
             {activeTab === 'menu' && (
               <div className="py-6">
                 {place.menuUrl ? (
-                  <div className="space-y-4">
-                    {place.menuUrl.toLowerCase().endsWith('.pdf') || place.menuUrl.includes('pdf') ? (
-                      <>
-                        <a
-                          href={place.menuUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#2D7A4F] text-white rounded-xl font-medium hover:bg-[#246b43] transition-colors"
-                        >
-                          <FileText className="h-5 w-5" />
-                          Étlap megnyitása (PDF)
-                        </a>
-                        <iframe
-                          src={place.menuUrl}
-                          title="Étlap"
-                          className="w-full h-[70vh] min-h-[400px] rounded-xl border border-gray-200 bg-white"
-                        />
-                      </>
-                    ) : (
-                      <>
-                        <a
-                          href={place.menuUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#2D7A4F] text-white rounded-xl font-medium hover:bg-[#246b43] transition-colors"
-                        >
-                          <FileText className="h-5 w-5" />
-                          Étlap megnyitása
-                        </a>
-                        <img
-                          src={place.menuUrl}
-                          alt="Étlap"
-                          className="w-full max-w-2xl mx-auto rounded-xl border border-gray-200 shadow-sm"
-                        />
-                      </>
-                    )}
+                  <div className="text-center space-y-6">
+                    <div>
+                      <div className="w-20 h-20 bg-[#E8F5E9] rounded-2xl flex items-center justify-center mx-auto mb-4">
+                        <FileText className="h-10 w-10 text-[#2D7A4F]" />
+                      </div>
+                      <h3 className="text-xl font-bold text-gray-900 mb-2">Étlap</h3>
+                      <p className="text-gray-600 mb-6">
+                        Az étlap külső oldalon érhető el. Kattints a gombra az étlap megnyitásához.
+                      </p>
+                      <a
+                        href={place.menuUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 px-8 py-4 bg-[#2D7A4F] text-white rounded-xl font-semibold hover:bg-[#246b43] transition-colors text-lg shadow-lg hover:shadow-xl"
+                      >
+                        <FileText className="h-6 w-6" />
+                        Étlap megnyitása
+                        <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                        </svg>
+                      </a>
+                    </div>
                   </div>
                 ) : (
                   <div className="text-center py-12">
                     <div className="w-20 h-20 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
                       <FileText className="h-10 w-10 text-gray-300" />
                     </div>
-                    <p className="text-gray-500 font-medium">Nincs feltöltött étlap</p>
+                    <p className="text-gray-500 font-medium">Nincs elérhető étlap</p>
                     <p className="text-gray-400 text-sm mt-1">Hamarosan elérhető lesz</p>
                   </div>
                 )}
