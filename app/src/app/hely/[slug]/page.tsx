@@ -246,12 +246,12 @@ export default function PlaceDetailPage({ params }: { params: Promise<{ slug: st
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 -mt-16 relative z-10 pb-12">
         {/* Main Info Card */}
         <Card elevated className="mb-6">
-          <CardContent className="p-6 md:p-8">
-            <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-6">
+          <CardContent className={place.category === 'Étterem' ? 'p-4 md:p-6' : 'p-6 md:p-8'}>
+            <div className={`flex flex-col md:flex-row md:items-start md:justify-between ${place.category === 'Étterem' ? 'gap-4' : 'gap-6'}`}>
               <div className="flex-1">
                 <p className="text-sm text-gray-500 font-medium mb-1">{place.category}</p>
-                <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-3">{place.name}</h1>
-                <div className="flex flex-wrap items-center gap-4 mb-6">
+                <h1 className={place.category === 'Étterem' ? 'text-2xl md:text-3xl font-bold text-gray-900 mb-2' : 'text-3xl md:text-4xl font-bold text-gray-900 mb-3'}>{place.name}</h1>
+                <div className={`flex flex-wrap items-center gap-4 ${place.category === 'Étterem' ? 'mb-4' : 'mb-6'}`}>
                   <div className="flex items-center gap-1.5">
                     {Array.from({ length: 5 }, (_, i) => {
                       const starNum = i + 1
@@ -259,11 +259,11 @@ export default function PlaceDetailPage({ params }: { params: Promise<{ slug: st
                       return (
                         <Star
                           key={starNum}
-                          className={`h-6 w-6 ${isFilled ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'}`}
+                          className={`${place.category === 'Étterem' ? 'h-5 w-5' : 'h-6 w-6'} ${isFilled ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'}`}
                         />
                       )
                     })}
-                    <span className="text-xl font-bold">{place.rating}</span>
+                    <span className={place.category === 'Étterem' ? 'text-lg font-bold' : 'text-xl font-bold'}>{place.rating}</span>
                     <span className="text-gray-400">({place.ratingCount} értékelés)</span>
                   </div>
                   <span className="text-gray-300">|</span>
@@ -274,7 +274,7 @@ export default function PlaceDetailPage({ params }: { params: Promise<{ slug: st
               {/* Action Buttons + Megosztás */}
               <div className="flex flex-col sm:flex-row gap-4">
                 <div className="flex gap-3">
-                  <Button onClick={handleDirections} size="lg">
+                  <Button onClick={handleDirections} size={place.category === 'Étterem' ? 'md' : 'lg'}>
                     <Navigation className="h-5 w-5" />
                     Útvonal
                   </Button>
