@@ -171,7 +171,7 @@ export default function HomePage() {
               Válassz egy kategóriát és találd meg a legjobb helyeket Magyarországon
             </p>
           </div>
-          <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-4">
+          <div className="grid grid-cols-2 gap-4 md:gap-6">
             {categoriesWithDisplay.map((category, index) => {
               const Icon = category.icon
               return (
@@ -184,7 +184,7 @@ export default function HomePage() {
                           alt={category.name}
                           fill
                           className="object-cover group-hover:scale-110 transition-transform duration-500"
-                          sizes="(max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"
+                          sizes="(max-width: 768px) 50vw, 50vw"
                         />
                       ) : (
                         <img src={category.imageUrl} alt={category.name} className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
