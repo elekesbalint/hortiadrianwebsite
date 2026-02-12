@@ -63,6 +63,16 @@ body {
   background: #1B5E20;
 }
 
+/* Scrollbar hide utility – elrejti a scrollbar-t, de lehetővé teszi a görgetést */
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;  /* Chrome, Safari, Opera */
+}
+
 /* Card hover effect */
 .card-hover {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);

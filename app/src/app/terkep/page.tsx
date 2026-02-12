@@ -212,75 +212,83 @@ function MapPageContent() {
     <div className="h-[calc(100vh-80px)] flex flex-col bg-gray-50 w-full min-w-0 overflow-x-hidden">
       {/* Top Bar */}
       <div className="bg-white border-b border-gray-100 px-4 py-4 shadow-sm flex-shrink-0 w-full min-w-0">
-        <div className="w-full max-w-7xl mx-auto flex items-center justify-between gap-2 sm:gap-4 min-w-0">
-          {/* Search */}
-          <div className="flex-1 max-w-xl">
-            <div className="relative">
-              <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Keresés a térképen..."
-                className="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:border-[#2D7A4F] focus:ring-2 focus:ring-[#2D7A4F]/20 transition-all"
-              />
+        <div className="w-full max-w-7xl mx-auto">
+          {/* Mobile: Kereső mező fent, gombok alatta görgethető sorban */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+            {/* Search */}
+            <div className="flex-1 max-w-xl min-w-0">
+              <div className="relative">
+                <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Keresés a térképen..."
+                  className="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:border-[#2D7A4F] focus:ring-2 focus:ring-[#2D7A4F]/20 transition-all"
+                />
+              </div>
+            </div>
+
+            {/* Gombok görgethető sorban mobil nézetben */}
+            <div className="flex items-center gap-2 sm:gap-4 overflow-x-auto pb-2 sm:pb-0 scrollbar-hide -mx-4 px-4 sm:mx-0 sm:px-0 flex-shrink-0">
+              {/* View Toggle */}
+              <div className="flex items-center bg-gray-100 rounded-xl p-1 flex-shrink-0">
+                <button
+                  onClick={() => setViewMode('map')}
+                  className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200 ${
+                    viewMode === 'map'
+                      ? 'bg-white text-[#2D7A4F] shadow-sm'
+                      : 'text-gray-500 hover:text-gray-700'
+                  }`}
+                >
+                  <MapPin className="h-4 w-4" />
+                  Térkép
+                </button>
+                <button
+                  onClick={() => setViewMode('list')}
+                  className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200 ${
+                    viewMode === 'list'
+                      ? 'bg-white text-[#2D7A4F] shadow-sm'
+                      : 'text-gray-500 hover:text-gray-700'
+                  }`}
+                >
+                  <List className="h-4 w-4" />
+                  Lista
+                </button>
+              </div>
+
+              {/* Aktív kategória (pl. Éttermekből jött) – X-re mind látszik */}
+              {categoryLabel && (
+                <Link href="/terkep" className="inline-flex items-center gap-2 bg-[#E8F5E9] text-[#1B5E20] px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-[#C8E6C9] transition-colors flex-shrink-0 whitespace-nowrap">
+                  <span>{categoryLabel}</span>
+                  <X className="h-4 w-4" />
+                </Link>
+              )}
+
+              {/* Keresés zóna (kör) */}
+              <Button
+                variant={isCirclePanelOpen || activeSearchCircle ? 'primary' : 'outline'}
+                onClick={() => {
+                  setIsCirclePanelOpen((o) => !o)
+                  if (!isCirclePanelOpen) setCircleCenterMode(false)
+                }}
+                className="flex-shrink-0 whitespace-nowrap"
+              >
+                <CircleDot className="h-4 w-4" />
+                Keresés zóna
+                <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${isCirclePanelOpen ? 'rotate-180' : ''}`} />
+              </Button>
+
+              {/* Filter Button */}
+              <Button 
+                variant={isFilterOpen ? 'primary' : 'outline'} 
+                onClick={() => setIsFilterOpen(!isFilterOpen)}
+                className="flex-shrink-0 whitespace-nowrap"
+              >
+                <Sliders className="h-4 w-4" />
+                Szűrők
+                <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${isFilterOpen ? 'rotate-180' : ''}`} />
+              </Button>
             </div>
           </div>
-
-          {/* View Toggle */}
-          <div className="flex items-center bg-gray-100 rounded-xl p-1">
-            <button
-              onClick={() => setViewMode('map')}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200 ${
-                viewMode === 'map'
-                  ? 'bg-white text-[#2D7A4F] shadow-sm'
-                  : 'text-gray-500 hover:text-gray-700'
-              }`}
-            >
-              <MapPin className="h-4 w-4" />
-              Térkép
-            </button>
-            <button
-              onClick={() => setViewMode('list')}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200 ${
-                viewMode === 'list'
-                  ? 'bg-white text-[#2D7A4F] shadow-sm'
-                  : 'text-gray-500 hover:text-gray-700'
-              }`}
-            >
-              <List className="h-4 w-4" />
-              Lista
-            </button>
-          </div>
-
-          {/* Aktív kategória (pl. Éttermekből jött) – X-re mind látszik */}
-          {categoryLabel && (
-            <Link href="/terkep" className="inline-flex items-center gap-2 bg-[#E8F5E9] text-[#1B5E20] px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-[#C8E6C9] transition-colors">
-              <span>{categoryLabel}</span>
-              <X className="h-4 w-4" />
-            </Link>
-          )}
-
-          {/* Keresés zóna (kör) */}
-          <Button
-            variant={isCirclePanelOpen || activeSearchCircle ? 'primary' : 'outline'}
-            onClick={() => {
-              setIsCirclePanelOpen((o) => !o)
-              if (!isCirclePanelOpen) setCircleCenterMode(false)
-            }}
-          >
-            <CircleDot className="h-4 w-4" />
-            Keresés zóna
-            <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${isCirclePanelOpen ? 'rotate-180' : ''}`} />
-          </Button>
-
-          {/* Filter Button */}
-          <Button 
-            variant={isFilterOpen ? 'primary' : 'outline'} 
-            onClick={() => setIsFilterOpen(!isFilterOpen)}
-          >
-            <Sliders className="h-4 w-4" />
-            Szűrők
-            <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${isFilterOpen ? 'rotate-180' : ''}`} />
-          </Button>
         </div>
 
         {/* Szűrő Modal – overlay ablak */}
