@@ -120,6 +120,44 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
     return places.filter((p) => p.category_id === categoryBySlug.id)
   }, [places, categoryBySlug])
 
+  // Dinamikusan generált városok listája az adatbázisból (csak azok, ahol van hely)
+  const availableCities = useMemo(() => {
+    const citySet = new Set<string>()
+    placesInCategory.forEach((place) => {
+      const address = place.address
+      // Különböző címformátumok kezelése
+      // Formátumok: "Cím, Város", "Város, Cím", "Város", stb.
+      const parts = address.split(',').map(p => p.trim())
+      
+      // Ha van vessző, akkor valószínűleg a második rész a város
+      if (parts.length > 1) {
+        // Próbáljuk meg a második részt (leggyakrabban a város)
+        const possibleCity = parts[parts.length - 1]
+        if (possibleCity && possibleCity.length > 2 && !/\d/.test(possibleCity)) {
+          citySet.add(possibleCity)
+        }
+        // Vagy az első rész lehet a város (pl. "Budapest, ...")
+        const firstPart = parts[0]
+        if (firstPart && firstPart.length > 2 && !/\d/.test(firstPart)) {
+          citySet.add(firstPart)
+        }
+      } else {
+        // Ha nincs vessző, akkor az egész cím lehet város
+        const singlePart = parts[0]
+        if (singlePart && singlePart.length > 2 && !/\d/.test(singlePart)) {
+          citySet.add(singlePart)
+        }
+      }
+    })
+    
+    // Rendezés és "Teljes ország" opció hozzáadása
+    const cities = Array.from(citySet).sort((a, b) => a.localeCompare(b, 'hu'))
+    return [
+      { value: '', label: 'Teljes ország' },
+      ...cities.map(city => ({ value: city, label: city }))
+    ]
+  }, [placesInCategory])
+
   const centerForDistance = userLocation ?? BUDAPEST
   
   // Először légvonalban számolunk (gyors)
@@ -139,10 +177,14 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
           p.address.toLowerCase().includes(q)
       )
     }
-    // Hol? – város a címben
-    if (filterCity) {
-      const city = filterCity.toLowerCase()
-      list = list.filter((p) => p.address.toLowerCase().includes(city))
+    // Hol? – város/település a címben (rugalmas keresés)
+    if (filterCity && filterCity.trim()) {
+      const cityQuery = filterCity.trim().toLowerCase()
+      list = list.filter((p) => {
+        const address = p.address.toLowerCase()
+        // Keresés a címben (részleges egyezés)
+        return address.includes(cityQuery)
+      })
     }
     // Értékelés
     if (filterRatingMin) {
@@ -462,20 +504,7 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
                       )}
                     </label>
                     <SearchableSelect
-                      options={[
-                        { value: '', label: 'Teljes ország' },
-                        { value: 'Budapest', label: 'Budapest' },
-                        { value: 'Debrecen', label: 'Debrecen' },
-                        { value: 'Pécs', label: 'Pécs' },
-                        { value: 'Szeged', label: 'Szeged' },
-                        { value: 'Győr', label: 'Győr' },
-                        { value: 'Eger', label: 'Eger' },
-                        { value: 'Sopron', label: 'Sopron' },
-                        { value: 'Veszprém', label: 'Veszprém' },
-                        { value: 'Siófok', label: 'Siófok' },
-                        { value: 'Hollókő', label: 'Hollókő' },
-                        { value: 'Tokaj', label: 'Tokaj' },
-                      ]}
+                      options={availableCities}
                       value={filterCity}
                       onChange={setFilterCity}
                       placeholder="Teljes ország"
