@@ -852,9 +852,8 @@ export default function AdminPlacesPage() {
                   placeholder="0 = nem jelenik meg"
                   className="w-full max-w-[120px] px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-[#2D7A4F]"
                 />
-                <p className="text-xs text-gray-500 mt-1">1 = első, 2 = második… a „Felkapott helyek” szekcióban. 0 vagy üres = nem felkapott.</p>
+                <p className="text-xs text-gray-500 mt-1">1 = első, 2 = második... a &quot;Felkapott helyek&quot; szekcióban. 0 vagy üres = nem felkapott.</p>
               </div>
-            </div>
             
             {/* Szűrők */}
             <div className="w-full">
