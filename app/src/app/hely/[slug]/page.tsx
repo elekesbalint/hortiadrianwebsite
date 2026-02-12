@@ -278,16 +278,6 @@ export default function PlaceDetailPage({ params }: { params: Promise<{ slug: st
                     <Navigation className="h-5 w-5" />
                     Útvonal
                   </Button>
-                  {place.category === 'Étterem' && place.menuUrl && (
-                    <Button
-                      onClick={() => window.open(place.menuUrl!, '_blank', 'noopener,noreferrer')}
-                      size={place.category === 'Étterem' ? 'md' : 'lg'}
-                      variant="outline"
-                    >
-                      <FileText className="h-5 w-5" />
-                      Étlap
-                    </Button>
-                  )}
                 </div>
                 {(hasSocialLink(place.website) || hasSocialLink(place.instagram) || hasSocialLink(place.facebook) || hasSocialLink(place.youtube) || hasSocialLink(place.tiktok) || hasSocialLink(place.email)) && (
                 <div className="flex flex-wrap items-center gap-2 border-l border-gray-200 pl-4">
