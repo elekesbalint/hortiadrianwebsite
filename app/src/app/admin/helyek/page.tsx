@@ -174,13 +174,15 @@ export default function AdminPlacesPage() {
         return
       }
       placeId = res.id
-      if (menuFile) {
+      // Csak akkor töltjük fel a fájlt, ha nincs URL megadva
+      if (menuFile && !finalMenuUrl) {
         const url = await uploadMenuFile(res.id, menuFile)
         if (url) await updatePlace(res.id, { ...form, menuUrl: url, openingHours: cleanedOpeningHours })
       }
     } else if (editingPlace) {
       placeId = editingPlace.id
-      if (menuFile) {
+      // Csak akkor töltjük fel a fájlt, ha nincs URL megadva
+      if (menuFile && !finalMenuUrl) {
         const url = await uploadMenuFile(editingPlace.id, menuFile)
         if (url) finalMenuUrl = url
       }
@@ -783,22 +785,39 @@ export default function AdminPlacesPage() {
                   <p className="text-xs text-gray-500 mt-1">Az első kép (fent) a fő borítókép. Itt feltöltött képek a részletes oldal „Fotók” fülén jelennek meg.</p>
                 </div>
               )}
-              <div className="flex items-center gap-4">
+              <div className="flex flex-col gap-4">
                 <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Étlap (JPG/PDF)</label>
-                <div className="flex flex-col gap-2">
-                  <label className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#E8F5E9] text-[#1B5E20] rounded-xl font-medium text-sm cursor-pointer hover:bg-[#C8E6C9] transition-colors w-fit">
-                    <FileText className="h-5 w-5" />
-                    Étlap tallózása
-                    <input
-                      ref={menuInputRef}
-                      type="file"
-                      accept=".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf"
-                      onChange={handleMenuFile}
-                      className="sr-only"
-                    />
-                  </label>
-                  {menuFile && <p className="text-sm text-gray-600">{menuFile.name}</p>}
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Étlap URL</label>
+                  <input
+                    type="url"
+                    value={form.menuUrl || ''}
+                    onChange={(e) => setForm((f) => ({ ...f, menuUrl: e.target.value || null }))}
+                    placeholder="https://example.com/etlap"
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl outline-none focus:border-[#2D7A4F]"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Az étlap külső linkje (pl. az étterem saját oldalán lévő étlap). Jogilag megfelelő megoldás.
+                  </p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Vagy étlap fájl feltöltése (JPG/PDF)</label>
+                  <div className="flex flex-col gap-2">
+                    <label className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#E8F5E9] text-[#1B5E20] rounded-xl font-medium text-sm cursor-pointer hover:bg-[#C8E6C9] transition-colors w-fit">
+                      <FileText className="h-5 w-5" />
+                      Étlap tallózása
+                      <input
+                        ref={menuInputRef}
+                        type="file"
+                        accept=".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf"
+                        onChange={handleMenuFile}
+                        className="sr-only"
+                      />
+                    </label>
+                    {menuFile && <p className="text-sm text-gray-600">{menuFile.name}</p>}
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Ha URL-t adsz meg, az elsőbbséget élvezi. Fájl feltöltés csak akkor történik, ha nincs URL megadva.
+                  </p>
                 </div>
               </div>
               
