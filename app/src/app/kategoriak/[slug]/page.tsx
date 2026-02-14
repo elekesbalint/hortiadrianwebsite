@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/Button'
 import { Card, CardContent, CardTitle } from '@/components/ui/Card'
 import { MapPin, Star, Heart, ChevronDown, Map, Sliders, RotateCcw, Search, Utensils, Home, Landmark, Calendar, Clock, Users, Route, Tag, Gauge, Award, CheckCircle, X } from 'lucide-react'
 import { SearchableSelect, type SearchableSelectOption } from '@/components/ui/SearchableSelect'
+import { CityAutocomplete } from '@/components/ui/CityAutocomplete'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 import { getCategoryIconComponent } from '@/lib/categoryIcons'
 import { getPlaces } from '@/lib/db/places'
@@ -80,8 +81,6 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
   const [filterEventDateFrom, setFilterEventDateFrom] = useState<string>('')
   const [filterEventDateTo, setFilterEventDateTo] = useState<string>('')
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null)
-  /** Összes magyar település (API-ból), a Hol? szűrő opcióihoz */
-  const [allSettlements, setAllSettlements] = useState<string[]>([])
 
   useEffect(() => {
     Promise.all([getPlaces(), getCategories(), getFilters()]).then(([pls, cats, filts]) => {
@@ -96,14 +95,6 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
     if (!isLoggedIn) return
     getFavoritePlaceIds().then(setFavorites)
   }, [isLoggedIn])
-
-  // Összes magyar település betöltése a Hol? szűrőhöz (API)
-  useEffect(() => {
-    fetch('/api/telepulesek')
-      .then((r) => r.json())
-      .then((arr: string[]) => setAllSettlements(Array.isArray(arr) ? arr : []))
-      .catch(() => setAllSettlements([]))
-  }, [])
 
   // Felhasználó helyének lekérése
   useEffect(() => {
@@ -129,34 +120,6 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
     if (!categoryBySlug) return places
     return places.filter((p) => p.category_id === categoryBySlug.id)
   }, [places, categoryBySlug])
-
-  // Hol? szűrő opciói: összes magyar település (API), vagy tartalékban a kategóriából kinyert települések
-  const availableCities = useMemo(() => {
-    const list =
-      allSettlements.length > 0
-        ? [...allSettlements]
-        : (() => {
-            const citySet = new Set<string>()
-            placesInCategory.forEach((place) => {
-              const address = place.address
-              const parts = address.split(',').map((p) => p.trim())
-              if (parts.length > 1) {
-                const possibleCity = parts[parts.length - 1]
-                if (possibleCity && possibleCity.length > 2 && !/\d/.test(possibleCity)) citySet.add(possibleCity)
-                const firstPart = parts[0]
-                if (firstPart && firstPart.length > 2 && !/\d/.test(firstPart)) citySet.add(firstPart)
-              } else {
-                const singlePart = parts[0]
-                if (singlePart && singlePart.length > 2 && !/\d/.test(singlePart)) citySet.add(singlePart)
-              }
-            })
-            return Array.from(citySet).sort((a, b) => a.localeCompare(b, 'hu'))
-          })()
-    return [
-      { value: '', label: 'Teljes ország' },
-      ...list.map((city) => ({ value: city, label: city })),
-    ]
-  }, [allSettlements, placesInCategory])
 
   const centerForDistance = userLocation ?? BUDAPEST
   
@@ -492,7 +455,7 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
             {/* Szűrő mezők – scrollozható tartalom */}
             <div className="flex-1 overflow-y-auto px-6 py-6">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                {/* Hol? */}
+                {/* Hol? – Google Places Autocomplete (csak magyar települések) */}
                 <div className="group">
                     <label className="flex items-center gap-2 text-xs font-bold text-gray-600 uppercase tracking-wider mb-3">
                       <MapPin className={`h-3.5 w-3.5 ${filterCity ? 'text-[#2D7A4F]' : 'text-gray-400'}`} />
@@ -503,14 +466,10 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
                         </span>
                       )}
                     </label>
-                    <SearchableSelect
-                      options={availableCities}
+                    <CityAutocomplete
                       value={filterCity}
                       onChange={setFilterCity}
-                      placeholder="Teljes ország"
-                      searchPlaceholder="Írj be településnevet..."
-                      hasValue={!!filterCity}
-                      allowCustomValue
+                      placeholder="Írj be településnevet (pl. Sióagárd)…"
                     />
                   </div>
 
