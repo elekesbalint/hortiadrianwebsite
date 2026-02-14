@@ -14,7 +14,7 @@ import { getFavoritePlaceIds, addFavorite, removeFavorite } from '@/lib/db/favor
 import { getReviewsByPlaceId, addReview, uploadReviewImage, type AppReview } from '@/lib/db/reviews'
 import { recordStatistic } from '@/lib/db/statistics'
 import {
-  MapPin, Star, Heart, Share2, Navigation, ChevronLeft, ChevronRight, Image as ImageIcon, FileText, MessageSquare, X, Globe, Mail, Clock, CheckCircle2, Calendar, Banknote
+  MapPin, Star, Heart, Share2, Navigation, ChevronLeft, ChevronRight, Image as ImageIcon, FileText, MessageSquare, X, Globe, Mail, Clock, CheckCircle2, CalendarDays, Banknote
 } from 'lucide-react'
 
 const tabsBase = [
@@ -301,9 +301,9 @@ export default function PlaceDetailPage({ params }: { params: Promise<{ slug: st
                       href={place.bookingUrl.startsWith('http') ? place.bookingUrl : `https://${place.bookingUrl}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center justify-center gap-2 h-11 px-5 text-sm font-semibold rounded-xl border-2 border-[#2D7A4F] text-[#2D7A4F] hover:bg-[#2D7A4F] hover:text-white transition-all"
+                      className="inline-flex items-center justify-center gap-2 h-11 px-5 text-sm font-semibold rounded-xl bg-amber-400 text-gray-900 hover:bg-amber-500 transition-all shadow-sm"
                     >
-                      <Calendar className="h-5 w-5" />
+                      <CalendarDays className="h-5 w-5" />
                       Foglalás
                     </a>
                   )}
