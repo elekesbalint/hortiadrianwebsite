@@ -6,11 +6,9 @@ import Image from 'next/image'
 import { Button } from '@/components/ui/Button'
 import { Card, CardContent, CardTitle, CardDescription } from '@/components/ui/Card'
 import { MapPin, Utensils, Bed, Star, Heart, Wine, Camera, Bath, Baby, Sparkles, ArrowRight, Landmark, ChevronLeft, ChevronRight, Users, Eye } from 'lucide-react'
-import { getPlaces, getFeaturedPlaces } from '@/lib/db/places'
 import { useCategoriesContext } from '@/components/providers/CategoriesProvider'
 import { recordStatistic } from '@/lib/db/statistics'
 import { getCategoryIconComponent } from '@/lib/categoryIcons'
-import { getSiteStatistics } from '@/lib/db/siteStatistics'
 import { AnimatedCounter } from '@/components/ui/AnimatedCounter'
 
 /** Ikon a kategóriához: ha van mentett icon a DB-ben, azt; különben slug alapján (ugyanaz, mint headerben és részletes nézetben). */
@@ -40,11 +38,8 @@ const defaultCategoryImage = 'https://images.unsplash.com/photo-1517248135467-4c
 const FEATURED_CAROUSEL_INTERVAL_MS = 4500
 
 export default function HomePage() {
-  const { categories, featuredCategories } = useCategoriesContext()
+  const { categories, featuredCategories, places, featuredPlaces, siteStats } = useCategoriesContext()
   const [carouselIndex, setCarouselIndex] = useState(0)
-  const [places, setPlaces] = useState<Awaited<ReturnType<typeof getPlaces>>>([])
-  const [featuredPlaces, setFeaturedPlaces] = useState<Awaited<ReturnType<typeof getFeaturedPlaces>>>([])
-  const [siteStats, setSiteStats] = useState<Awaited<ReturnType<typeof getSiteStatistics>>>([])
   const [featuredPaused, setFeaturedPaused] = useState(false)
   const scrollRef = useRef<HTMLDivElement>(null)
   const slideRefs = useRef<(HTMLAnchorElement | null)[]>([])
@@ -59,14 +54,6 @@ export default function HomePage() {
       imageUrl: c.image || categoryImages[c.slug] || defaultCategoryImage,
       count: places.filter((p) => p.category_id === c.id).length,
     }))
-
-  useEffect(() => {
-    Promise.all([getPlaces(), getFeaturedPlaces(), getSiteStatistics()]).then(([pls, featured, stats]) => {
-      setPlaces(pls)
-      setFeaturedPlaces(featured.length > 0 ? featured : pls.slice(0, 8))
-      setSiteStats(stats)
-    })
-  }, [])
 
   useEffect(() => {
     const slide = slideRefs.current[carouselIndex]

@@ -3,6 +3,8 @@ import { Dancing_Script } from 'next/font/google'
 import './globals.css'
 import { Header } from '@/components/layout/Header'
 import { getCategories, getFeaturedCategories, getCategoriesForHeader } from '@/lib/db/categories'
+import { getPlaces, getFeaturedPlaces } from '@/lib/db/places'
+import { getSiteStatistics } from '@/lib/db/siteStatistics'
 import { CategoriesProvider } from '@/components/providers/CategoriesProvider'
 
 const fontBrand = Dancing_Script({
@@ -36,11 +38,15 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode
 }) {
-  const [categories, featuredCategories, headerCategories] = await Promise.all([
+  const [categories, featuredCategories, headerCategories, places, featuredPlacesRaw, siteStats] = await Promise.all([
     getCategories(),
     getFeaturedCategories(),
     getCategoriesForHeader(),
+    getPlaces(),
+    getFeaturedPlaces(),
+    getSiteStatistics(),
   ])
+  const featuredPlaces = featuredPlacesRaw.length > 0 ? featuredPlacesRaw : places.slice(0, 8)
 
   return (
     <html lang="hu">
@@ -50,6 +56,9 @@ export default async function RootLayout({
             initialCategories={categories}
             initialFeaturedCategories={featuredCategories}
             initialHeaderCategories={headerCategories}
+            initialPlaces={places}
+            initialFeaturedPlaces={featuredPlaces}
+            initialSiteStats={siteStats}
           >
             <StatisticsTracker />
             <Header />

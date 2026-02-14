@@ -2,6 +2,8 @@
 
 import { createContext, useContext, useState, useMemo, type ReactNode } from 'react'
 import type { AppCategory } from '@/lib/db/categories'
+import type { AppPlace } from '@/lib/db/places'
+import type { SiteStatistic } from '@/lib/db/siteStatistics'
 
 export type HeaderCategory = { id: string; slug: string; name: string; icon: string | null }
 
@@ -9,6 +11,9 @@ type CategoriesContextValue = {
   categories: AppCategory[]
   featuredCategories: AppCategory[]
   headerCategories: HeaderCategory[]
+  places: AppPlace[]
+  featuredPlaces: AppPlace[]
+  siteStats: SiteStatistic[]
 }
 
 const CategoriesContext = createContext<CategoriesContextValue | null>(null)
@@ -18,19 +23,35 @@ export function CategoriesProvider({
   initialCategories,
   initialFeaturedCategories,
   initialHeaderCategories,
+  initialPlaces,
+  initialFeaturedPlaces,
+  initialSiteStats,
 }: {
   children: ReactNode
   initialCategories: AppCategory[]
   initialFeaturedCategories: AppCategory[]
   initialHeaderCategories: HeaderCategory[]
+  initialPlaces: AppPlace[]
+  initialFeaturedPlaces: AppPlace[]
+  initialSiteStats: SiteStatistic[]
 }) {
   const [categories] = useState<AppCategory[]>(initialCategories)
   const [featuredCategories] = useState<AppCategory[]>(initialFeaturedCategories)
   const [headerCategories] = useState<HeaderCategory[]>(initialHeaderCategories)
+  const [places] = useState<AppPlace[]>(initialPlaces)
+  const [featuredPlaces] = useState<AppPlace[]>(initialFeaturedPlaces)
+  const [siteStats] = useState<SiteStatistic[]>(initialSiteStats)
 
   const value = useMemo(
-    () => ({ categories, featuredCategories, headerCategories }),
-    [categories, featuredCategories, headerCategories]
+    () => ({
+      categories,
+      featuredCategories,
+      headerCategories,
+      places,
+      featuredPlaces,
+      siteStats,
+    }),
+    [categories, featuredCategories, headerCategories, places, featuredPlaces, siteStats]
   )
 
   return (
