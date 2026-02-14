@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/Button'
 import { Card, CardContent, CardTitle, CardDescription } from '@/components/ui/Card'
 import { MapPin, Utensils, Bed, Star, Heart, Wine, Camera, Bath, Baby, Sparkles, ArrowRight, Landmark, ChevronLeft, ChevronRight, Users, Eye } from 'lucide-react'
 import { getPlaces, getFeaturedPlaces } from '@/lib/db/places'
-import { getCategories, getFeaturedCategories } from '@/lib/db/categories'
+import { useCategoriesContext } from '@/components/providers/CategoriesProvider'
 import { recordStatistic } from '@/lib/db/statistics'
 import { getCategoryIconComponent } from '@/lib/categoryIcons'
 import { getSiteStatistics } from '@/lib/db/siteStatistics'
@@ -40,11 +40,10 @@ const defaultCategoryImage = 'https://images.unsplash.com/photo-1517248135467-4c
 const FEATURED_CAROUSEL_INTERVAL_MS = 4500
 
 export default function HomePage() {
+  const { categories, featuredCategories } = useCategoriesContext()
   const [carouselIndex, setCarouselIndex] = useState(0)
   const [places, setPlaces] = useState<Awaited<ReturnType<typeof getPlaces>>>([])
   const [featuredPlaces, setFeaturedPlaces] = useState<Awaited<ReturnType<typeof getFeaturedPlaces>>>([])
-  const [featuredCategories, setFeaturedCategories] = useState<Awaited<ReturnType<typeof getFeaturedCategories>>>([])
-  const [categories, setCategories] = useState<Awaited<ReturnType<typeof getCategories>>>([])
   const [siteStats, setSiteStats] = useState<Awaited<ReturnType<typeof getSiteStatistics>>>([])
   const [featuredPaused, setFeaturedPaused] = useState(false)
   const scrollRef = useRef<HTMLDivElement>(null)
@@ -62,11 +61,9 @@ export default function HomePage() {
     }))
 
   useEffect(() => {
-    Promise.all([getPlaces(), getFeaturedPlaces(), getFeaturedCategories(), getCategories(), getSiteStatistics()]).then(([pls, featured, featuredCats, cats, stats]) => {
+    Promise.all([getPlaces(), getFeaturedPlaces(), getSiteStatistics()]).then(([pls, featured, stats]) => {
       setPlaces(pls)
       setFeaturedPlaces(featured.length > 0 ? featured : pls.slice(0, 8))
-      setFeaturedCategories(featuredCats)
-      setCategories(cats)
       setSiteStats(stats)
     })
   }, [])

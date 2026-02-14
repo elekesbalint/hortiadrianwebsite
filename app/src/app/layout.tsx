@@ -2,6 +2,8 @@ import type { Metadata } from 'next'
 import { Dancing_Script } from 'next/font/google'
 import './globals.css'
 import { Header } from '@/components/layout/Header'
+import { getCategories, getFeaturedCategories, getCategoriesForHeader } from '@/lib/db/categories'
+import { CategoriesProvider } from '@/components/providers/CategoriesProvider'
 
 const fontBrand = Dancing_Script({
   subsets: ['latin', 'latin-ext'],
@@ -29,22 +31,34 @@ export const viewport = {
   maximumScale: 5,
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+  const [categories, featuredCategories, headerCategories] = await Promise.all([
+    getCategories(),
+    getFeaturedCategories(),
+    getCategoriesForHeader(),
+  ])
+
   return (
     <html lang="hu">
       <body className={`${fontBrand.variable} antialiased min-h-screen flex flex-col`} suppressHydrationWarning>
         <AuthProviderWrapper>
-          <StatisticsTracker />
-          <Header />
-          <main className="flex-1 min-w-0 w-full">
-            {children}
-          </main>
-          <Footer />
-          <CookieConsent />
+          <CategoriesProvider
+            initialCategories={categories}
+            initialFeaturedCategories={featuredCategories}
+            initialHeaderCategories={headerCategories}
+          >
+            <StatisticsTracker />
+            <Header />
+            <main className="flex-1 min-w-0 w-full">
+              {children}
+            </main>
+            <Footer />
+            <CookieConsent />
+          </CategoriesProvider>
         </AuthProviderWrapper>
       </body>
     </html>

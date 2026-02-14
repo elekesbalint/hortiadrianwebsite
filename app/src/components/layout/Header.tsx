@@ -6,7 +6,7 @@ import { useState, useEffect, useRef } from 'react'
 import { Button } from '@/components/ui/Button'
 import { useAuth } from '@/context/AuthContext'
 import { supabase } from '@/lib/supabase'
-import { getCategoriesForHeader } from '@/lib/db/categories'
+import { useCategoriesContext, type HeaderCategory } from '@/components/providers/CategoriesProvider'
 import {
   Menu,
   X,
@@ -22,8 +22,6 @@ import {
 } from 'lucide-react'
 import { getCategoryIconComponent } from '@/lib/categoryIcons'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
-
-type HeaderCategory = { id: string; slug: string; name: string; icon: string | null }
 
 /** Ikon a kategóriához: ha van mentett icon, azt; különben slug alapján. */
 function getHeaderCategoryIcon(cat: HeaderCategory) {
@@ -80,11 +78,7 @@ export function Header() {
   const fiokCloseTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [mounted, setMounted] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
-  const [headerCategories, setHeaderCategories] = useState<HeaderCategory[]>([])
-
-  useEffect(() => {
-    getCategoriesForHeader().then(setHeaderCategories)
-  }, [])
+  const { headerCategories } = useCategoriesContext()
 
   // Olvasatlan szám: értesítések, amik a lastReadAt után érkeztek (lastReadAt nélkül mind „új”)
   const unreadCount = mounted
