@@ -80,6 +80,8 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
   const [filterEventDateFrom, setFilterEventDateFrom] = useState<string>('')
   const [filterEventDateTo, setFilterEventDateTo] = useState<string>('')
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null)
+  /** Összes magyar település (API-ból), a Hol? szűrő opcióihoz */
+  const [allSettlements, setAllSettlements] = useState<string[]>([])
 
   useEffect(() => {
     Promise.all([getPlaces(), getCategories(), getFilters()]).then(([pls, cats, filts]) => {
@@ -94,6 +96,14 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
     if (!isLoggedIn) return
     getFavoritePlaceIds().then(setFavorites)
   }, [isLoggedIn])
+
+  // Összes magyar település betöltése a Hol? szűrőhöz (API)
+  useEffect(() => {
+    fetch('/api/telepulesek')
+      .then((r) => r.json())
+      .then((arr: string[]) => setAllSettlements(Array.isArray(arr) ? arr : []))
+      .catch(() => setAllSettlements([]))
+  }, [])
 
   // Felhasználó helyének lekérése
   useEffect(() => {
@@ -120,43 +130,33 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
     return places.filter((p) => p.category_id === categoryBySlug.id)
   }, [places, categoryBySlug])
 
-  // Dinamikusan generált városok listája az adatbázisból (csak azok, ahol van hely)
+  // Hol? szűrő opciói: összes magyar település (API), vagy tartalékban a kategóriából kinyert települések
   const availableCities = useMemo(() => {
-    const citySet = new Set<string>()
-    placesInCategory.forEach((place) => {
-      const address = place.address
-      // Különböző címformátumok kezelése
-      // Formátumok: "Cím, Város", "Város, Cím", "Város", stb.
-      const parts = address.split(',').map(p => p.trim())
-      
-      // Ha van vessző, akkor valószínűleg a második rész a város
-      if (parts.length > 1) {
-        // Próbáljuk meg a második részt (leggyakrabban a város)
-        const possibleCity = parts[parts.length - 1]
-        if (possibleCity && possibleCity.length > 2 && !/\d/.test(possibleCity)) {
-          citySet.add(possibleCity)
-        }
-        // Vagy az első rész lehet a város (pl. "Budapest, ...")
-        const firstPart = parts[0]
-        if (firstPart && firstPart.length > 2 && !/\d/.test(firstPart)) {
-          citySet.add(firstPart)
-        }
-      } else {
-        // Ha nincs vessző, akkor az egész cím lehet város
-        const singlePart = parts[0]
-        if (singlePart && singlePart.length > 2 && !/\d/.test(singlePart)) {
-          citySet.add(singlePart)
-        }
-      }
-    })
-    
-    // Rendezés és "Teljes ország" opció hozzáadása
-    const cities = Array.from(citySet).sort((a, b) => a.localeCompare(b, 'hu'))
+    const list =
+      allSettlements.length > 0
+        ? [...allSettlements]
+        : (() => {
+            const citySet = new Set<string>()
+            placesInCategory.forEach((place) => {
+              const address = place.address
+              const parts = address.split(',').map((p) => p.trim())
+              if (parts.length > 1) {
+                const possibleCity = parts[parts.length - 1]
+                if (possibleCity && possibleCity.length > 2 && !/\d/.test(possibleCity)) citySet.add(possibleCity)
+                const firstPart = parts[0]
+                if (firstPart && firstPart.length > 2 && !/\d/.test(firstPart)) citySet.add(firstPart)
+              } else {
+                const singlePart = parts[0]
+                if (singlePart && singlePart.length > 2 && !/\d/.test(singlePart)) citySet.add(singlePart)
+              }
+            })
+            return Array.from(citySet).sort((a, b) => a.localeCompare(b, 'hu'))
+          })()
     return [
       { value: '', label: 'Teljes ország' },
-      ...cities.map(city => ({ value: city, label: city }))
+      ...list.map((city) => ({ value: city, label: city })),
     ]
-  }, [placesInCategory])
+  }, [allSettlements, placesInCategory])
 
   const centerForDistance = userLocation ?? BUDAPEST
   
