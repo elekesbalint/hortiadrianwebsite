@@ -104,6 +104,8 @@ export type Database = {
           rating_count: number
           images: string[]
           menu_url: string | null
+          price_url: string | null
+          booking_url: string | null
           features: string[]
           is_active: boolean
           featured_order: number | null
@@ -137,6 +139,8 @@ export type Database = {
           rating_count?: number
           images?: string[]
           menu_url?: string | null
+          price_url?: string | null
+          booking_url?: string | null
           features?: string[]
           is_active?: boolean
           featured_order?: number | null
@@ -170,6 +174,8 @@ export type Database = {
           rating_count?: number
           images?: string[]
           menu_url?: string | null
+          price_url?: string | null
+          booking_url?: string | null
           features?: string[]
           is_active?: boolean
           featured_order?: number | null

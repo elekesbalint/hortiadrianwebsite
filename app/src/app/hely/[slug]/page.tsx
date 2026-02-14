@@ -14,15 +14,15 @@ import { getFavoritePlaceIds, addFavorite, removeFavorite } from '@/lib/db/favor
 import { getReviewsByPlaceId, addReview, uploadReviewImage, type AppReview } from '@/lib/db/reviews'
 import { recordStatistic } from '@/lib/db/statistics'
 import {
-  MapPin, Star, Heart, Share2, Navigation, ChevronLeft, ChevronRight, Image as ImageIcon, FileText, MessageSquare, X, Globe, Mail, Clock, CheckCircle2
+  MapPin, Star, Heart, Share2, Navigation, ChevronLeft, ChevronRight, Image as ImageIcon, FileText, MessageSquare, X, Globe, Mail, Clock, CheckCircle2, Calendar, Banknote
 } from 'lucide-react'
 
-const tabs = [
+const tabsBase = [
   { id: 'info', label: 'Információk', icon: MapPin },
-  { id: 'menu', label: 'Étlap', icon: FileText },
   { id: 'reviews', label: 'Értékelések', icon: MessageSquare },
   { id: 'photos', label: 'Fotók', icon: ImageIcon },
 ]
+const tabMenu = { id: 'menu', label: 'Étlap', icon: FileText }
 
 /** Csak akkor számít „beállított” linknek, ha van nem üres érték (üres string / szóköz ne jelenjen meg). */
 function hasSocialLink(url: string | null | undefined): boolean {
@@ -83,14 +83,21 @@ export default function PlaceDetailPage({ params }: { params: Promise<{ slug: st
     getReviewsByPlaceId(place.id).then(setReviews)
   }, [place?.id])
 
-  // Hash alapú navigáció: #menu → Étlap fül
+  // Hash alapú navigáció: #menu → Étlap fül (csak éttermeknél)
   useEffect(() => {
     if (typeof window === 'undefined') return
-    const hash = window.location.hash.slice(1) // Eltávolítjuk a #-et
+    const hash = window.location.hash.slice(1)
     if (hash === 'menu' || hash === 'info' || hash === 'reviews' || hash === 'photos') {
       setActiveTab(hash)
     }
   }, [])
+
+  // Ha nem étterem és menu fülre érkeztünk, váltás Információkra
+  useEffect(() => {
+    if (place && place.category !== 'Étterem' && activeTab === 'menu') {
+      setActiveTab('info')
+    }
+  }, [place, activeTab])
 
   useEffect(() => {
     if (!lightboxOpen || !place?.images?.length) return
@@ -244,14 +251,14 @@ export default function PlaceDetailPage({ params }: { params: Promise<{ slug: st
 
       {/* Main Content */}
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 -mt-16 relative z-10 pb-12">
-        {/* Main Info Card */}
+        {/* Main Info Card – egységes méret minden kategóriánál (étterem méret) */}
         <Card elevated className="mb-6">
-          <CardContent className={place.category === 'Étterem' ? 'p-4 md:p-6' : 'p-6 md:p-8'}>
-            <div className={`flex flex-col md:flex-row md:items-start md:justify-between ${place.category === 'Étterem' ? 'gap-4' : 'gap-6'}`}>
+          <CardContent className="p-4 md:p-6">
+            <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
               <div className="flex-1">
                 <p className="text-sm text-gray-500 font-medium mb-1">{place.category}</p>
-                <h1 className={place.category === 'Étterem' ? 'text-2xl md:text-3xl font-bold text-gray-900 mb-2' : 'text-3xl md:text-4xl font-bold text-gray-900 mb-3'}>{place.name}</h1>
-                <div className={`flex flex-wrap items-center gap-4 ${place.category === 'Étterem' ? 'mb-4' : 'mb-6'}`}>
+                <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">{place.name}</h1>
+                <div className="flex flex-wrap items-center gap-4 mb-4">
                   <div className="flex items-center gap-1.5">
                     {Array.from({ length: 5 }, (_, i) => {
                       const starNum = i + 1
@@ -259,11 +266,11 @@ export default function PlaceDetailPage({ params }: { params: Promise<{ slug: st
                       return (
                         <Star
                           key={starNum}
-                          className={`${place.category === 'Étterem' ? 'h-5 w-5' : 'h-6 w-6'} ${isFilled ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'}`}
+                          className={`h-5 w-5 ${isFilled ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'}`}
                         />
                       )
                     })}
-                    <span className={place.category === 'Étterem' ? 'text-lg font-bold' : 'text-xl font-bold'}>{place.rating}</span>
+                    <span className="text-lg font-bold">{place.rating}</span>
                     <span className="text-gray-400">({place.ratingCount} értékelés)</span>
                   </div>
                   <span className="text-gray-300">|</span>
@@ -273,11 +280,44 @@ export default function PlaceDetailPage({ params }: { params: Promise<{ slug: st
 
               {/* Action Buttons + Megosztás */}
               <div className="flex flex-col sm:flex-row gap-4">
-                <div className="flex gap-3">
-                  <Button onClick={handleDirections} size={place.category === 'Étterem' ? 'md' : 'lg'}>
+                <div className="flex flex-wrap gap-3">
+                  <Button onClick={handleDirections} size="md">
                     <Navigation className="h-5 w-5" />
                     Útvonal
                   </Button>
+                  {place.category === 'Szállás' && place.priceUrl && (
+                    <a
+                      href={place.priceUrl.startsWith('http') ? place.priceUrl : `https://${place.priceUrl}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center justify-center gap-2 h-11 px-5 text-sm font-semibold rounded-xl border-2 border-[#2D7A4F] text-[#2D7A4F] hover:bg-[#2D7A4F] hover:text-white transition-all"
+                    >
+                      <Banknote className="h-5 w-5" />
+                      Árak
+                    </a>
+                  )}
+                  {place.category === 'Szállás' && place.bookingUrl && (
+                    <a
+                      href={place.bookingUrl.startsWith('http') ? place.bookingUrl : `https://${place.bookingUrl}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center justify-center gap-2 h-11 px-5 text-sm font-semibold rounded-xl border-2 border-[#2D7A4F] text-[#2D7A4F] hover:bg-[#2D7A4F] hover:text-white transition-all"
+                    >
+                      <Calendar className="h-5 w-5" />
+                      Foglalás
+                    </a>
+                  )}
+                  {place.category === 'Étterem' && place.menuUrl && (
+                    <a
+                      href={place.menuUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center justify-center gap-2 h-11 px-5 text-sm font-semibold rounded-xl border-2 border-[#2D7A4F] text-[#2D7A4F] hover:bg-[#2D7A4F] hover:text-white transition-all"
+                    >
+                      <FileText className="h-5 w-5" />
+                      Étlap
+                    </a>
+                  )}
                 </div>
                 {(hasSocialLink(place.website) || hasSocialLink(place.instagram) || hasSocialLink(place.facebook) || hasSocialLink(place.youtube) || hasSocialLink(place.tiktok) || hasSocialLink(place.email)) && (
                 <div className="flex flex-wrap items-center gap-2 border-l border-gray-200 pl-4">
@@ -319,10 +359,10 @@ export default function PlaceDetailPage({ params }: { params: Promise<{ slug: st
           </CardContent>
         </Card>
 
-        {/* Tabs */}
+        {/* Tabs – Étlap fül csak éttermeknél */}
         <Card className="overflow-hidden">
           <div className="flex border-b border-gray-100 bg-gray-50/50">
-            {tabs.map((tab) => {
+            {(place.category === 'Étterem' ? [tabsBase[0], tabMenu, tabsBase[1], tabsBase[2]] : tabsBase).map((tab) => {
               const Icon = tab.icon
               return (
                 <button
@@ -425,8 +465,8 @@ export default function PlaceDetailPage({ params }: { params: Promise<{ slug: st
                 </div>
             )}
 
-            {/* Menu Tab */}
-            {activeTab === 'menu' && (
+            {/* Menu Tab – csak éttermeknél */}
+            {activeTab === 'menu' && place.category === 'Étterem' && (
               <div className="py-6">
                 {place.menuUrl ? (
                   <div className="text-center space-y-6">

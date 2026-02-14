@@ -36,6 +36,8 @@ const defaultForm: PlaceFormInput = {
   lng: 19.0402,
   imageUrl: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400&h=200&fit=crop',
   menuUrl: null,
+  priceUrl: null,
+  bookingUrl: null,
   featured_order: null,
   website: null,
   instagram: null,
@@ -126,6 +128,8 @@ export default function AdminPlacesPage() {
       lng: place.lng,
       imageUrl: place.imageUrl,
       menuUrl: place.menuUrl ?? null,
+      priceUrl: place.priceUrl ?? null,
+      bookingUrl: place.bookingUrl ?? null,
       featured_order: place.featured_order ?? null,
       website: place.website ?? null,
       instagram: place.instagram ?? null,
@@ -817,6 +821,32 @@ export default function AdminPlacesPage() {
                   </div>
                   <p className="text-xs text-gray-500 mt-1">
                     Ha URL-t adsz meg, az elsőbbséget élvezi. Fájl feltöltés csak akkor történik, ha nincs URL megadva.
+                  </p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Árak URL</label>
+                  <input
+                    type="url"
+                    value={form.priceUrl || ''}
+                    onChange={(e) => setForm((f) => ({ ...f, priceUrl: e.target.value || null }))}
+                    placeholder="https://example.com/arak"
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl outline-none focus:border-[#2D7A4F]"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Pl. szállásnál: link az árképzéshez. A hely oldalán &quot;Árak&quot; gomb jelenik meg.
+                  </p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Foglalás URL</label>
+                  <input
+                    type="url"
+                    value={form.bookingUrl || ''}
+                    onChange={(e) => setForm((f) => ({ ...f, bookingUrl: e.target.value || null }))}
+                    placeholder="https://example.com/foglalas"
+                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl outline-none focus:border-[#2D7A4F]"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Pl. szállásnál: link a foglalási oldalra. A hely oldalán &quot;Foglalás&quot; gomb jelenik meg (naptár ikonnal).
                   </p>
                 </div>
               </div>

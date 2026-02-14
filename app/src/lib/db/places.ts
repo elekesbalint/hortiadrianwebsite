@@ -35,6 +35,8 @@ export type AppPlace = {
   images: string[]
   slug: string
   menuUrl?: string | null
+  priceUrl?: string | null
+  bookingUrl?: string | null
   website?: string | null
   instagram?: string | null
   facebook?: string | null
@@ -109,6 +111,8 @@ function rowToAppPlace(row: PlaceRowWithCategory): AppPlace {
     images,
     slug: row.slug,
     menuUrl: row.menu_url ?? null,
+    priceUrl: (row as PlaceRowWithCategory & { price_url?: string | null }).price_url ?? null,
+    bookingUrl: (row as PlaceRowWithCategory & { booking_url?: string | null }).booking_url ?? null,
     website: row.website ?? null,
     instagram: row.instagram ?? null,
     facebook: row.facebook ?? null,
@@ -301,6 +305,8 @@ export type PlaceFormInput = {
   /** Teljes fotólista (első = fő kép, többi = galéria). Ha megadva, felülírja az imageUrl-ból származó [imageUrl]-t. */
   images?: string[]
   menuUrl?: string | null
+  priceUrl?: string | null
+  bookingUrl?: string | null
   /** 0 vagy üres = nem felkapott; 1, 2, 3... = sorrend a kezdőlapon */
   featured_order?: number | null
   website?: string | null
@@ -341,6 +347,8 @@ export async function insertPlace(input: PlaceFormInput): Promise<{ id: string }
     rating_count: input.ratingCount,
     images: input.images !== undefined ? input.images : (input.imageUrl ? [input.imageUrl] : []),
     menu_url: input.menuUrl || null,
+    price_url: input.priceUrl || null,
+    booking_url: input.bookingUrl || null,
     features: [],
     is_active: true,
     event_date: input.eventDate || null,
@@ -386,6 +394,8 @@ export async function updatePlace(id: string, input: PlaceFormInput): Promise<{ 
     rating_count: input.ratingCount,
     images: input.images !== undefined ? input.images : (input.imageUrl ? [input.imageUrl] : []),
     menu_url: input.menuUrl ?? null,
+    price_url: input.priceUrl ?? null,
+    booking_url: input.bookingUrl ?? null,
     opening_hours: input.openingHours || null,
     website: input.website ?? null,
     instagram: input.instagram ?? null,
