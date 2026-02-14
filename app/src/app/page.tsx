@@ -139,13 +139,13 @@ export default function HomePage() {
         {/* Wave – simább, organikus átmenet */}
         <div className="absolute bottom-0 left-0 right-0 pointer-events-none">
           <svg viewBox="0 0 1440 100" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-auto">
-            <path d="M0 60 C360 100 1080 0 1440 50 L1440 100 L0 100 Z" fill="white"/>
+            <path d="M0 60 C360 100 1080 0 1440 50 L1440 100 L0 100 Z" fill="#E5E5E5"/>
           </svg>
         </div>
       </section>
 
       {/* Kategóriakártyák – referencia: képek + ikonok, négyzetes kártyák */}
-      <section className="pt-12 pb-20 md:pt-16 md:pb-28 bg-[#F0F0F0]">
+      <section className="pt-12 pb-20 md:pt-16 md:pb-28 bg-[#E5E5E5]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-12 text-center">
             <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-3">
@@ -198,7 +198,7 @@ export default function HomePage() {
 
       {/* Kiemelt kategóriák */}
       {featuredCategories.length > 0 && (
-        <section className="py-20 md:py-28 bg-gradient-to-b from-[#F0F0F0] to-gray-50">
+        <section className="py-20 md:py-28 bg-[#E5E5E5]">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 mb-12">
               <div>
@@ -260,7 +260,7 @@ export default function HomePage() {
       )}
 
       {/* Felkapott helyek */}
-      <section className="py-20 md:py-28 bg-[#F0F0F0]">
+      <section className="py-20 md:py-28 bg-[#E5E5E5]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 mb-12">
             <div>
@@ -381,7 +381,7 @@ export default function HomePage() {
 
 
       {/* Térkép és statisztikák */}
-      <section className="py-20 md:py-28 bg-gradient-to-b from-[#F0F0F0] to-gray-50">
+      <section className="py-20 md:py-28 bg-[#E5E5E5]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             {/* Stylized map – Magyarország körvonal (megyék) */}

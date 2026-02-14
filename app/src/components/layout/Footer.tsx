@@ -30,7 +30,7 @@ export function Footer() {
   }
 
   return (
-    <footer className="bg-gradient-to-b from-gray-50 to-gray-100 border-t border-gray-200">
+    <footer className="bg-[#E5E5E5] border-t border-gray-300">
       {/* Newsletter Section */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="bg-gradient-to-r from-[#2D7A4F] to-[#1B5E20] rounded-3xl p-8 md:p-12 shadow-xl shadow-[#2D7A4F]/20">
