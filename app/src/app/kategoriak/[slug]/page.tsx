@@ -508,8 +508,9 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
                       value={filterCity}
                       onChange={setFilterCity}
                       placeholder="Teljes ország"
-                      searchPlaceholder="Keresés város..."
+                      searchPlaceholder="Írj be településnevet..."
                       hasValue={!!filterCity}
+                      allowCustomValue
                     />
                   </div>
 

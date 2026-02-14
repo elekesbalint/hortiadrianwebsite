@@ -17,6 +17,8 @@ type SearchableSelectProps = {
   className?: string
   disabled?: boolean
   hasValue?: boolean
+  /** Ha true, a beírt szöveg használható szűréshez még ha nincs is a listában (pl. Hol? város) */
+  allowCustomValue?: boolean
 }
 
 export function SearchableSelect({
@@ -28,6 +30,7 @@ export function SearchableSelect({
   className = '',
   disabled = false,
   hasValue = false,
+  allowCustomValue = false,
 }: SearchableSelectProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
@@ -38,12 +41,14 @@ export function SearchableSelect({
   const dropdownRef = useRef<HTMLDivElement>(null)
 
   const selectedOption = options.find((opt) => opt.value === value)
-  const displayValue = selectedOption?.label || placeholder
+  const displayValue = selectedOption?.label ?? (allowCustomValue && value ? value : placeholder)
 
   // Szűrt opciók a keresés alapján
   const filteredOptions = options.filter((opt) =>
     opt.label.toLowerCase().includes(searchQuery.toLowerCase())
   )
+  const hasExactMatch = searchQuery.trim() && options.some((opt) => opt.value.toLowerCase() === searchQuery.trim().toLowerCase())
+  const showCustomOption = allowCustomValue && searchQuery.trim() && !hasExactMatch
 
   // Dropdown pozíció számítása: ha nincs elég hely lefelé, akkor felfelé nyíljon meg
   useEffect(() => {
@@ -183,10 +188,16 @@ export function SearchableSelect({
                   className="w-full pl-10 pr-3 py-2 bg-transparent outline-none focus:outline-none text-sm border-0 focus:ring-0"
                   onClick={(e) => e.stopPropagation()}
                   onKeyDown={(e) => {
-                    // Escape kezelése: bezárja a keresőt
                     if (e.key === 'Escape') {
                       setIsSearchOpen(false)
                       setSearchQuery('')
+                    }
+                    if (allowCustomValue && e.key === 'Enter' && searchQuery.trim()) {
+                      e.preventDefault()
+                      onChange(searchQuery.trim())
+                      setIsOpen(false)
+                      setSearchQuery('')
+                      setIsSearchOpen(false)
                     }
                   }}
                 />
@@ -212,12 +223,22 @@ export function SearchableSelect({
               e.stopPropagation()
             }}
           >
-            {filteredOptions.length === 0 ? (
+            {filteredOptions.length === 0 && !showCustomOption ? (
               <div className="px-4 py-8 text-center text-sm text-gray-500">
                 Nincs találat
               </div>
             ) : (
-              filteredOptions.map((option) => (
+              <>
+              {showCustomOption && (
+                <button
+                  type="button"
+                  onClick={() => handleSelect(searchQuery.trim())}
+                  className="w-full px-4 py-2.5 text-left text-sm transition-colors bg-amber-50 hover:bg-amber-100 text-amber-800 border-b border-amber-200"
+                >
+                  Szűrés ezzel: &quot;{searchQuery.trim()}&quot;
+                </button>
+              )}
+              {filteredOptions.map((option) => (
                 <button
                   key={option.value}
                   type="button"
@@ -230,7 +251,8 @@ export function SearchableSelect({
                 >
                   {option.label}
                 </button>
-              ))
+              ))}
+              </>
             )}
           </div>
         </div>
