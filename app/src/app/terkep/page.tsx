@@ -9,6 +9,7 @@ import { Card, CardContent, CardTitle } from '@/components/ui/Card'
 import { MapView, type SearchCircle } from '@/components/map/MapView'
 import { MapPin, List, Filter, Navigation, Star, ChevronDown, Sliders, RotateCcw, X, CircleDot, Calendar, Clock, Users, Route, Tag, Gauge, Award, CheckCircle } from 'lucide-react'
 import { SearchableSelect, type SearchableSelectOption } from '@/components/ui/SearchableSelect'
+import { CityAutocomplete } from '@/components/ui/CityAutocomplete'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 import { getPlaces } from '@/lib/db/places'
 import { getCategories } from '@/lib/db/categories'
@@ -55,19 +56,11 @@ function MapPageContent() {
       filtered = filtered.filter((p) => p.category_id === categoryBySlug.id)
     }
     
-    // "Hol?" szűrés (cím alapú)
-    if (filterHol === 'budapest') {
-      filtered = filtered.filter((p) => 
-        p.address.toLowerCase().includes('budapest')
-      )
-    } else if (filterHol === 'varos') {
-      // Város szűrés - ha van város a címben (nem csak "Budapest")
-      filtered = filtered.filter((p) => {
-        const addr = p.address.toLowerCase()
-        return addr.includes('budapest') || addr.match(/\d{4}\s+\w+/)
-      })
+    // "Hol?" szűrés: cím tartalmazza a kiválasztott településnevet (Google Places alapján)
+    if (filterHol && filterHol.trim()) {
+      const cityQuery = filterHol.trim().toLowerCase()
+      filtered = filtered.filter((p) => p.address.toLowerCase().includes(cityQuery))
     }
-    // "megye" esetén jelenleg nincs specifikus logika
     
     // Szűrők alkalmazása (Évszak, Időszak, Tér, Kivel mész?, Megközelítés)
     const activeFilterSlugs: string[] = []
@@ -337,24 +330,21 @@ function MapPageContent() {
               {/* Szűrő mezők – scrollozható tartalom */}
               <div className="flex-1 overflow-y-auto px-6 py-6">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                {/* Hol? - különleges, cím alapú szűrés */}
+                {/* Hol? – Google Places Autocomplete (csak magyar települések) */}
                 <div className="group">
                   <label className="flex items-center gap-2 text-xs font-bold text-gray-600 uppercase tracking-wider mb-3">
-                    <MapPin className="h-3.5 w-3.5 text-[#2D7A4F]" />
+                    <MapPin className={`h-3.5 w-3.5 ${filterHol ? 'text-[#2D7A4F]' : 'text-gray-400'}`} />
                     Hol?
+                    {filterHol && (
+                      <span className="ml-auto px-2 py-0.5 bg-[#2D7A4F] text-white text-[10px] font-bold rounded-full">
+                        Aktív
+                      </span>
+                    )}
                   </label>
-                  <SearchableSelect
-                    options={[
-                      { value: '', label: 'Teljes ország' },
-                      { value: 'megye', label: 'Megye' },
-                      { value: 'varos', label: 'Város' },
-                      { value: 'budapest', label: 'Budapest' },
-                    ]}
+                  <CityAutocomplete
                     value={filterHol}
                     onChange={setFilterHol}
-                    placeholder="Teljes ország"
-                    searchPlaceholder="Keresés város vagy régió..."
-                    hasValue={!!filterHol}
+                    placeholder="Írj be településnevet (pl. Budapest)…"
                   />
                 </div>
               

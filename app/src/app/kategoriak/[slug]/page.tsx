@@ -469,7 +469,7 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
                     <CityAutocomplete
                       value={filterCity}
                       onChange={setFilterCity}
-                      placeholder="Írj be településnevet (pl. Sióagárd)…"
+                      placeholder="Írj be településnevet (pl. Budapest)…"
                     />
                   </div>
 
