@@ -290,7 +290,7 @@ export default function PlaceDetailPage({ params }: { params: Promise<{ slug: st
                       href={place.priceUrl.startsWith('http') ? place.priceUrl : `https://${place.priceUrl}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center justify-center gap-2 h-11 px-5 text-sm font-semibold rounded-xl border-2 border-[#2D7A4F] text-[#2D7A4F] hover:bg-[#2D7A4F] hover:text-white transition-all"
+                      className="inline-flex items-center justify-center gap-2 h-11 px-5 text-sm font-semibold rounded-xl bg-gradient-to-r from-[#2D7A4F] to-[#236B43] text-white hover:from-[#236B43] hover:to-[#1B5E20] shadow-lg shadow-[#2D7A4F]/25 transition-all"
                     >
                       <Banknote className="h-5 w-5" />
                       Árak

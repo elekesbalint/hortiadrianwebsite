@@ -33,6 +33,9 @@ export const viewport = {
   maximumScale: 5,
 }
 
+// Minden kérésnél friss adat (kategóriák, helyek) – ne cache-eljük a layoutot, különben az admin változtatások (pl. show_in_header) nem jelennek meg frissítésig
+export const dynamic = 'force-dynamic'
+
 export default async function RootLayout({
   children,
 }: {
