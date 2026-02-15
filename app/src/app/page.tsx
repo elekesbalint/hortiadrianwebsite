@@ -6,10 +6,9 @@ import Image from 'next/image'
 import { Button } from '@/components/ui/Button'
 import { Card, CardContent, CardTitle, CardDescription } from '@/components/ui/Card'
 import { MapPin, Utensils, Bed, Star, Heart, Wine, Camera, Bath, Baby, Sparkles, ArrowRight, Landmark, ChevronLeft, ChevronRight, Users, Eye } from 'lucide-react'
-import { useCategoriesContext } from '@/components/providers/CategoriesProvider'
-import { recordStatistic } from '@/lib/db/statistics'
-import { getCategoryIconComponent } from '@/lib/categoryIcons'
 import { AnimatedCounter } from '@/components/ui/AnimatedCounter'
+import { useCategoriesContext } from '@/components/providers/CategoriesProvider'
+import { getCategoryIconComponent } from '@/lib/categoryIcons'
 
 /** Ikon a kategóriához: ha van mentett icon a DB-ben, azt; különben slug alapján (ugyanaz, mint headerben és részletes nézetben). */
 function getCategoryIcon(slug: string, iconFromDb: string | null) {
@@ -297,7 +296,6 @@ export default function HomePage() {
                   key={place.id}
                   ref={(el) => { slideRefs.current[i] = el }}
                   href={`/hely/${place.slug || place.id}`}
-                  onClick={() => recordStatistic('place_click', place.id)}
                   className="flex-shrink-0 w-[min(100%,420px)] sm:w-[min(100%,480px)] lg:w-[520px] snap-center"
                 >
                   <Card hover className="h-full group overflow-hidden">
@@ -380,7 +378,7 @@ export default function HomePage() {
       </section>
 
 
-      {/* Térkép és statisztikák */}
+      {/* Térkép és főoldal statisztikák (adminból szerkeszthető: Főoldal statisztikák) */}
       <section className="py-20 md:py-28 bg-[#E5E5E5]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
@@ -394,8 +392,7 @@ export default function HomePage() {
                 sizes="(max-width: 1024px) 100vw, 50vw"
               />
             </div>
-
-            {/* Statisztikák */}
+            {/* Főoldal statisztika kártyák (site_statistics táblából, adminból szerkeszthető) */}
             <div className="space-y-8">
               <div>
                 <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
@@ -405,9 +402,11 @@ export default function HomePage() {
                   Több ezer partner és százezres megtekintések – fedezd fel Magyarország legjobb helyeit velünk!
                 </p>
               </div>
-
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                {siteStats.map((stat) => {
+                {(siteStats.length > 0 ? siteStats : [
+                  { key: 'page_views', value: 100000, display_label: 'Megtekintés' },
+                  { key: 'partners', value: 2000, display_label: 'Partner' },
+                ]).map((stat) => {
                   const isPartners = stat.key === 'partners'
                   const Icon = isPartners ? Users : Eye
                   return (

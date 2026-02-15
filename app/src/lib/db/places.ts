@@ -433,8 +433,7 @@ export async function deletePlace(id: string): Promise<boolean> {
     console.error('deletePlace: SUPABASE_SERVICE_ROLE_KEY hiányzik')
     return false
   }
-  // Tényleges törlés az adatbázisból (CASCADE miatt automatikusan törlődnek a kapcsolódó rekordok is:
-  // favorites, reviews, place_filters. A statistics táblában a place_id SET NULL lesz.)
+  // Tényleges törlés az adatbázisból (CASCADE miatt automatikusan törlődnek a kapcsolódó rekordok: favorites, reviews, place_filters.)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { error } = await (admin.from('places') as any).delete().eq('id', id)
   if (error) {

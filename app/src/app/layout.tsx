@@ -15,7 +15,6 @@ const fontBrand = Dancing_Script({
 import { Footer } from '@/components/layout/Footer'
 import { CookieConsent } from '@/components/layout/CookieConsent'
 import { AuthProviderWrapper } from '@/components/providers/AuthProviderWrapper'
-import { StatisticsTracker } from '@/components/StatisticsTracker'
 
 export const metadata: Metadata = {
   title: 'Programláz - Fedezd fel Magyarország legjobb helyeit',
@@ -63,7 +62,6 @@ export default async function RootLayout({
             initialFeaturedPlaces={featuredPlaces}
             initialSiteStats={siteStats}
           >
-            <StatisticsTracker />
             <Header />
             <main className="flex-1 min-w-0 w-full">
               {children}

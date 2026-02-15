@@ -9,7 +9,6 @@ import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 import { Card, CardContent, CardTitle } from '@/components/ui/Card'
 import { getFavoritePlaces, removeFavorite } from '@/lib/db/favorites'
 import type { AppPlace } from '@/lib/db/places'
-import { recordStatistic } from '@/lib/db/statistics'
 
 export default function FiokGyujtemenyekPage() {
   const [places, setPlaces] = useState<AppPlace[]>([])
@@ -69,7 +68,7 @@ export default function FiokGyujtemenyekPage() {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {places.map((place) => (
-            <Link key={place.id} href={`/hely/${place.slug || place.id}`} onClick={() => recordStatistic('place_click', place.id)}>
+            <Link key={place.id} href={`/hely/${place.slug || place.id}`}>
               <Card hover className="h-full group relative">
                 <button
                   onClick={(e) => handleRemove(e, place.id)}

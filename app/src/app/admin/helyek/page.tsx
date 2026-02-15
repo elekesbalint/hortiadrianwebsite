@@ -13,7 +13,6 @@ import {
   type AppPlace,
   type PlaceFormInput,
 } from '@/lib/db/places'
-import { importPlacesFromExcel } from '@/lib/db/placeImport'
 import { uploadMenuFile } from '@/lib/db/menuUpload'
 import { uploadPlacePhoto } from '@/lib/db/placePhotoUpload'
 import { getCategories, type AppCategory } from '@/lib/db/categories'
@@ -71,10 +70,6 @@ export default function AdminPlacesPage() {
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null)
   const [filters, setFilters] = useState<AppFilter[]>([])
   const [selectedFilterIds, setSelectedFilterIds] = useState<string[]>([])
-  const [importFile, setImportFile] = useState<File | null>(null)
-  const [importLoading, setImportLoading] = useState(false)
-  const [importResult, setImportResult] = useState<{ imported: number; skipped: number; errors: string[] } | null>(null)
-
   const { isLoaded: isGoogleLoaded } = useJsApiLoader({
     googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '',
     libraries: GOOGLE_MAPS_LIBS,
@@ -300,73 +295,6 @@ export default function AdminPlacesPage() {
           <Plus className="h-4 w-4" />
           Új hely
         </Button>
-      </div>
-
-      {/* Excel import (egyszeri bulk) */}
-      <div className="bg-amber-50/80 border border-amber-200 rounded-xl p-4">
-        <h3 className="text-sm font-semibold text-amber-900 flex items-center gap-2 mb-2">
-          <FileText className="h-4 w-4" />
-          Excel import (egyszeri)
-        </h3>
-        <p className="text-xs text-amber-800 mb-3">
-          Az Excel első sorában legyen <strong>Név</strong> (vagy Name) és opcionálisan <strong>E-mail</strong>. Minden sor = új hely, kategória: Éttermek, cím üres.
-        </p>
-        <form
-          onSubmit={async (e) => {
-            e.preventDefault()
-            if (!importFile) return
-            setImportLoading(true)
-            setImportResult(null)
-            const formData = new FormData()
-            formData.set('file', importFile)
-            const result = await importPlacesFromExcel(formData)
-            setImportLoading(false)
-            if (result.ok) {
-              setImportResult({ imported: result.imported, skipped: result.skipped, errors: result.errors })
-              setImportFile(null)
-              ;(e.target as HTMLFormElement).reset()
-              load()
-            } else {
-              setImportResult({ imported: 0, skipped: 0, errors: [result.error] })
-            }
-          }}
-          className="flex flex-wrap items-end gap-3"
-        >
-          <label className="flex flex-col gap-1">
-            <span className="text-xs text-amber-800">Fájl (.xlsx, .xls)</span>
-            <input
-              type="file"
-              accept=".xlsx,.xls"
-              onChange={(e) => setImportFile(e.target.files?.[0] ?? null)}
-              className="text-sm file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:bg-amber-200 file:text-amber-900 file:font-medium"
-            />
-          </label>
-          <Button
-            type="submit"
-            variant="secondary"
-            disabled={!importFile || importLoading}
-            className="inline-flex items-center gap-2"
-          >
-            {importLoading ? <LoadingSpinner /> : <Upload className="h-4 w-4" />}
-            {importLoading ? 'Importálás…' : 'Importálás'}
-          </Button>
-        </form>
-        {importResult && (
-          <div className="mt-3 text-sm text-amber-900">
-            <strong>Importálva:</strong> {importResult.imported} hely. Kihagyva: {importResult.skipped}.
-            {importResult.errors.length > 0 && (
-              <div className="mt-2 text-amber-800">
-                <strong>Hibák ({importResult.errors.length}):</strong>
-                <ul className="list-disc list-inside mt-1 max-h-24 overflow-y-auto">
-                  {importResult.errors.slice(0, 10).map((err, i) => (
-                    <li key={i}>{err}</li>
-                  ))}
-                  {importResult.errors.length > 10 && <li>… és még {importResult.errors.length - 10} hiba</li>}
-                </ul>
-              </div>
-            )}
-          </div>
-        )}
       </div>
 
       <div className="flex flex-col sm:flex-row gap-3">

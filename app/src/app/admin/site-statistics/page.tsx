@@ -2,200 +2,107 @@
 
 import { useState, useEffect } from 'react'
 import { getSiteStatisticsForAdmin, updateSiteStatistic, type SiteStatistic } from '@/lib/db/siteStatistics'
-import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 import { Button } from '@/components/ui/Button'
-import { Save, Users, Eye } from 'lucide-react'
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
+import { TrendingUp } from 'lucide-react'
 
 export default function SiteStatisticsAdminPage() {
   const [stats, setStats] = useState<SiteStatistic[]>([])
   const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState<Record<string, boolean>>({})
+  const [saving, setSaving] = useState<string | null>(null)
+  const [success, setSuccess] = useState<string | null>(null)
   const [values, setValues] = useState<Record<string, number>>({})
   const [labels, setLabels] = useState<Record<string, string>>({})
-  const [error, setError] = useState<string | null>(null)
-  const [success, setSuccess] = useState<string | null>(null)
 
   useEffect(() => {
-    loadStats()
+    getSiteStatisticsForAdmin().then((data) => {
+      setStats(data)
+      const v: Record<string, number> = {}
+      const l: Record<string, string> = {}
+      data.forEach((s) => {
+        v[s.key] = s.value
+        l[s.key] = s.display_label ?? ''
+      })
+      setValues(v)
+      setLabels(l)
+      setLoading(false)
+    })
   }, [])
 
-  const loadStats = async () => {
-    setLoading(true)
-    setError(null)
-    try {
-      const data = await getSiteStatisticsForAdmin()
-      setStats(data)
-      const initialValues: Record<string, number> = {}
-      const initialLabels: Record<string, string> = {}
-      data.forEach((stat) => {
-        initialValues[stat.key] = stat.value
-        initialLabels[stat.key] = stat.display_label || ''
-      })
-      setValues(initialValues)
-      setLabels(initialLabels)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Hiba történt a statisztikák betöltésekor')
-    } finally {
-      setLoading(false)
-    }
-  }
-
   const handleSave = async (key: string) => {
-    setSaving((prev) => ({ ...prev, [key]: true }))
-    setError(null)
+    setSaving(key)
     setSuccess(null)
-
-    try {
-      const result = await updateSiteStatistic(key, values[key], labels[key] || undefined)
-      if (result.ok) {
-        setSuccess(`A "${key}" statisztika sikeresen frissítve!`)
-        setTimeout(() => setSuccess(null), 3000)
-        await loadStats() // Újratöltjük az adatokat
-      } else {
-        setError(result.error || 'Hiba történt a mentés során')
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Hiba történt a mentés során')
-    } finally {
-      setSaving((prev) => ({ ...prev, [key]: false }))
+    const result = await updateSiteStatistic(key, values[key], labels[key] || undefined)
+    setSaving(null)
+    if (result.ok) {
+      setSuccess(`A "${key === 'partners' ? 'Partner' : 'Megtekintés'}" érték mentve!`)
     }
   }
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
+      <div className="flex items-center justify-center py-12">
         <LoadingSpinner />
       </div>
     )
   }
 
-  const getIcon = (key: string) => {
-    return key === 'partners' ? Users : Eye
-  }
-
-  const getDefaultLabel = (key: string) => {
-    return key === 'partners' ? 'Partner' : 'Megtekintés'
-  }
-
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Főoldal statisztikák</h1>
-        <p className="text-gray-600">
-          Itt szerkesztheted a főoldalon megjelenő statisztikákat (partner száma, megtekintések száma).
+        <h1 className="text-2xl font-bold text-[#1A1A1A] flex items-center gap-2">
+          <TrendingUp className="h-7 w-7 text-[#2D7A4F]" />
+          Főoldal statisztikák
+        </h1>
+        <p className="text-gray-500 mt-1">
+          A főoldal „Csatlakozz közösségünkhöz” szekciójában megjelenő számok (Partner, Megtekintés). A megtekintés általában 100K+, a partner 2K+ formátumban jelenik meg.
         </p>
       </div>
 
-      {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl">
-          {error}
-        </div>
-      )}
-
       {success && (
-        <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-xl">
+        <div className="p-4 bg-green-50 border border-green-200 rounded-xl text-green-800 text-sm">
           {success}
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {stats.map((stat) => {
-          const Icon = getIcon(stat.key)
-          const isSaving = saving[stat.key] || false
-
-          return (
-            <div key={stat.key} className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
-              <div className="flex items-center gap-4 mb-6">
-                <div className="w-12 h-12 rounded-full bg-[#E8F5E9] flex items-center justify-center">
-                  <Icon className="h-6 w-6 text-[#2D7A4F]" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900 capitalize">
-                    {stat.key === 'partners' ? 'Partner' : 'Megtekintés'}
-                  </h3>
-                  <p className="text-sm text-gray-500">Kulcs: {stat.key}</p>
-                </div>
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+        <div className="p-6 space-y-6">
+          {stats.map((stat) => (
+            <div key={stat.key} className="flex flex-col sm:flex-row sm:items-center gap-4 pb-6 border-b border-gray-100 last:border-0 last:pb-0">
+              <div className="flex-1">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  {stat.key === 'partners' ? 'Partner' : 'Megtekintés'} – érték (szám)
+                </label>
+                <input
+                  type="number"
+                  min={0}
+                  value={values[stat.key] ?? 0}
+                  onChange={(e) => setValues((v) => ({ ...v, [stat.key]: parseInt(e.target.value, 10) || 0 }))}
+                  className="w-full max-w-[200px] px-4 py-2 border border-gray-200 rounded-xl focus:border-[#2D7A4F] focus:ring-2 focus:ring-[#2D7A4F]/20"
+                />
               </div>
-
-              <div className="space-y-4">
-                <div>
-                  <label htmlFor={`value-${stat.key}`} className="block text-sm font-medium text-gray-700 mb-2">
-                    Érték
-                  </label>
-                  <input
-                    id={`value-${stat.key}`}
-                    type="number"
-                    min="0"
-                    value={values[stat.key] ?? stat.value}
-                    onChange={(e) =>
-                      setValues((prev) => ({
-                        ...prev,
-                        [stat.key]: parseInt(e.target.value, 10) || 0,
-                      }))
-                    }
-                    className="w-full px-4 py-3 bg-white border-2 border-gray-200 rounded-xl outline-none focus:border-[#2D7A4F] focus:ring-2 focus:ring-[#2D7A4F]/20 transition-all"
-                    disabled={isSaving}
-                  />
-                  <p className="text-xs text-gray-500 mt-1">
-                    Ez az érték jelenik meg a számláló animációban a főoldalon.
-                  </p>
-                </div>
-
-                <div>
-                  <label htmlFor={`label-${stat.key}`} className="block text-sm font-medium text-gray-700 mb-2">
-                    Megjelenítési címke (opcionális)
-                  </label>
-                  <input
-                    id={`label-${stat.key}`}
-                    type="text"
-                    value={labels[stat.key] ?? stat.display_label ?? getDefaultLabel(stat.key)}
-                    onChange={(e) =>
-                      setLabels((prev) => ({
-                        ...prev,
-                        [stat.key]: e.target.value,
-                      }))
-                    }
-                    placeholder={getDefaultLabel(stat.key)}
-                    className="w-full px-4 py-3 bg-white border-2 border-gray-200 rounded-xl outline-none focus:border-[#2D7A4F] focus:ring-2 focus:ring-[#2D7A4F]/20 transition-all"
-                    disabled={isSaving}
-                  />
-                  <p className="text-xs text-gray-500 mt-1">
-                    Ha üres, akkor az alapértelmezett címke jelenik meg.
-                  </p>
-                </div>
-
-                <Button
-                  onClick={() => handleSave(stat.key)}
-                  disabled={isSaving}
-                  className="w-full"
-                  size="lg"
-                >
-                  {isSaving ? (
-                    <>
-                      <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
-                      Mentés...
-                    </>
-                  ) : (
-                    <>
-                      <Save className="h-4 w-4 mr-2" />
-                      Mentés
-                    </>
-                  )}
-                </Button>
+              <div className="flex-1">
+                <label className="block text-sm font-medium text-gray-700 mb-1">Megjelenő címke (opcionális)</label>
+                <input
+                  type="text"
+                  value={labels[stat.key] ?? ''}
+                  onChange={(e) => setLabels((l) => ({ ...l, [stat.key]: e.target.value }))}
+                  placeholder={stat.key === 'partners' ? 'Partner' : 'Megtekintés'}
+                  className="w-full max-w-[200px] px-4 py-2 border border-gray-200 rounded-xl focus:border-[#2D7A4F] focus:ring-2 focus:ring-[#2D7A4F]/20"
+                />
               </div>
+              <Button
+                variant="primary"
+                onClick={() => handleSave(stat.key)}
+                disabled={saving === stat.key}
+                className="self-start"
+              >
+                {saving === stat.key ? <LoadingSpinner /> : 'Mentés'}
+              </Button>
             </div>
-          )
-        })}
-      </div>
-
-      {stats.length === 0 && (
-        <div className="bg-yellow-50 border border-yellow-200 text-yellow-700 px-4 py-3 rounded-xl">
-          <p className="font-medium">Nincsenek statisztikák</p>
-          <p className="text-sm mt-1">
-            Futtasd le az adatbázis migrációt, hogy létrejöjjenek az alapértelmezett statisztikák.
-          </p>
+          ))}
         </div>
-      )}
+      </div>
     </div>
   )
 }

@@ -12,7 +12,6 @@ import { getPlaceBySlug } from '@/lib/db/places'
 import type { AppPlace } from '@/lib/db/places'
 import { getFavoritePlaceIds, addFavorite, removeFavorite } from '@/lib/db/favorites'
 import { getReviewsByPlaceId, addReview, uploadReviewImage, type AppReview } from '@/lib/db/reviews'
-import { recordStatistic } from '@/lib/db/statistics'
 import {
   MapPin, Star, Heart, Share2, Navigation, ChevronLeft, ChevronRight, Image as ImageIcon, FileText, MessageSquare, X, Globe, Mail, Clock, CheckCircle2, CalendarDays, Banknote
 } from 'lucide-react'
@@ -156,7 +155,6 @@ export default function PlaceDetailPage({ params }: { params: Promise<{ slug: st
 
   const handleDirections = () => {
     if (!place) return
-    recordStatistic('direction_click', place.id)
     const url = `https://www.google.com/maps/dir/?api=1&destination=${place.lat},${place.lng}`
     window.open(url, '_blank')
   }
