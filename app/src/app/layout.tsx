@@ -21,7 +21,7 @@ export const metadata: Metadata = {
   description: 'Éttermek, szállások, látnivalók és programok egy helyen, interaktív térképen. Fedezd fel Magyarország legjobb helyeit!',
   keywords: 'éttermek, szállások, látnivalók, programok, Magyarország, térkép, kirándulás, utazás, programláz',
   icons: {
-    icon: '/logo.png',
+    icon: [{ url: '/favicon.ico', type: 'image/x-icon' }, { url: '/logo.png', type: 'image/png' }],
     apple: '/logo.png',
   },
 }
