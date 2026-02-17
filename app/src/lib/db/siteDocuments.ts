@@ -33,8 +33,9 @@ export async function setPartnereinknekPdfUrl(url: string): Promise<{ ok: true }
     updated_at: new Date().toISOString(),
     updated_by: null,
   }
-  // Table may be missing from generated Supabase types in build
-  const { error } = await (admin as { from: (table: string) => { upsert: (v: typeof payload, o: { onConflict: string }) => Promise<{ error: { message: string } | null }> } }).from('site_documents').upsert(payload, { onConflict: 'key' })
+  // Table may be missing from generated Supabase types in build; cast via unknown
+  const table = (admin as unknown as { from: (t: string) => { upsert: (v: typeof payload, o: { onConflict: string }) => Promise<{ error: { message: string } | null }> } }).from('site_documents')
+  const { error } = await table.upsert(payload, { onConflict: 'key' })
   if (error) return { ok: false, error: error.message }
   return { ok: true }
 }
