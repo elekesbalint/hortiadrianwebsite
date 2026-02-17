@@ -61,14 +61,10 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
     e.preventDefault()
     setLoginError('')
     setIsLoading(true)
-    // Ha az email nem tartalmaz @ jelet, hozzáfűzzük a @programlaz.hu-t
-    const loginEmail = email.includes('@') ? email : `${email}@programlaz.hu`
-    console.log('Bejelentkezési kísérlet:', { loginEmail, passwordLength: password.length })
-    const { error } = await supabase.auth.signInWithPassword({ email: loginEmail, password })
+    const { error } = await supabase.auth.signInWithPassword({ email, password })
     setIsLoading(false)
     if (error) {
-      console.error('Bejelentkezési hiba:', error)
-      setLoginError(error.message === 'Invalid login credentials' ? 'Hibás felhasználónév vagy jelszó.' : error.message)
+      setLoginError(error.message === 'Invalid login credentials' ? 'Hibás e-mail vagy jelszó.' : error.message)
       return
     }
   }
@@ -205,28 +201,19 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                 )}
                 <div>
                   <label htmlFor="admin-email" className="block text-sm font-semibold text-[#1A1A1A] mb-2">
-                    Felhasználónév
+                    E-mail
                   </label>
                   <div className="relative">
                     <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                     <input
                       id="admin-email"
-                      name="admin-username"
-                      type="text"
+                      type="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      placeholder="AProgram"
+                      placeholder="admin@programlaz.hu"
                       className={inputClass}
                       required
-                      autoComplete="new-password"
-                      autoCapitalize="off"
-                      autoCorrect="off"
-                      spellCheck="false"
-                      data-form-type="other"
-                      data-lpignore="true"
-                      data-1p-ignore="true"
-                      readOnly
-                      onFocus={(e) => e.target.removeAttribute('readonly')}
+                      autoComplete="email"
                     />
                   </div>
                 </div>
