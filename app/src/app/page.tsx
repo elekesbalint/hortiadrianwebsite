@@ -311,29 +311,29 @@ export default function HomePage() {
         </section>
       )}
 
-      {/* Közelgő események – ugyanolyan carousel, értékelés nélkül */}
-      {upcomingEvents.length > 0 && (
-        <section className="py-20 md:py-28 bg-[#E5E5E5]">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 mb-12">
-              <div>
-                <span className="inline-flex items-center gap-2 bg-yellow-100 text-yellow-700 text-sm font-semibold px-4 py-2 rounded-full mb-4">
-                  <Calendar className="h-4 w-4" />
-                  Közelgő események
-                </span>
-                <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-2">
-                  Közelgő események
-                </h2>
-                <p className="text-lg text-gray-500">
-                  Események naptári sorrendben
-                </p>
-              </div>
-              <Link href="/terkep" className="group flex items-center gap-2 text-[#2D7A4F] font-semibold hover:gap-3 transition-all">
-                Összes megtekintése
-                <ArrowRight className="h-5 w-5" />
-              </Link>
+      {/* Közelgő események – mindig a helyén; ha nincs esemény, üzenet */}
+      <section className="py-20 md:py-28 bg-[#E5E5E5]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 mb-12">
+            <div>
+              <span className="inline-flex items-center gap-2 bg-yellow-100 text-yellow-700 text-sm font-semibold px-4 py-2 rounded-full mb-4">
+                <Calendar className="h-4 w-4" />
+                Közelgő események
+              </span>
+              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-2">
+                Közelgő események
+              </h2>
+              <p className="text-lg text-gray-500">
+                Események naptári sorrendben
+              </p>
             </div>
+            <Link href="/terkep" className="group flex items-center gap-2 text-[#2D7A4F] font-semibold hover:gap-3 transition-all">
+              Összes megtekintése
+              <ArrowRight className="h-5 w-5" />
+            </Link>
+          </div>
 
+          {upcomingEvents.length > 0 ? (
             <div
               className="relative"
               onMouseEnter={() => setEventsPaused(true)}
@@ -411,9 +411,15 @@ export default function HomePage() {
                 ))}
               </div>
             </div>
-          </div>
-        </section>
-      )}
+          ) : (
+            <div className="bg-white/80 rounded-2xl border border-gray-200 p-10 text-center">
+              <Calendar className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+              <p className="text-gray-600 font-medium">Nincs közelgő esemény</p>
+              <p className="text-sm text-gray-500 mt-1">Ha Programok kategóriában adsz meg egy helyet jövőbeli esemény dátummal, az itt fog megjelenni.</p>
+            </div>
+          )}
+        </div>
+      </section>
 
       {/* Népszerű helyek */}
       <section className="py-20 md:py-28 bg-[#E5E5E5]">
