@@ -15,7 +15,8 @@ export async function getSiteDocumentUrl(key: string): Promise<string | null> {
     console.error('[getSiteDocumentUrl]', error)
     return null
   }
-  return data?.url ?? null
+  const row = data as { url: string } | null
+  return row?.url ?? null
 }
 
 /** Partnereinknek oldal PDF URL-je. */
