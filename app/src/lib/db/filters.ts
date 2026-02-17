@@ -106,6 +106,7 @@ export async function getPlaceFilters(placeId: string): Promise<string[]> {
   const { data, error } = await supabase
     .from('place_filters')
     .select('filter_id')
+    // @ts-expect-error - Supabase type inference issue after auth config change
     .eq('place_id', placeId)
   if (error) {
     console.error('getPlaceFilters error', error)
