@@ -373,6 +373,26 @@ export type Database = {
           updated_by?: string | null
         }
       }
+      site_documents: {
+        Row: {
+          key: string
+          url: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          key: string
+          url: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          key?: string
+          url?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+      }
     }
   }
 }

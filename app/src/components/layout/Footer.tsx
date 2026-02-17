@@ -135,6 +135,7 @@ export function Footer() {
             <ul className="space-y-3">
               {[
                 { href: '/rolunk', label: 'Bemutatkozás' },
+                { href: '/partnereinknek', label: 'Partnereinknek' },
                 { href: '/aszf', label: 'ÁSZF' },
                 { href: '/adatvedelem', label: 'Adatvédelem' },
                 { href: '/sugo', label: 'Súgó' },
