@@ -27,15 +27,14 @@ export async function getPartnereinknekPdfUrl(): Promise<string | null> {
 /** Admin: beállítja a Partnereinknek dokumentum URL-jét. */
 export async function setPartnereinknekPdfUrl(url: string): Promise<{ ok: true } | { ok: false; error: string }> {
   const admin = createServerSupabaseClient()
-  const { error } = await admin.from('site_documents').upsert(
-    {
-      key: KEY_PARTNEREINKNEK,
-      url,
-      updated_at: new Date().toISOString(),
-      updated_by: null,
-    },
-    { onConflict: 'key' }
-  )
+  const payload = {
+    key: KEY_PARTNEREINKNEK,
+    url,
+    updated_at: new Date().toISOString(),
+    updated_by: null,
+  }
+  // Table may be missing from generated Supabase types in build
+  const { error } = await (admin as { from: (table: string) => { upsert: (v: typeof payload, o: { onConflict: string }) => Promise<{ error: { message: string } | null }> } }).from('site_documents').upsert(payload, { onConflict: 'key' })
   if (error) return { ok: false, error: error.message }
   return { ok: true }
 }
