@@ -166,7 +166,7 @@ export async function getPlaces(): Promise<AppPlace[]> {
   return places
 }
 
-/** Felkapott helyek a kezdőlaphoz: featured_order szerint, max 12. */
+/** Népszerű helyek a kezdőlaphoz: featured_order szerint, max 12. */
 export async function getFeaturedPlaces(): Promise<AppPlace[]> {
   const { data, error } = await supabase
     .from('places')

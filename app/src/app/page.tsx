@@ -33,7 +33,7 @@ const categoryImages: Record<string, string> = {
 }
 const defaultCategoryImage = 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=600&h=400&fit=crop'
 
-/** Felkapott helyek carousel: ennyi ms után ugrik egyet vízszintesen */
+/** Népszerű helyek carousel: ennyi ms után ugrik egyet vízszintesen */
 const FEATURED_CAROUSEL_INTERVAL_MS = 4500
 
 export default function HomePage() {
@@ -258,7 +258,7 @@ export default function HomePage() {
         </section>
       )}
 
-      {/* Felkapott helyek */}
+      {/* Népszerű helyek */}
       <section className="py-20 md:py-28 bg-[#E5E5E5]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 mb-12">
@@ -268,7 +268,7 @@ export default function HomePage() {
                 Kiemelt helyek
               </span>
               <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-2">
-                Felkapott helyek
+                Népszerű helyek
               </h2>
               <p className="text-lg text-gray-500">
                 A legnépszerűbb helyszínek most
@@ -280,7 +280,7 @@ export default function HomePage() {
             </Link>
           </div>
 
-          {/* Felkapott helyek – lapozható carousel, automatikus vízszintes ugrás + kézi lapozás */}
+          {/* Népszerű helyek – lapozható carousel, automatikus vízszintes ugrás + kézi lapozás */}
           <div
             className="relative"
             onMouseEnter={() => setFeaturedPaused(true)}
