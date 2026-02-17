@@ -415,7 +415,7 @@ export default function HomePage() {
             <div className="bg-white/80 rounded-2xl border border-gray-200 p-10 text-center">
               <Calendar className="h-12 w-12 text-gray-300 mx-auto mb-4" />
               <p className="text-gray-600 font-medium">Nincs közelgő esemény</p>
-              <p className="text-sm text-gray-500 mt-1">Ha Programok kategóriában adsz meg egy helyet jövőbeli esemény dátummal, az itt fog megjelenni.</p>
+              <p className="text-sm text-gray-500 mt-1">Ha Programok vagy Esemény kategóriában adsz meg egy helyet jövőbeli esemény dátummal, az itt fog megjelenni.</p>
             </div>
           )}
         </div>
