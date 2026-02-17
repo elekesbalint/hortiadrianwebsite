@@ -110,6 +110,7 @@ export type Database = {
           is_active: boolean
           featured_order: number | null
           event_date: string | null
+          map_secondary_button: string | null
           created_at: string
           updated_at: string
         }
@@ -145,6 +146,7 @@ export type Database = {
           is_active?: boolean
           featured_order?: number | null
           event_date?: string | null
+          map_secondary_button?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -180,6 +182,7 @@ export type Database = {
           is_active?: boolean
           featured_order?: number | null
           event_date?: string | null
+          map_secondary_button?: string | null
           created_at?: string
           updated_at?: string
         }

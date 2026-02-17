@@ -46,6 +46,7 @@ const defaultForm: PlaceFormInput = {
   tiktok: null,
   email: null,
   eventDate: null,
+  mapSecondaryButton: null,
   openingHours: null,
 }
 
@@ -137,6 +138,7 @@ export default function AdminPlacesPage() {
       tiktok: place.tiktok ?? null,
       email: place.email ?? null,
       eventDate: place.eventDate ?? null,
+      mapSecondaryButton: place.mapSecondaryButton ?? null,
       openingHours: place.openingHours ?? null,
     })
     // Betöltjük a helyhez rendelt szűrőket
@@ -474,6 +476,21 @@ export default function AdminPlacesPage() {
                   </div>
                 ) : null
               })()}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Térképen a Részletek mellett</label>
+                <select
+                  value={form.mapSecondaryButton ?? ''}
+                  onChange={(e) => setForm((f) => ({ ...f, mapSecondaryButton: (e.target.value === 'route' || e.target.value === 'tickets') ? e.target.value : null }))}
+                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl outline-none focus:border-[#2D7A4F]"
+                >
+                  <option value="">Útvonal (alap)</option>
+                  <option value="route">Útvonal</option>
+                  <option value="tickets">Jegyvásárlás</option>
+                </select>
+                <p className="text-xs text-gray-500 mt-1">
+                  A térképes nézetben a hely kártyán: Részletek gomb mindig, a második gomb pedig Útvonal vagy Jegyvásárlás (a Jegyvásárlás a Foglalás / jegy URL mezőre mutat).
+                </p>
+              </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Leírás</label>
                 <textarea

@@ -61,6 +61,9 @@ export type MapPlace = {
   isOpen?: boolean
   isPremium?: boolean
   menuUrl?: string | null
+  /** Térképen a második gomb: 'tickets' = Jegyvásárlás (bookingUrl), egyébként Útvonal */
+  mapSecondaryButton?: 'route' | 'tickets' | null
+  bookingUrl?: string | null
 }
 
 export type SearchCircle = {
@@ -160,7 +163,11 @@ function getInfoWindowContent(place: MapPlace, placeUrl: string): string {
   const distance = place.distance != null
     ? (place.distance < 1 ? `${Math.round(place.distance * 1000)} m` : `${place.distance.toFixed(1)} km`)
     : ''
-  const isRestaurant = (place.category || '').toLowerCase().includes('étterem') || (place.category || '').toLowerCase().includes('gastro')
+  const showTickets = place.mapSecondaryButton === 'tickets' && place.bookingUrl
+  const routeUrl = 'https://www.google.com/maps/dir/?api=1&destination=' + place.lat + ',' + place.lng
+  const secondButton = showTickets
+    ? '<a href="' + place.bookingUrl + '" target="_blank" rel="noopener noreferrer" style="flex:1;display:block;text-align:center;padding:10px 12px;background:#E8F5E9;color:#1B5E20!important;text-decoration:none;border-radius:8px;font-size:13px;font-weight:600;box-sizing:border-box;white-space:nowrap;">Jegyvásárlás</a>'
+    : '<a href="' + routeUrl + '" target="_blank" style="flex:1;display:block;text-align:center;padding:10px 12px;background:#E8F5E9;color:#1B5E20!important;text-decoration:none;border-radius:8px;font-size:13px;font-weight:600;box-sizing:border-box;white-space:nowrap;">Útvonal</a>'
 
   return `
     <div style="font-family:system-ui,sans-serif;width:100%;min-width:300px;max-width:380px;box-sizing:border-box;overflow:hidden;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,0.12);border:2px solid ${borderColor};background:#fff;">
@@ -179,7 +186,7 @@ function getInfoWindowContent(place: MapPlace, placeUrl: string): string {
         </div>
         <div style="display:flex;gap:8px;margin-top:12px;">
           <a href="${placeUrl}" style="flex:1;display:block;text-align:center;padding:10px 12px;background:#2D7A4F;color:#fff!important;text-decoration:none;border-radius:8px;font-size:13px;font-weight:600;box-sizing:border-box;white-space:nowrap;">Részletek</a>
-          ${isRestaurant && place.menuUrl ? '<a href="' + place.menuUrl + '" target="_blank" rel="noopener noreferrer" style="flex:1;display:block;text-align:center;padding:10px 12px;background:#E8F5E9;color:#1B5E20!important;text-decoration:none;border-radius:8px;font-size:13px;font-weight:600;box-sizing:border-box;white-space:nowrap;">Étlap</a>' : isRestaurant ? '' : '<a href="https://www.google.com/maps/dir/?api=1&destination=' + place.lat + ',' + place.lng + '" target="_blank" style="flex:1;display:block;text-align:center;padding:10px 12px;background:#E8F5E9;color:#1B5E20!important;text-decoration:none;border-radius:8px;font-size:13px;font-weight:600;box-sizing:border-box;white-space:nowrap;">Útvonal</a>'}
+          ${secondButton}
         </div>
       </div>
     </div>

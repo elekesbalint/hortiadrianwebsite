@@ -692,6 +692,8 @@ function MapPageContent() {
                   isOpen: p.isOpen,
                   isPremium: p.isPremium,
                   menuUrl: p.menuUrl || null,
+                  mapSecondaryButton: p.mapSecondaryButton ?? null,
+                  bookingUrl: p.bookingUrl ?? null,
                 }))}
                 userLocation={userLocation}
                 searchCircle={activeSearchCircle}

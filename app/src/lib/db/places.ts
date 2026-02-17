@@ -45,6 +45,8 @@ export type AppPlace = {
   email?: string | null
   featured_order?: number | null
   eventDate?: string | null
+  /** Térképen a Részletek mellett: 'route' = Útvonal, 'tickets' = Jegyvásárlás (bookingUrl). */
+  mapSecondaryButton?: 'route' | 'tickets' | null
   openingHours?: Record<string, string> | null
   distance?: number
   /** Helyhez rendelt szűrők ID-k */
@@ -121,6 +123,7 @@ function rowToAppPlace(row: PlaceRowWithCategory): AppPlace {
     email: row.email ?? null,
     featured_order: (row as PlaceRowWithCategory & { featured_order?: number | null }).featured_order ?? null,
     eventDate: (row as PlaceRowWithCategory & { event_date?: string | null }).event_date ?? null,
+    mapSecondaryButton: (row as PlaceRowWithCategory & { map_secondary_button?: string | null }).map_secondary_button === 'tickets' ? 'tickets' : (row as PlaceRowWithCategory & { map_secondary_button?: string | null }).map_secondary_button === 'route' ? 'route' : null,
     openingHours: (row as PlaceRowWithCategory & { opening_hours?: Record<string, string> | null }).opening_hours ?? null,
   }
 }
@@ -334,6 +337,8 @@ export type PlaceFormInput = {
   tiktok?: string | null
   email?: string | null
   eventDate?: string | null
+  /** Térképen a Részletek mellett: 'route' = Útvonal, 'tickets' = Jegyvásárlás. */
+  mapSecondaryButton?: 'route' | 'tickets' | null
   openingHours?: Record<string, string> | null
 }
 
@@ -370,6 +375,7 @@ export async function insertPlace(input: PlaceFormInput): Promise<{ id: string }
     features: [],
     is_active: true,
     event_date: input.eventDate || null,
+    map_secondary_button: input.mapSecondaryButton ?? null,
   }
   const rowWithFeatured = {
     ...baseRow,
@@ -422,6 +428,7 @@ export async function updatePlace(id: string, input: PlaceFormInput): Promise<{ 
     tiktok: input.tiktok ?? null,
     email: input.email ?? null,
     event_date: input.eventDate || null,
+    map_secondary_button: input.mapSecondaryButton ?? null,
   }
   const updateWithFeatured = {
     ...baseUpdate,
