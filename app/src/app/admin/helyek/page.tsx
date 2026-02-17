@@ -453,21 +453,27 @@ export default function AdminPlacesPage() {
                   </select>
                 </div>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Esemény dátuma / Közelgő esemény</label>
-                <input
-                  type="datetime-local"
-                  value={form.eventDate ? new Date(form.eventDate).toISOString().slice(0, 16) : ''}
-                  onChange={(e) => {
-                    const value = e.target.value
-                    setForm((f) => ({ ...f, eventDate: value ? new Date(value).toISOString() : null }))
-                  }}
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl outline-none focus:border-[#2D7A4F]"
-                />
-                <p className="text-xs text-gray-500 mt-1">
-                  Ha megadsz egy jövőbeli dátumot, a hely megjelenik a főoldal „Közelgő események” szekciójában. Üresen hagyva nem jelenik meg ott.
-                </p>
-              </div>
+              {(() => {
+                const selectedCategory = categories.find(c => c.id === form.category_id)
+                const isProgram = selectedCategory?.slug === 'programok'
+                return isProgram ? (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Esemény dátuma/időpontja</label>
+                    <input
+                      type="datetime-local"
+                      value={form.eventDate ? new Date(form.eventDate).toISOString().slice(0, 16) : ''}
+                      onChange={(e) => {
+                        const value = e.target.value
+                        setForm((f) => ({ ...f, eventDate: value ? new Date(value).toISOString() : null }))
+                      }}
+                      className="w-full px-4 py-2.5 border border-gray-200 rounded-xl outline-none focus:border-[#2D7A4F]"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      Csak programokhoz: az esemény dátumát/időpontját itt lehet megadni.
+                    </p>
+                  </div>
+                ) : null
+              })()}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Leírás</label>
                 <textarea
