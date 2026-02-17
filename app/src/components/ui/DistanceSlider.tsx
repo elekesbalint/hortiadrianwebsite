@@ -37,17 +37,8 @@ export function DistanceSlider({ value, onChange, max = 50, step = 1, className 
 
   return (
     <div className={`space-y-3 ${className}`}>
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Gauge className={`h-3.5 w-3.5 ${hasValue ? 'text-[#2D7A4F]' : 'text-gray-400'}`} />
-          <span className="text-xs font-bold text-gray-600 uppercase tracking-wider">Távolság</span>
-          {hasValue && (
-            <span className="ml-auto px-2 py-0.5 bg-[#2D7A4F] text-white text-[10px] font-bold rounded-full">
-              Aktív
-            </span>
-          )}
-        </div>
-        {hasValue && (
+      {hasValue && (
+        <div className="flex items-center justify-end">
           <button
             onClick={handleClear}
             className="text-xs text-[#2D7A4F] hover:text-[#1B5E20] font-medium"
@@ -55,8 +46,8 @@ export function DistanceSlider({ value, onChange, max = 50, step = 1, className 
           >
             Törlés
           </button>
-        )}
-      </div>
+        </div>
+      )}
 
       <div className="relative">
         <input

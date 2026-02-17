@@ -71,8 +71,8 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
   const [filterMaxDistance, setFilterMaxDistance] = useState<number | null>(null)
   const [filterOpenOnly, setFilterOpenOnly] = useState(false)
   const [filterSortBy, setFilterSortBy] = useState<'distance' | 'rating' | 'name'>('distance')
-  // Dinamikus szűrők (kategória-specifikus)
-  const [activeFilters, setActiveFilters] = useState<Record<string, string>>({})
+  // Dinamikus szűrők (kategória-specifikus) - több opció kijelöléséhez
+  const [activeFilters, setActiveFilters] = useState<Record<string, string[]>>({})
   const [filterEventDateFrom, setFilterEventDateFrom] = useState<string>('')
   const [filterEventDateTo, setFilterEventDateTo] = useState<string>('')
   const [filterQuickDate, setFilterQuickDate] = useState<string>('')
@@ -177,8 +177,8 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
       })
     }
     
-    // Dinamikus szűrők (kategória-specifikus)
-    const activeFilterSlugs = Object.values(activeFilters).filter(Boolean)
+    // Dinamikus szűrők (kategória-specifikus) - több opció kijelöléséhez
+    const activeFilterSlugs = Object.values(activeFilters).flat().filter(Boolean)
     
     if (activeFilterSlugs.length > 0) {
       // Szűrő slug-okból filter ID-kat keresünk
@@ -247,7 +247,7 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
     setFilterQuickDate('')
   }
 
-  const hasActiveFilters = filterCity || filterPriceLevel || filterMaxDistance !== null || filterOpenOnly || filterSortBy !== 'distance' || Object.keys(activeFilters).length > 0 || filterEventDateFrom || filterEventDateTo
+  const hasActiveFilters = filterCity || filterPriceLevel || filterMaxDistance !== null || filterOpenOnly || filterSortBy !== 'distance' || Object.values(activeFilters).some((arr) => arr.length > 0) || filterEventDateFrom || filterEventDateTo
 
   const toggleFavorite = async (e: React.MouseEvent, id: string) => {
     e.preventDefault()
@@ -493,8 +493,8 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
                     .filter(([groupSlug]) => allowedGroups.includes(groupSlug))
                     .map(([groupSlug, items]) => {
                       const groupName = items[0]?.group_name || groupSlug
-                      const currentValue = activeFilters[groupSlug] || ''
-                      const hasValue = !!currentValue
+                      const currentValues = activeFilters[groupSlug] || []
+                      const hasValue = currentValues.length > 0
 
                       // Ikonok a szűrő típusokhoz
                       const getIcon = () => {
@@ -527,7 +527,7 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
                             {items
                               .sort((a, b) => a.order - b.order)
                               .map((filter) => {
-                                const isSelected = currentValue === filter.slug
+                                const isSelected = currentValues.includes(filter.slug)
                                 // Ikonok az egyes szűrő opciókhoz (ha szükséges)
                                 const getOptionIcon = () => {
                                   // Itt lehetne specifikus ikonokat adni az opciókhoz
@@ -542,10 +542,16 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
                                     icon={OptionIcon || undefined}
                                     isSelected={isSelected}
                                     onClick={() => {
-                                      setActiveFilters((prev) => ({
-                                        ...prev,
-                                        [groupSlug]: isSelected ? '' : filter.slug,
-                                      }))
+                                      setActiveFilters((prev) => {
+                                        const current = prev[groupSlug] || []
+                                        const newValues = isSelected
+                                          ? current.filter((v) => v !== filter.slug)
+                                          : [...current, filter.slug]
+                                        return {
+                                          ...prev,
+                                          [groupSlug]: newValues,
+                                        }
+                                      })
                                     }}
                                   />
                                 )
