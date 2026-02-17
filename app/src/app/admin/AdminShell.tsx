@@ -61,10 +61,12 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
     e.preventDefault()
     setLoginError('')
     setIsLoading(true)
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
+    // Ha az email nem tartalmaz @ jelet, hozzáfűzzük a @programlaz.hu-t
+    const loginEmail = email.includes('@') ? email : `${email}@programlaz.hu`
+    const { error } = await supabase.auth.signInWithPassword({ email: loginEmail, password })
     setIsLoading(false)
     if (error) {
-      setLoginError(error.message === 'Invalid login credentials' ? 'Hibás e-mail vagy jelszó.' : error.message)
+      setLoginError(error.message === 'Invalid login credentials' ? 'Hibás felhasználónév vagy jelszó.' : error.message)
       return
     }
   }
@@ -201,19 +203,19 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                 )}
                 <div>
                   <label htmlFor="admin-email" className="block text-sm font-semibold text-[#1A1A1A] mb-2">
-                    E-mail
+                    Felhasználónév
                   </label>
                   <div className="relative">
                     <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                     <input
                       id="admin-email"
-                      type="email"
+                      type="text"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      placeholder="admin@programlaz.hu"
+                      placeholder="AProgram"
                       className={inputClass}
                       required
-                      autoComplete="email"
+                      autoComplete="username"
                     />
                   </div>
                 </div>
