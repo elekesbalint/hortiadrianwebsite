@@ -8,9 +8,9 @@ import { usePathname } from 'next/navigation'
 import { Button } from '@/components/ui/Button'
 import { Card, CardContent, CardTitle } from '@/components/ui/Card'
 import { MapPin, Star, Heart, ChevronDown, Map, Sliders, RotateCcw, Search, Utensils, Home, Landmark, Calendar, Clock, Users, Route, Tag, Gauge, CheckCircle, X } from 'lucide-react'
-import { SearchableSelect, type SearchableSelectOption } from '@/components/ui/SearchableSelect'
 import { CityAutocomplete } from '@/components/ui/CityAutocomplete'
 import { DistanceSlider } from '@/components/ui/DistanceSlider'
+import { FilterChip } from '@/components/ui/FilterChip'
 import { Accordion } from '@/components/ui/Accordion'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 import { getCategoryIconComponent } from '@/lib/categoryIcons'
@@ -76,6 +76,7 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
   const [activeFilters, setActiveFilters] = useState<Record<string, string>>({})
   const [filterEventDateFrom, setFilterEventDateFrom] = useState<string>('')
   const [filterEventDateTo, setFilterEventDateTo] = useState<string>('')
+  const [filterQuickDate, setFilterQuickDate] = useState<string>('')
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null)
 
   useEffect(() => {
@@ -244,6 +245,7 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
     setActiveFilters({})
     setFilterEventDateFrom('')
     setFilterEventDateTo('')
+    setFilterQuickDate('')
   }
 
   const hasActiveFilters = filterCity || filterPriceLevel || filterMaxDistance !== null || filterOpenOnly || filterSortBy !== 'distance' || Object.keys(activeFilters).length > 0 || filterEventDateFrom || filterEventDateTo
@@ -505,27 +507,34 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
                           hasActiveFilter={hasValue}
                           defaultOpen={hasValue}
                         >
-                          <SearchableSelect
-                            options={[
-                              { value: '', label: 'Mind' },
-                              ...items
-                                .sort((a, b) => a.order - b.order)
-                                .map((filter) => ({
-                                  value: filter.slug,
-                                  label: filter.name,
-                                })),
-                            ]}
-                            value={currentValue}
-                            onChange={(val) => {
-                              setActiveFilters((prev) => ({
-                                ...prev,
-                                [groupSlug]: val,
-                              }))
-                            }}
-                            placeholder="Mind"
-                            searchPlaceholder={`Keresés ${groupName.toLowerCase()}...`}
-                            hasValue={hasValue}
-                          />
+                          <div className="flex flex-wrap gap-2">
+                            {items
+                              .sort((a, b) => a.order - b.order)
+                              .map((filter) => {
+                                const isSelected = currentValue === filter.slug
+                                // Ikonok az egyes szűrő opciókhoz (ha szükséges)
+                                const getOptionIcon = () => {
+                                  // Itt lehetne specifikus ikonokat adni az opciókhoz
+                                  return null
+                                }
+                                const OptionIcon = getOptionIcon()
+                                
+                                return (
+                                  <FilterChip
+                                    key={filter.id}
+                                    label={filter.name}
+                                    icon={OptionIcon || undefined}
+                                    isSelected={isSelected}
+                                    onClick={() => {
+                                      setActiveFilters((prev) => ({
+                                        ...prev,
+                                        [groupSlug]: isSelected ? '' : filter.slug,
+                                      }))
+                                    }}
+                                  />
+                                )
+                              })}
+                          </div>
                         </Accordion>
                       )
                     })
@@ -534,31 +543,91 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
                 {/* Esemény dátuma (csak programokhoz) */}
                 {slug === 'programok' && (
                   <Accordion
-                    title="Esemény dátuma"
+                    title="Mikor?"
                     icon={Calendar}
-                    hasActiveFilter={!!(filterEventDateFrom || filterEventDateTo)}
-                    defaultOpen={!!(filterEventDateFrom || filterEventDateTo)}
+                    hasActiveFilter={!!(filterEventDateFrom || filterEventDateTo || filterQuickDate)}
+                    defaultOpen={!!(filterEventDateFrom || filterEventDateTo || filterQuickDate)}
                   >
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <label className="block text-xs text-gray-500 mb-1.5">Tól</label>
-                        <input
-                          type="date"
-                          value={filterEventDateFrom}
-                          onChange={(e) => setFilterEventDateFrom(e.target.value)}
-                          max={filterEventDateTo || undefined}
-                          className="w-full px-4 py-3 bg-white border-2 border-gray-200 rounded-xl outline-none transition-all text-sm font-medium appearance-none cursor-pointer hover:shadow-md focus:border-[#2D7A4F] focus:ring-[#2D7A4F]/10"
-                        />
+                    <div className="space-y-4">
+                      {/* Előre definiált dátum opciók */}
+                      <div className="flex flex-wrap gap-2">
+                        {[
+                          { value: 'today', label: 'Ma', icon: Calendar },
+                          { value: 'tomorrow', label: 'Holnap', icon: Calendar },
+                          { value: 'weekend', label: 'Hétvégén', icon: Calendar },
+                          { value: 'thisweek', label: 'Ezen a héten', icon: Calendar },
+                        ].map((option) => {
+                          const OptionIcon = option.icon
+                          return (
+                            <FilterChip
+                              key={option.value}
+                              label={option.label}
+                              icon={OptionIcon}
+                              isSelected={filterQuickDate === option.value}
+                              onClick={() => {
+                                const today = new Date()
+                                today.setHours(0, 0, 0, 0)
+                                
+                                if (filterQuickDate === option.value) {
+                                  setFilterQuickDate('')
+                                  setFilterEventDateFrom('')
+                                  setFilterEventDateTo('')
+                                } else {
+                                  setFilterQuickDate(option.value)
+                                  
+                                  if (option.value === 'today') {
+                                    const dateStr = today.toISOString().split('T')[0]
+                                    setFilterEventDateFrom(dateStr)
+                                    setFilterEventDateTo(dateStr)
+                                  } else if (option.value === 'tomorrow') {
+                                    const tomorrow = new Date(today)
+                                    tomorrow.setDate(tomorrow.getDate() + 1)
+                                    const dateStr = tomorrow.toISOString().split('T')[0]
+                                    setFilterEventDateFrom(dateStr)
+                                    setFilterEventDateTo(dateStr)
+                                  } else if (option.value === 'weekend') {
+                                    const saturday = new Date(today)
+                                    const dayOfWeek = saturday.getDay()
+                                    const daysUntilSaturday = (6 - dayOfWeek + 7) % 7 || 7
+                                    saturday.setDate(saturday.getDate() + daysUntilSaturday)
+                                    const sunday = new Date(saturday)
+                                    sunday.setDate(sunday.getDate() + 1)
+                                    setFilterEventDateFrom(saturday.toISOString().split('T')[0])
+                                    setFilterEventDateTo(sunday.toISOString().split('T')[0])
+                                  } else if (option.value === 'thisweek') {
+                                    const monday = new Date(today)
+                                    const dayOfWeek = monday.getDay()
+                                    const diff = monday.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1)
+                                    monday.setDate(diff)
+                                    const sunday = new Date(monday)
+                                    sunday.setDate(sunday.getDate() + 6)
+                                    setFilterEventDateFrom(monday.toISOString().split('T')[0])
+                                    setFilterEventDateTo(sunday.toISOString().split('T')[0])
+                                  }
+                                }
+                              }}
+                            />
+                          )
+                        })}
                       </div>
-                      <div>
-                        <label className="block text-xs text-gray-500 mb-1.5">Ig</label>
-                        <input
-                          type="date"
-                          value={filterEventDateTo}
-                          onChange={(e) => setFilterEventDateTo(e.target.value)}
-                          min={filterEventDateFrom || undefined}
-                          className="w-full px-4 py-3 bg-white border-2 border-gray-200 rounded-xl outline-none transition-all text-sm font-medium appearance-none cursor-pointer hover:shadow-md focus:border-[#2D7A4F] focus:ring-[#2D7A4F]/10"
-                        />
+                      
+                      {/* Dátum választó */}
+                      <div className="relative">
+                        <label className="block text-xs text-gray-500 mb-1.5">Dátum kiválasztása</label>
+                        <div className="relative">
+                          <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                          <input
+                            type="date"
+                            value={filterEventDateFrom}
+                            onChange={(e) => {
+                              setFilterEventDateFrom(e.target.value)
+                              setFilterQuickDate('')
+                            }}
+                            max={filterEventDateTo || undefined}
+                            className="w-full pl-12 pr-4 py-3 bg-white border-2 border-gray-200 rounded-xl outline-none transition-all text-sm font-medium appearance-none cursor-pointer hover:shadow-md focus:border-[#2D7A4F] focus:ring-[#2D7A4F]/10"
+                          />
+                          <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+                        </div>
                       </div>
                     </div>
                   </Accordion>
@@ -571,23 +640,20 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
                   hasActiveFilter={!!filterPriceLevel}
                   defaultOpen={!!filterPriceLevel}
                 >
-                  <div className="relative">
-                    <select
-                      value={filterPriceLevel}
-                      onChange={(e) => setFilterPriceLevel(e.target.value)}
-                      className={`w-full px-4 py-3 pr-10 bg-white border-2 rounded-xl outline-none focus:ring-4 transition-all text-sm font-medium appearance-none cursor-pointer hover:shadow-md ${
-                        filterPriceLevel 
-                          ? 'border-[#2D7A4F] text-[#1B5E20] focus:border-[#2D7A4F] focus:ring-[#2D7A4F]/10' 
-                          : 'border-gray-200 text-gray-900 focus:border-[#2D7A4F] focus:ring-[#2D7A4F]/10'
-                      }`}
-                    >
-                      <option value="">Mind</option>
-                      <option value="1">$</option>
-                      <option value="2">$$</option>
-                      <option value="3">$$$</option>
-                      <option value="4">$$$$</option>
-                    </select>
-                    <ChevronDown className={`absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 pointer-events-none transition-colors ${filterPriceLevel ? 'text-[#2D7A4F]' : 'text-gray-400'}`} />
+                  <div className="flex flex-wrap gap-2">
+                    {[
+                      { value: '1', label: '$' },
+                      { value: '2', label: '$$' },
+                      { value: '3', label: '$$$' },
+                      { value: '4', label: '$$$$' },
+                    ].map((option) => (
+                      <FilterChip
+                        key={option.value}
+                        label={option.label}
+                        isSelected={filterPriceLevel === option.value}
+                        onClick={() => setFilterPriceLevel(filterPriceLevel === option.value ? '' : option.value)}
+                      />
+                    ))}
                   </div>
                 </Accordion>
 
