@@ -63,9 +63,11 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
     setIsLoading(true)
     // Ha az email nem tartalmaz @ jelet, hozzáfűzzük a @programlaz.hu-t
     const loginEmail = email.includes('@') ? email : `${email}@programlaz.hu`
+    console.log('Bejelentkezési kísérlet:', { loginEmail, passwordLength: password.length })
     const { error } = await supabase.auth.signInWithPassword({ email: loginEmail, password })
     setIsLoading(false)
     if (error) {
+      console.error('Bejelentkezési hiba:', error)
       setLoginError(error.message === 'Invalid login credentials' ? 'Hibás felhasználónév vagy jelszó.' : error.message)
       return
     }
