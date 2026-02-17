@@ -128,11 +128,15 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
     const startEnroll = () => {
       if (cancelled) return
       supabase.auth.mfa
-        .enroll({ factorType: 'totp', friendlyName: 'Admin' })
+        .enroll({ 
+          factorType: 'totp', 
+          friendlyName: 'Admin',
+        })
         .then(({ data, error }) => {
           if (cancelled) return
           if (error) {
-            setMfaError(error.message)
+            console.error('MFA enroll error:', error)
+            setMfaError(error.message || 'Hiba történt a 2FA beállítás során.')
             setMfaState('enroll')
             return
           }
@@ -147,7 +151,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
         })
         .catch((err) => {
           if (cancelled) return
-          console.error('MFA enroll error:', err)
+          console.error('MFA enroll exception:', err)
           setMfaError(err.message || 'Hiba történt a 2FA beállítás során.')
           setMfaState('enroll')
         })
