@@ -451,6 +451,9 @@ function MapPageContent() {
                       latnivalok: ['program-tipusa', 'kinek-ajanlott', 'megkozelithetoseg'],
                       paroknak: ['paroknak'],
                       'esos-napra': ['esos-napra'],
+                      esos_napra: ['esos-napra'],
+                      esosnapra: ['esos-napra'],
+                      'esos napra': ['esos-napra'],
                       hetvegere: ['hetvegere'],
                     }
 

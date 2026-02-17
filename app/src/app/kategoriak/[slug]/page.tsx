@@ -477,9 +477,12 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
                     ettermek: ['konyha-tipusa', 'etkezesi-igenyek'],
                     programok: ['hangulat', 'evszak', 'idoszak', 'kivel-mesz', 'ter'],
                     latnivalok: ['program-tipusa', 'kinek-ajanlott', 'megkozelithetoseg', 'evszak', 'kivel-mesz', 'hangulat', 'ter'],
-                    // Kiemelt kategóriák (főoldal)
+                    // Kiemelt kategóriák (főoldal) – több slug variáns az "Esős napra" kategóriához
                     paroknak: ['paroknak'],
                     'esos-napra': ['esos-napra'],
+                    esos_napra: ['esos-napra'],
+                    esosnapra: ['esos-napra'],
+                    'esos napra': ['esos-napra'],
                     hetvegere: ['hetvegere'],
                   }
 
