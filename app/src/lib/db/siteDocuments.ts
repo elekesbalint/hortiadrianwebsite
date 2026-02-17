@@ -39,3 +39,13 @@ export async function setPartnereinknekPdfUrl(url: string): Promise<{ ok: true }
   if (error) return { ok: false, error: error.message }
   return { ok: true }
 }
+
+/** Admin: eltávolítja a Partnereinknek dokumentumot (a nyilvános oldal nem fog PDF-et mutatni). */
+export async function deletePartnereinknekPdf(): Promise<{ ok: true } | { ok: false; error: string }> {
+  const admin = createServerSupabaseClient()
+  type DeleteBuilder = { eq: (col: string, val: string) => Promise<{ error: { message: string } | null }> }
+  const table = (admin as unknown as { from: (t: string) => { delete: () => DeleteBuilder } }).from('site_documents')
+  const { error } = await table.delete().eq('key', KEY_PARTNEREINKNEK)
+  if (error) return { ok: false, error: error.message }
+  return { ok: true }
+}

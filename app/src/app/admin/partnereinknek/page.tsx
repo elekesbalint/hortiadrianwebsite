@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { getPartnereinknekPdfUrl, setPartnereinknekPdfUrl } from '@/lib/db/siteDocuments'
+import { getPartnereinknekPdfUrl, setPartnereinknekPdfUrl, deletePartnereinknekPdf } from '@/lib/db/siteDocuments'
 import { uploadPartnereinknekPdf } from '@/lib/db/documentUpload'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 import { FileText } from 'lucide-react'
@@ -10,6 +10,7 @@ export default function PartnereinknekAdminPage() {
   const [currentUrl, setCurrentUrl] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [uploading, setUploading] = useState(false)
+  const [deleting, setDeleting] = useState(false)
   const [success, setSuccess] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -49,6 +50,21 @@ export default function PartnereinknekAdminPage() {
     }
   }
 
+  const handleDelete = async () => {
+    if (!currentUrl || !confirm('Biztosan eltávolítod a Partnereinknek PDF-et? A nyilvános oldal ezután nem fog dokumentumot mutatni.')) return
+    setError(null)
+    setSuccess(null)
+    setDeleting(true)
+    const result = await deletePartnereinknekPdf()
+    setDeleting(false)
+    if (result.ok) {
+      setCurrentUrl(null)
+      setSuccess('A Partnereinknek PDF eltávolítva.')
+    } else {
+      setError(result.error)
+    }
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -83,16 +99,26 @@ export default function PartnereinknekAdminPage() {
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
         <div className="p-6 space-y-6">
           {currentUrl && (
-            <div>
-              <p className="text-sm font-medium text-gray-700 mb-1">Jelenlegi dokumentum</p>
-              <a
-                href={currentUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-[#2D7A4F] hover:underline"
+            <div className="flex flex-wrap items-center gap-3">
+              <div>
+                <p className="text-sm font-medium text-gray-700 mb-1">Jelenlegi dokumentum</p>
+                <a
+                  href={currentUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[#2D7A4F] hover:underline"
+                >
+                  PDF megnyitása új lapon
+                </a>
+              </div>
+              <button
+                type="button"
+                onClick={handleDelete}
+                disabled={deleting}
+                className="text-sm px-4 py-2 text-red-600 hover:bg-red-50 border border-red-200 rounded-xl font-medium disabled:opacity-50"
               >
-                PDF megnyitása új lapon
-              </a>
+                {deleting ? <LoadingSpinner /> : 'PDF törlése'}
+              </button>
             </div>
           )}
           <div>
