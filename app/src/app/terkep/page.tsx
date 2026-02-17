@@ -36,6 +36,10 @@ function MapPageContent() {
   const [filterSortBy, setFilterSortBy] = useState<'distance' | 'rating' | 'name'>('distance')
   // Dinamikus szűrők (kategória-specifikus)
   const [activeFilters, setActiveFilters] = useState<Record<string, string>>({})
+  const [searchQuery, setSearchQuery] = useState('')
+  const [viewMode, setViewMode] = useState<'map' | 'list'>('map')
+  const [isFilterOpen, setIsFilterOpen] = useState(false)
+  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null)
 
   useEffect(() => {
     Promise.all([getPlaces(), getCategories(), getFilters()]).then(([pls, cats, filts]) => {
@@ -124,11 +128,6 @@ function MapPageContent() {
     
     return filtered
   }, [placesAll, searchQuery, kategoriaSlug, filterCategory, categories, filters, filterHol, filterMaxDistance, filterOpenOnly, activeFilters, userLocation])
-
-  const [viewMode, setViewMode] = useState<'map' | 'list'>('map')
-  const [isFilterOpen, setIsFilterOpen] = useState(false)
-  const [searchQuery, setSearchQuery] = useState('')
-  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null)
   const [locationMessage, setLocationMessage] = useState<string | null>(null)
   const [locationLoading, setLocationLoading] = useState(false)
   const [circleCenterMode, setCircleCenterMode] = useState(false)
