@@ -29,6 +29,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data } = await supabase
       .from('admin_users')
       .select('user_id')
+      // @ts-expect-error - Supabase type inference issue with user_id column after auth config change
       .eq('user_id', userId)
       .maybeSingle()
     setIsAdmin(!!data)

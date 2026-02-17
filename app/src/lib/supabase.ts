@@ -12,7 +12,12 @@ if (!supabaseUrl || !supabaseAnonKey) {
   )
 }
 
-export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey)
+export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    redirectTo: typeof window !== 'undefined' ? window.location.origin : undefined,
+    flowType: 'pkce',
+  },
+})
 
 // Server-side client with service role (for admin operations)
 export const createServerSupabaseClient = () => {
