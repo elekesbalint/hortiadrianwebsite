@@ -2,6 +2,7 @@
 
 import { supabase, createServerSupabaseClient } from '@/lib/supabase'
 import type { Database } from '@/types/database'
+import { isPlaceOpenNow } from '@/lib/utils'
 
 /** Admin írásokhoz (RLS kihagyása); hiányzó key esetén null. */
 function getAdminClient() {
@@ -138,8 +139,14 @@ export async function getPlaces(): Promise<AppPlace[]> {
     console.error('getPlaces error', error)
     return []
   }
-  const places = (data ?? []).map((r) => rowToAppPlace(r as unknown as PlaceRowWithCategory))
-  
+  const places = (data ?? []).map((r) => {
+    const p = rowToAppPlace(r as unknown as PlaceRowWithCategory)
+    if (p.openingHours && Object.keys(p.openingHours).length > 0) {
+      p.isOpen = isPlaceOpenNow(p.openingHours, p.isOpen)
+    }
+    return p
+  })
+
   // Helyekhez rendelt szűrők betöltése
   if (places.length > 0) {
     const placeIds = places.map((p) => p.id)
@@ -184,7 +191,13 @@ export async function getUpcomingEvents(): Promise<AppPlace[]> {
     console.error('getUpcomingEvents error', error)
     return []
   }
-  return (data ?? []).map((r) => rowToAppPlace(r as unknown as PlaceRowWithCategory))
+  return (data ?? []).map((r) => {
+    const p = rowToAppPlace(r as unknown as PlaceRowWithCategory)
+    if (p.openingHours && Object.keys(p.openingHours).length > 0) {
+      p.isOpen = isPlaceOpenNow(p.openingHours, p.isOpen)
+    }
+    return p
+  })
 }
 
 /** Népszerű helyek a kezdőlaphoz: featured_order szerint, max 12. */
@@ -200,8 +213,14 @@ export async function getFeaturedPlaces(): Promise<AppPlace[]> {
     console.error('getFeaturedPlaces error', error)
     return []
   }
-  const places = (data ?? []).map((r) => rowToAppPlace(r as unknown as PlaceRowWithCategory))
-  
+  const places = (data ?? []).map((r) => {
+    const p = rowToAppPlace(r as unknown as PlaceRowWithCategory)
+    if (p.openingHours && Object.keys(p.openingHours).length > 0) {
+      p.isOpen = isPlaceOpenNow(p.openingHours, p.isOpen)
+    }
+    return p
+  })
+
   // Helyekhez rendelt szűrők betöltése
   if (places.length > 0) {
     const placeIds = places.map((p) => p.id)
@@ -237,7 +256,11 @@ export async function getPlaceById(id: string): Promise<AppPlace | null> {
     .eq('is_active', true)
     .single()
   if (error || !data) return null
-  return rowToAppPlace(data as unknown as PlaceRowWithCategory)
+  const p = rowToAppPlace(data as unknown as PlaceRowWithCategory)
+  if (p.openingHours && Object.keys(p.openingHours).length > 0) {
+    p.isOpen = isPlaceOpenNow(p.openingHours, p.isOpen)
+  }
+  return p
 }
 
 /** Hely lekérése slug alapján (SEO-barát URL-hez). */
@@ -268,7 +291,11 @@ export async function getPlaceBySlug(slug: string): Promise<AppPlace | null> {
   }
   
   if (error || !data) return null
-  return rowToAppPlace(data as unknown as PlaceRowWithCategory)
+  const p = rowToAppPlace(data as unknown as PlaceRowWithCategory)
+  if (p.openingHours && Object.keys(p.openingHours).length > 0) {
+    p.isOpen = isPlaceOpenNow(p.openingHours, p.isOpen)
+  }
+  return p
 }
 
 export async function getPlacesByIds(ids: string[]): Promise<AppPlace[]> {
@@ -282,8 +309,14 @@ export async function getPlacesByIds(ids: string[]): Promise<AppPlace[]> {
     console.error('getPlacesByIds error', error)
     return []
   }
-  const places = (data ?? []).map((r) => rowToAppPlace(r as unknown as PlaceRowWithCategory))
-  
+  const places = (data ?? []).map((r) => {
+    const p = rowToAppPlace(r as unknown as PlaceRowWithCategory)
+    if (p.openingHours && Object.keys(p.openingHours).length > 0) {
+      p.isOpen = isPlaceOpenNow(p.openingHours, p.isOpen)
+    }
+    return p
+  })
+
   // Helyekhez rendelt szűrők betöltése
   if (places.length > 0) {
     const { data: placeFiltersData } = await supabase
