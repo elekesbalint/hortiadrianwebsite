@@ -611,11 +611,10 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
                         })}
                       </div>
                       
-                      {/* Dátum választó */}
-                      <div className="relative">
-                        <label className="block text-xs text-gray-500 mb-1.5">Dátum kiválasztása</label>
-                        <div className="relative">
-                          <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                      {/* Dátum választó - Tól-Ig */}
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-xs text-gray-500 mb-1.5">Tól</label>
                           <input
                             type="date"
                             value={filterEventDateFrom}
@@ -624,9 +623,21 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
                               setFilterQuickDate('')
                             }}
                             max={filterEventDateTo || undefined}
-                            className="w-full pl-12 pr-4 py-3 bg-white border-2 border-gray-200 rounded-xl outline-none transition-all text-sm font-medium appearance-none cursor-pointer hover:shadow-md focus:border-[#2D7A4F] focus:ring-[#2D7A4F]/10"
+                            className="w-full px-4 py-3 bg-white border-2 border-gray-200 rounded-xl outline-none transition-all text-sm font-medium appearance-none cursor-pointer hover:shadow-md focus:border-[#2D7A4F] focus:ring-[#2D7A4F]/10"
                           />
-                          <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+                        </div>
+                        <div>
+                          <label className="block text-xs text-gray-500 mb-1.5">Ig</label>
+                          <input
+                            type="date"
+                            value={filterEventDateTo}
+                            onChange={(e) => {
+                              setFilterEventDateTo(e.target.value)
+                              setFilterQuickDate('')
+                            }}
+                            min={filterEventDateFrom || undefined}
+                            className="w-full px-4 py-3 bg-white border-2 border-gray-200 rounded-xl outline-none transition-all text-sm font-medium appearance-none cursor-pointer hover:shadow-md focus:border-[#2D7A4F] focus:ring-[#2D7A4F]/10"
+                          />
                         </div>
                       </div>
                     </div>
