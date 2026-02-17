@@ -11,7 +11,6 @@ import { MapPin, Star, Heart, ChevronDown, Map, Sliders, RotateCcw, Search, Uten
 import { CityAutocomplete } from '@/components/ui/CityAutocomplete'
 import { DistanceSlider } from '@/components/ui/DistanceSlider'
 import { FilterChip } from '@/components/ui/FilterChip'
-import { Accordion } from '@/components/ui/Accordion'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 import { getCategoryIconComponent } from '@/lib/categoryIcons'
 import { getPlaces } from '@/lib/db/places'
@@ -428,35 +427,47 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
 
             {/* Szűrő mezők – scrollozható tartalom */}
             <div className="flex-1 overflow-y-auto px-6 py-6">
-              <div className="space-y-3">
+              <div className="space-y-4">
                 {/* Hol? – Google Places Autocomplete */}
-                <Accordion
-                  title="Hol?"
-                  icon={MapPin}
-                  hasActiveFilter={!!filterCity}
-                  defaultOpen={!!filterCity}
-                >
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <MapPin className={`h-4 w-4 ${filterCity ? 'text-[#2D7A4F]' : 'text-gray-400'}`} />
+                    <span className={`text-sm font-bold ${filterCity ? 'text-[#2D7A4F]' : 'text-gray-700'}`}>
+                      Hol?
+                    </span>
+                    {filterCity && (
+                      <span className="px-2 py-0.5 bg-[#2D7A4F] text-white text-[10px] font-bold rounded-full">
+                        Aktív
+                      </span>
+                    )}
+                  </div>
                   <CityAutocomplete
                     value={filterCity}
                     onChange={setFilterCity}
                     placeholder="Írj be településnevet (pl. Budapest)…"
                   />
-                </Accordion>
+                </div>
 
                 {/* Távolság – Slider */}
-                <Accordion
-                  title="Távolság"
-                  icon={Gauge}
-                  hasActiveFilter={filterMaxDistance !== null}
-                  defaultOpen={filterMaxDistance !== null}
-                >
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Gauge className={`h-4 w-4 ${filterMaxDistance !== null ? 'text-[#2D7A4F]' : 'text-gray-400'}`} />
+                    <span className={`text-sm font-bold ${filterMaxDistance !== null ? 'text-[#2D7A4F]' : 'text-gray-700'}`}>
+                      Távolság
+                    </span>
+                    {filterMaxDistance !== null && (
+                      <span className="px-2 py-0.5 bg-[#2D7A4F] text-white text-[10px] font-bold rounded-full">
+                        Aktív
+                      </span>
+                    )}
+                  </div>
                   <DistanceSlider
                     value={filterMaxDistance}
                     onChange={setFilterMaxDistance}
                     max={50}
                     step={1}
                   />
-                </Accordion>
+                </div>
 
                 {/* Kategória-specifikus szűrők */}
                 {(() => {
@@ -500,13 +511,18 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
                       const Icon = getIcon()
 
                       return (
-                        <Accordion
-                          key={groupSlug}
-                          title={groupName}
-                          icon={Icon}
-                          hasActiveFilter={hasValue}
-                          defaultOpen={hasValue}
-                        >
+                        <div key={groupSlug} className="space-y-2">
+                          <div className="flex items-center gap-2">
+                            <Icon className={`h-4 w-4 ${hasValue ? 'text-[#2D7A4F]' : 'text-gray-400'}`} />
+                            <span className={`text-sm font-bold ${hasValue ? 'text-[#2D7A4F]' : 'text-gray-700'}`}>
+                              {groupName}
+                            </span>
+                            {hasValue && (
+                              <span className="px-2 py-0.5 bg-[#2D7A4F] text-white text-[10px] font-bold rounded-full">
+                                Aktív
+                              </span>
+                            )}
+                          </div>
                           <div className="flex flex-wrap gap-2">
                             {items
                               .sort((a, b) => a.order - b.order)
@@ -535,19 +551,25 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
                                 )
                               })}
                           </div>
-                        </Accordion>
+                        </div>
                       )
                     })
                 })()}
 
                 {/* Esemény dátuma (csak programokhoz) */}
                 {slug === 'programok' && (
-                  <Accordion
-                    title="Mikor?"
-                    icon={Calendar}
-                    hasActiveFilter={!!(filterEventDateFrom || filterEventDateTo || filterQuickDate)}
-                    defaultOpen={!!(filterEventDateFrom || filterEventDateTo || filterQuickDate)}
-                  >
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <Calendar className={`h-4 w-4 ${(filterEventDateFrom || filterEventDateTo || filterQuickDate) ? 'text-[#2D7A4F]' : 'text-gray-400'}`} />
+                      <span className={`text-sm font-bold ${(filterEventDateFrom || filterEventDateTo || filterQuickDate) ? 'text-[#2D7A4F]' : 'text-gray-700'}`}>
+                        Mikor?
+                      </span>
+                      {(filterEventDateFrom || filterEventDateTo || filterQuickDate) && (
+                        <span className="px-2 py-0.5 bg-[#2D7A4F] text-white text-[10px] font-bold rounded-full">
+                          Aktív
+                        </span>
+                      )}
+                    </div>
                     <div className="space-y-4">
                       {/* Előre definiált dátum opciók */}
                       <div className="flex flex-wrap gap-2">
@@ -641,16 +663,22 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
                         </div>
                       </div>
                     </div>
-                  </Accordion>
+                  </div>
                 )}
 
                 {/* Árkategória */}
-                <Accordion
-                  title="Árkategória"
-                  icon={Tag}
-                  hasActiveFilter={!!filterPriceLevel}
-                  defaultOpen={!!filterPriceLevel}
-                >
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Tag className={`h-4 w-4 ${filterPriceLevel ? 'text-[#2D7A4F]' : 'text-gray-400'}`} />
+                    <span className={`text-sm font-bold ${filterPriceLevel ? 'text-[#2D7A4F]' : 'text-gray-700'}`}>
+                      Árkategória
+                    </span>
+                    {filterPriceLevel && (
+                      <span className="px-2 py-0.5 bg-[#2D7A4F] text-white text-[10px] font-bold rounded-full">
+                        Aktív
+                      </span>
+                    )}
+                  </div>
                   <div className="flex flex-wrap gap-2">
                     {[
                       { value: '1', label: '$' },
@@ -666,15 +694,21 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
                       />
                     ))}
                   </div>
-                </Accordion>
+                </div>
 
                 {/* Rendezés */}
-                <Accordion
-                  title="Rendezés"
-                  icon={Sliders}
-                  hasActiveFilter={filterSortBy !== 'distance'}
-                  defaultOpen={false}
-                >
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Sliders className={`h-4 w-4 ${filterSortBy !== 'distance' ? 'text-[#2D7A4F]' : 'text-gray-400'}`} />
+                    <span className={`text-sm font-bold ${filterSortBy !== 'distance' ? 'text-[#2D7A4F]' : 'text-gray-700'}`}>
+                      Rendezés
+                    </span>
+                    {filterSortBy !== 'distance' && (
+                      <span className="px-2 py-0.5 bg-[#2D7A4F] text-white text-[10px] font-bold rounded-full">
+                        Aktív
+                      </span>
+                    )}
+                  </div>
                   <div className="relative">
                     <select
                       value={filterSortBy}
@@ -687,7 +721,7 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
                     </select>
                     <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
                   </div>
-                </Accordion>
+                </div>
               </div>
             </div>
 
