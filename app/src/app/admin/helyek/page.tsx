@@ -487,8 +487,23 @@ export default function AdminPlacesPage() {
                   <option value="route">Útvonal</option>
                   <option value="tickets">Jegyvásárlás</option>
                 </select>
+                {form.mapSecondaryButton === 'tickets' && (
+                  <div className="mt-3">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Jegyvásárlás gomb URL-je</label>
+                    <input
+                      type="url"
+                      value={form.bookingUrl ?? ''}
+                      onChange={(e) => setForm((f) => ({ ...f, bookingUrl: e.target.value.trim() || null }))}
+                      placeholder="https://..."
+                      className="w-full px-4 py-2.5 border border-gray-200 rounded-xl outline-none focus:border-[#2D7A4F]"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      A térképen a helynél a „Jegyvásárlás” gomb erre az oldalra visz (pl. jegyértékesítő, esemény oldal).
+                    </p>
+                  </div>
+                )}
                 <p className="text-xs text-gray-500 mt-1">
-                  A térképes nézetben a hely kártyán: Részletek gomb mindig, a második gomb pedig Útvonal vagy Jegyvásárlás (a Jegyvásárlás a Foglalás / jegy URL mezőre mutat).
+                  A térképes nézetben a hely kártyán: Részletek gomb mindig, a második gomb pedig Útvonal vagy Jegyvásárlás.
                 </p>
               </div>
               <div>
