@@ -10,8 +10,7 @@ SET
   email = 'AProgram@programlaz.hu',
   raw_user_meta_data = COALESCE(raw_user_meta_data, '{}'::jsonb) || '{"name": "AProgram"}'::jsonb,
   updated_at = now()
-WHERE id IN (SELECT user_id FROM public.admin_users)
-LIMIT 1;
+WHERE id IN (SELECT user_id FROM public.admin_users LIMIT 1);
 
 -- FONTOS: A jelszó módosításához futtasd le a következő scriptet:
 -- npx tsx app/scripts/update-admin-credentials.ts
