@@ -74,15 +74,95 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
     router.push('/')
   }
 
-  // IDEIGLENES: 2FA kikapcsolva bejelentkezéskor – a Biztonság oldalon lehet beállítani
-  // Ha a 2FA beállítás kész, állítsd vissza az eredeti MFA ellenőrzést
   useEffect(() => {
     if (!isLoggedIn || !isAdmin) {
       setMfaState(null)
       return
     }
-    // 2FA skip: egyből granted, így be lehet lépni
-    setMfaState('granted')
+    let cancelled = false
+    setMfaState('checking')
+    
+    // Először próbáljuk meg lekérni az AAL-t
+    supabase.auth.mfa.getAuthenticatorAssuranceLevel()
+      .then((aalRes) => {
+        if (cancelled) return
+        const aal = aalRes.data
+        if (aal?.currentLevel === 'aal2') {
+          setMfaState('granted')
+          return
+        }
+        
+        // Ha nincs AAL2, próbáljuk meg lekérni a faktorokat
+        supabase.auth.mfa.listFactors()
+          .then((factorsRes) => {
+            if (cancelled) return
+            if (factorsRes.error) {
+              // Ha hiba van a faktorok lekérdezésénél, folytassuk az enroll folyamatot
+              console.warn('MFA factors list error:', factorsRes.error)
+              startEnroll()
+              return
+            }
+            const factors = factorsRes.data?.totp ?? []
+            if (factors.length > 0) {
+              setMfaFactors(factors)
+              setMfaState('verify')
+              return
+            }
+            // Ha nincs faktor, kezdjük az enroll folyamatot
+            startEnroll()
+          })
+          .catch((err) => {
+            if (cancelled) return
+            console.warn('MFA factors list exception:', err)
+            // Hiba esetén is próbáljuk meg az enroll-t
+            startEnroll()
+          })
+      })
+      .catch((err) => {
+        if (cancelled) return
+        console.warn('MFA AAL check exception:', err)
+        // Ha az AAL check is hibázik, próbáljuk meg az enroll-t
+        startEnroll()
+      })
+    
+    const startEnroll = () => {
+      if (cancelled) return
+      // Issuer paraméter hozzáadva a site URL hiba elkerüléséhez
+      const siteUrl = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000'
+      supabase.auth.mfa
+        .enroll({ 
+          factorType: 'totp', 
+          friendlyName: 'Admin',
+          issuer: siteUrl,
+        })
+        .then(({ data, error }) => {
+          if (cancelled) return
+          if (error) {
+            console.error('MFA enroll error:', error)
+            setMfaError(error.message || 'Hiba történt a 2FA beállítás során.')
+            setMfaState('enroll')
+            return
+          }
+          if (data?.id && data?.totp?.qr_code && data?.totp?.secret) {
+            setEnrollData({
+              factorId: data.id,
+              qrCode: data.totp.qr_code,
+              secret: data.totp.secret,
+            })
+          }
+          setMfaState('enroll')
+        })
+        .catch((err) => {
+          if (cancelled) return
+          console.error('MFA enroll exception:', err)
+          setMfaError(err.message || 'Hiba történt a 2FA beállítás során.')
+          setMfaState('enroll')
+        })
+    }
+    
+    return () => {
+      cancelled = true
+    }
   }, [isLoggedIn, isAdmin])
 
   const handleMfaVerify = async (e: React.FormEvent) => {

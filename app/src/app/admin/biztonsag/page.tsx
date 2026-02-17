@@ -46,9 +46,12 @@ export default function AdminBiztonsagPage() {
     for (const f of totpFactors) {
       await supabase.auth.mfa.unenroll({ factorId: f.id })
     }
+    // Próbáljuk meg az issuer paraméterrel, hogy elkerüljük a "site url is improperly formatted" hibát
+    const siteUrl = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000'
     const { data: enrollRes, error: enrollErr } = await supabase.auth.mfa.enroll({
       factorType: 'totp',
       friendlyName: 'Admin',
+      issuer: siteUrl,
     })
     setCreating(false)
     if (enrollErr) {
