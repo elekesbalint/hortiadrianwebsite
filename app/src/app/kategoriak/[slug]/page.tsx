@@ -473,10 +473,10 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
                 {(() => {
                   // Kategória-specifikus szűrő csoportok meghatározása
                   const categoryFilterGroups: Record<string, string[]> = {
-                    szallasok: ['tipus', 'kenyelmi-funkciok', 'kinek'],
+                    szallasok: ['tipus', 'kenyelmi-funkciok', 'kinek', 'evszak'],
                     ettermek: ['konyha-tipusa', 'etkezesi-igenyek'],
-                    programok: ['hangulat'],
-                    latnivalok: ['program-tipusa', 'kinek-ajanlott', 'megkozelithetoseg'],
+                    programok: ['hangulat', 'evszak', 'idoszak', 'kivel-mesz', 'ter'],
+                    latnivalok: ['program-tipusa', 'kinek-ajanlott', 'megkozelithetoseg', 'evszak', 'kivel-mesz', 'hangulat', 'ter'],
                   }
 
                   const allowedGroups = categoryFilterGroups[slug] || []
@@ -506,6 +506,10 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
                         if (groupSlug === 'hangulat') return Calendar
                         if (groupSlug === 'program-tipusa') return Landmark
                         if (groupSlug === 'megkozelithetoseg') return Route
+                        if (groupSlug === 'evszak') return Calendar
+                        if (groupSlug === 'idoszak') return Clock
+                        if (groupSlug === 'kivel-mesz') return Users
+                        if (groupSlug === 'ter') return MapPin
                         return Sliders
                       }
                       const Icon = getIcon()
