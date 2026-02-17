@@ -11,7 +11,6 @@ export async function getFavoritePlaceIds(): Promise<string[]> {
   const { data, error } = await supabase
     .from('favorites')
     .select('place_id')
-    // @ts-expect-error - Supabase type inference issue with user_id column after auth config change
     .eq('user_id', user.id)
     .order('created_at', { ascending: false })
   if (error) {
@@ -52,9 +51,7 @@ export async function removeFavorite(placeId: string): Promise<boolean> {
   const { error } = await supabase
     .from('favorites')
     .delete()
-    // @ts-expect-error - Supabase type inference issue with user_id column after auth config change
     .eq('user_id', user.id)
-    // @ts-expect-error - Supabase type inference issue after auth config change
     .eq('place_id', placeId)
   if (error) {
     console.error('removeFavorite error', error)

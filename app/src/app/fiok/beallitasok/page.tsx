@@ -88,7 +88,6 @@ export default function FiokBeallitasokPage() {
       setPushEnabled(true)
       setPushMessage({ type: 'success', text: 'Push értesítések bekapcsolva.' })
     } else {
-      // @ts-expect-error - Supabase type inference issue with user_id column after auth config change
       const { error } = await supabase.from('push_subscriptions').delete().eq('user_id', user.id)
       if (error) {
         setPushMessage({ type: 'error', text: error.message })
