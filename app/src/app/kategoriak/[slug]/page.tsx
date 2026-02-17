@@ -7,7 +7,7 @@ import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { Button } from '@/components/ui/Button'
 import { Card, CardContent, CardTitle } from '@/components/ui/Card'
-import { MapPin, Star, Heart, ChevronDown, Map, Sliders, RotateCcw, Search, Utensils, Home, Landmark, Calendar, Clock, Users, Route, Tag, Gauge, CheckCircle, X } from 'lucide-react'
+import { MapPin, Star, Heart, ChevronDown, Map, Sliders, RotateCcw, Search, Utensils, Home, Landmark, Calendar, Clock, Users, Route, Tag, Gauge, CheckCircle, X, CloudRain } from 'lucide-react'
 import { CityAutocomplete } from '@/components/ui/CityAutocomplete'
 import { DistanceSlider } from '@/components/ui/DistanceSlider'
 import { FilterChip } from '@/components/ui/FilterChip'
@@ -477,6 +477,10 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
                     ettermek: ['konyha-tipusa', 'etkezesi-igenyek'],
                     programok: ['hangulat', 'evszak', 'idoszak', 'kivel-mesz', 'ter'],
                     latnivalok: ['program-tipusa', 'kinek-ajanlott', 'megkozelithetoseg', 'evszak', 'kivel-mesz', 'hangulat', 'ter'],
+                    // Kiemelt kategóriák (főoldal)
+                    paroknak: ['paroknak'],
+                    'esos-napra': ['esos-napra'],
+                    hetvegere: ['hetvegere'],
                   }
 
                   const allowedGroups = categoryFilterGroups[slug] || []
@@ -510,6 +514,9 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
                         if (groupSlug === 'idoszak') return Clock
                         if (groupSlug === 'kivel-mesz') return Users
                         if (groupSlug === 'ter') return MapPin
+                        if (groupSlug === 'paroknak') return Heart
+                        if (groupSlug === 'esos-napra') return CloudRain
+                        if (groupSlug === 'hetvegere') return Calendar
                         return Sliders
                       }
                       const Icon = getIcon()

@@ -7,7 +7,7 @@ import Image from 'next/image'
 import { Button } from '@/components/ui/Button'
 import { Card, CardContent, CardTitle } from '@/components/ui/Card'
 import { MapView, type SearchCircle } from '@/components/map/MapView'
-import { MapPin, List, Filter, Navigation, Star, ChevronDown, Sliders, RotateCcw, X, CircleDot, Calendar, Clock, Users, Route, Tag, Gauge, CheckCircle, Home, Utensils, Landmark, Search } from 'lucide-react'
+import { MapPin, List, Filter, Navigation, Star, ChevronDown, Sliders, RotateCcw, X, CircleDot, Calendar, Clock, Users, Route, Tag, Gauge, CheckCircle, Home, Utensils, Landmark, Search, Heart, CloudRain } from 'lucide-react'
 import { SearchableSelect, type SearchableSelectOption } from '@/components/ui/SearchableSelect'
 import { CityAutocomplete } from '@/components/ui/CityAutocomplete'
 import { DistanceSlider } from '@/components/ui/DistanceSlider'
@@ -449,6 +449,9 @@ function MapPageContent() {
                       ettermek: ['konyha-tipusa', 'etkezesi-igenyek'],
                       programok: ['hangulat'],
                       latnivalok: ['program-tipusa', 'kinek-ajanlott', 'megkozelithetoseg'],
+                      paroknak: ['paroknak'],
+                      'esos-napra': ['esos-napra'],
+                      hetvegere: ['hetvegere'],
                     }
 
                     const allowedGroups = categoryFilterGroups[selectedCategorySlug] || []
@@ -478,6 +481,9 @@ function MapPageContent() {
                           if (groupSlug === 'hangulat') return Calendar
                           if (groupSlug === 'program-tipusa') return Landmark
                           if (groupSlug === 'megkozelithetoseg') return Route
+                          if (groupSlug === 'paroknak') return Heart
+                          if (groupSlug === 'esos-napra') return CloudRain
+                          if (groupSlug === 'hetvegere') return Calendar
                           return Filter
                         }
                         const Icon = getIcon()
