@@ -7,9 +7,11 @@ import Image from 'next/image'
 import { Button } from '@/components/ui/Button'
 import { Card, CardContent, CardTitle } from '@/components/ui/Card'
 import { MapView, type SearchCircle } from '@/components/map/MapView'
-import { MapPin, List, Filter, Navigation, Star, ChevronDown, Sliders, RotateCcw, X, CircleDot, Calendar, Clock, Users, Route, Tag, Gauge, Award, CheckCircle } from 'lucide-react'
+import { MapPin, List, Filter, Navigation, Star, ChevronDown, Sliders, RotateCcw, X, CircleDot, Calendar, Clock, Users, Route, Tag, Gauge, CheckCircle, Home, Utensils, Landmark, Search } from 'lucide-react'
 import { SearchableSelect, type SearchableSelectOption } from '@/components/ui/SearchableSelect'
 import { CityAutocomplete } from '@/components/ui/CityAutocomplete'
+import { DistanceSlider } from '@/components/ui/DistanceSlider'
+import { Accordion } from '@/components/ui/Accordion'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 import { getPlaces } from '@/lib/db/places'
 import { getCategories } from '@/lib/db/categories'
@@ -28,11 +30,12 @@ function MapPageContent() {
   
   // Szűrő értékek
   const [filterHol, setFilterHol] = useState('')
-  const [filterEvszak, setFilterEvszak] = useState('')
-  const [filterIdoszak, setFilterIdoszak] = useState('')
-  const [filterTer, setFilterTer] = useState('')
-  const [filterKivelMesz, setFilterKivelMesz] = useState('')
-  const [filterMegkozelites, setFilterMegkozelites] = useState('')
+  const [filterMaxDistance, setFilterMaxDistance] = useState<number | null>(null)
+  const [filterCategory, setFilterCategory] = useState('')
+  const [filterOpenOnly, setFilterOpenOnly] = useState(false)
+  const [filterSortBy, setFilterSortBy] = useState<'distance' | 'rating' | 'name'>('distance')
+  // Dinamikus szűrők (kategória-specifikus)
+  const [activeFilters, setActiveFilters] = useState<Record<string, string>>({})
 
   useEffect(() => {
     Promise.all([getPlaces(), getCategories(), getFilters()]).then(([pls, cats, filts]) => {
@@ -50,9 +53,36 @@ function MapPageContent() {
   const places = useMemo(() => {
     let filtered = placesAll
     
-    // Kategória szűrés
-    if (kategoriaSlug && categoryBySlug) {
-      filtered = filtered.filter((p) => p.category_id === categoryBySlug.id)
+    // Keresés: helynév, kategória vagy cím alapján
+    if (searchQuery && searchQuery.trim()) {
+      const query = searchQuery.trim().toLowerCase()
+      filtered = filtered.filter((p) => {
+        // Helynév keresés
+        if (p.name.toLowerCase().includes(query)) return true
+        
+        // Kategória keresés (pl. "étterem", "szállás")
+        const category = categories.find((c) => c.id === p.category_id)
+        if (category && (category.name.toLowerCase().includes(query) || category.slug.toLowerCase().includes(query))) {
+          return true
+        }
+        
+        // Cím keresés
+        if (p.address.toLowerCase().includes(query)) return true
+        
+        // Leírás keresés
+        if (p.description && p.description.toLowerCase().includes(query)) return true
+        
+        return false
+      })
+    }
+    
+    // Kategória szűrés (URL param vagy szűrő)
+    const selectedCategorySlug = kategoriaSlug || filterCategory
+    if (selectedCategorySlug) {
+      const cat = categories.find((c) => c.slug === selectedCategorySlug)
+      if (cat) {
+        filtered = filtered.filter((p) => p.category_id === cat.id)
+      }
     }
     
     // "Hol?" szűrés: cím tartalmazza a kiválasztott településnevet (Google Places alapján)
@@ -61,13 +91,21 @@ function MapPageContent() {
       filtered = filtered.filter((p) => p.address.toLowerCase().includes(cityQuery))
     }
     
-    // Szűrők alkalmazása (Évszak, Időszak, Tér, Kivel mész?, Megközelítés)
-    const activeFilterSlugs: string[] = []
-    if (filterEvszak) activeFilterSlugs.push(filterEvszak)
-    if (filterIdoszak) activeFilterSlugs.push(filterIdoszak)
-    if (filterTer) activeFilterSlugs.push(filterTer)
-    if (filterKivelMesz) activeFilterSlugs.push(filterKivelMesz)
-    if (filterMegkozelites) activeFilterSlugs.push(filterMegkozelites)
+    // Távolság szűrés
+    if (filterMaxDistance !== null && filterMaxDistance > 0 && userLocation) {
+      filtered = filtered.filter((p) => {
+        const distance = calculateDistance(userLocation.lat, userLocation.lng, p.lat, p.lng)
+        return distance <= filterMaxDistance
+      })
+    }
+    
+    // Nyitva most szűrés
+    if (filterOpenOnly) {
+      filtered = filtered.filter((p) => p.isOpen)
+    }
+    
+    // Dinamikus szűrők (kategória-specifikus)
+    const activeFilterSlugs = Object.values(activeFilters).filter(Boolean)
     
     if (activeFilterSlugs.length > 0) {
       // Szűrő slug-okból filter ID-kat keresünk
@@ -85,10 +123,11 @@ function MapPageContent() {
     }
     
     return filtered
-  }, [placesAll, kategoriaSlug, categoryBySlug, filters, filterHol, filterEvszak, filterIdoszak, filterTer, filterKivelMesz, filterMegkozelites])
+  }, [placesAll, searchQuery, kategoriaSlug, filterCategory, categories, filters, filterHol, filterMaxDistance, filterOpenOnly, activeFilters, userLocation])
 
   const [viewMode, setViewMode] = useState<'map' | 'list'>('map')
   const [isFilterOpen, setIsFilterOpen] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null)
   const [locationMessage, setLocationMessage] = useState<string | null>(null)
   const [locationLoading, setLocationLoading] = useState(false)
@@ -123,8 +162,12 @@ function MapPageContent() {
         distanceFromCenter: calculateDistance(centerForDistance.lat, centerForDistance.lng, p.lat, p.lng),
         travelTimeMinutes: estimateTravelTimeMinutes(calculateDistance(centerForDistance.lat, centerForDistance.lng, p.lat, p.lng)),
       }))
-      .sort((a, b) => a.distanceFromCenter - b.distanceFromCenter)
-  }, [placesInCircle, centerForDistance])
+      .sort((a, b) => {
+        if (filterSortBy === 'distance') return a.distanceFromCenter - b.distanceFromCenter
+        if (filterSortBy === 'rating') return b.rating - a.rating
+        return a.name.localeCompare(b.name)
+      })
+  }, [placesInCircle, centerForDistance, filterSortBy])
 
   // Google Maps API-val pontosítjuk az első 10 hely távolságát és idejét (ha elérhető)
   const [placesWithDistance, setPlacesWithDistance] = useState(placesWithDistanceInitial)
@@ -210,12 +253,24 @@ function MapPageContent() {
             {/* Search */}
             <div className="flex-1 max-w-xl min-w-0">
               <div className="relative">
-                <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                 <input
                   type="text"
-                  placeholder="Keresés a térképen..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Keresés a térképen... (pl. Mirage étterem, étterem)"
                   className="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:border-[#2D7A4F] focus:ring-2 focus:ring-[#2D7A4F]/20 transition-all"
                 />
+                {searchQuery && (
+                  <button
+                    type="button"
+                    onClick={() => setSearchQuery('')}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600 transition-colors"
+                    aria-label="Keresés törlése"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                )}
               </div>
             </div>
 
@@ -302,14 +357,16 @@ function MapPageContent() {
                       variant="ghost" 
                       size="sm"
                       onClick={() => {
+                        setSearchQuery('')
                         setFilterHol('')
-                        setFilterEvszak('')
-                        setFilterIdoszak('')
-                        setFilterTer('')
-                        setFilterKivelMesz('')
-                        setFilterMegkozelites('')
+                        setFilterMaxDistance(null)
+                        setFilterCategory('')
+                        setFilterOpenOnly(false)
+                        setFilterSortBy('distance')
+                        setActiveFilters({})
                       }}
-                      className="text-gray-600 hover:text-[#2D7A4F] hover:bg-[#E8F5E9]/50 text-sm"
+                      disabled={!searchQuery && !filterHol && filterMaxDistance === null && !filterCategory && !filterOpenOnly && filterSortBy === 'distance' && Object.keys(activeFilters).length === 0}
+                      className="text-gray-600 hover:text-[#2D7A4F] hover:bg-[#E8F5E9]/50 disabled:opacity-40 disabled:cursor-not-allowed text-sm"
                     >
                       <RotateCcw className="h-4 w-4 mr-1.5" />
                       Törlés
@@ -328,180 +385,176 @@ function MapPageContent() {
 
               {/* Szűrő mezők – scrollozható tartalom */}
               <div className="flex-1 overflow-y-auto px-6 py-6">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                {/* Hol? – Google Places Autocomplete (csak magyar települések) */}
-                <div className="group">
-                  <label className="flex items-center gap-2 text-xs font-bold text-gray-600 uppercase tracking-wider mb-3">
-                    <MapPin className={`h-3.5 w-3.5 ${filterHol ? 'text-[#2D7A4F]' : 'text-gray-400'}`} />
-                    Hol?
-                    {filterHol && (
-                      <span className="ml-auto px-2 py-0.5 bg-[#2D7A4F] text-white text-[10px] font-bold rounded-full">
-                        Aktív
-                      </span>
-                    )}
-                  </label>
-                  <CityAutocomplete
-                    value={filterHol}
-                    onChange={setFilterHol}
-                    placeholder="Írj be településnevet (pl. Budapest)…"
-                  />
-                </div>
-              
-                {/* Dinamikusan generált szűrők az adatbázisból */}
-                {Object.entries(
-                  filters.reduce<Record<string, AppFilter[]>>((acc, f) => {
-                    const key = f.group_slug || 'egyeb'
-                    if (!acc[key]) acc[key] = []
-                    acc[key].push(f)
-                    return acc
-                  }, {})
-                )
-                  .filter(([groupSlug]) => 
-                    ['evszak', 'idoszak', 'ter', 'kivel-mesz', 'megkozelites'].includes(groupSlug)
-                  )
-                  .map(([groupSlug, items]) => {
-                    const groupName = items[0]?.group_name || groupSlug
-                    const getValue = () => {
-                      if (groupSlug === 'evszak') return filterEvszak
-                      if (groupSlug === 'idoszak') return filterIdoszak
-                      if (groupSlug === 'ter') return filterTer
-                      if (groupSlug === 'kivel-mesz') return filterKivelMesz
-                      if (groupSlug === 'megkozelites') return filterMegkozelites
-                      return ''
+                <div className="space-y-3">
+                  {/* Hol? – Google Places Autocomplete */}
+                  <Accordion
+                    title="Hol?"
+                    icon={MapPin}
+                    hasActiveFilter={!!filterHol}
+                    defaultOpen={!!filterHol}
+                  >
+                    <CityAutocomplete
+                      value={filterHol}
+                      onChange={setFilterHol}
+                      placeholder="Írj be településnevet (pl. Budapest)…"
+                    />
+                  </Accordion>
+
+                  {/* Távolság – Slider */}
+                  <Accordion
+                    title="Távolság"
+                    icon={Gauge}
+                    hasActiveFilter={filterMaxDistance !== null}
+                    defaultOpen={filterMaxDistance !== null}
+                  >
+                    <DistanceSlider
+                      value={filterMaxDistance}
+                      onChange={setFilterMaxDistance}
+                      max={50}
+                      step={1}
+                    />
+                  </Accordion>
+
+                  {/* Kategória */}
+                  <Accordion
+                    title="Kategória"
+                    icon={Tag}
+                    hasActiveFilter={!!filterCategory}
+                    defaultOpen={!!filterCategory}
+                  >
+                    <div className="relative">
+                      <select
+                        value={filterCategory}
+                        onChange={(e) => setFilterCategory(e.target.value)}
+                        className={`w-full px-4 py-3 pr-10 bg-white border-2 rounded-xl outline-none focus:ring-4 transition-all text-sm font-medium appearance-none cursor-pointer hover:shadow-md ${
+                          filterCategory 
+                            ? 'border-[#2D7A4F] text-[#1B5E20] focus:border-[#2D7A4F] focus:ring-[#2D7A4F]/10' 
+                            : 'border-gray-200 text-gray-900 focus:border-[#2D7A4F] focus:ring-[#2D7A4F]/10'
+                        }`}
+                      >
+                        <option value="">Mind</option>
+                        <option value="ettermek">Éttermek</option>
+                        <option value="szallasok">Szállások</option>
+                        <option value="latnivalok">Látnivalók</option>
+                        <option value="programok">Programok</option>
+                      </select>
+                      <ChevronDown className={`absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 pointer-events-none transition-colors ${filterCategory ? 'text-[#2D7A4F]' : 'text-gray-400'}`} />
+                    </div>
+                  </Accordion>
+
+                  {/* Kategória-specifikus szűrők (csak ha van kiválasztott kategória) */}
+                  {(() => {
+                    const selectedCategorySlug = filterCategory || kategoriaSlug || ''
+                    const categoryFilterGroups: Record<string, string[]> = {
+                      szallasok: ['tipus', 'kenyelmi-funkciok', 'kinek'],
+                      ettermek: ['konyha-tipusa', 'etkezesi-igenyek'],
+                      programok: ['hangulat'],
+                      latnivalok: ['program-tipusa', 'kinek-ajanlott', 'megkozelithetoseg'],
                     }
-                    const setValue = (val: string) => {
-                      if (groupSlug === 'evszak') setFilterEvszak(val)
-                      else if (groupSlug === 'idoszak') setFilterIdoszak(val)
-                      else if (groupSlug === 'ter') setFilterTer(val)
-                      else if (groupSlug === 'kivel-mesz') setFilterKivelMesz(val)
-                      else if (groupSlug === 'megkozelites') setFilterMegkozelites(val)
-                    }
+
+                    const allowedGroups = categoryFilterGroups[selectedCategorySlug] || []
                     
-                    // Ikonok a szűrő típusokhoz
-                    const getIcon = () => {
-                      if (groupSlug === 'evszak') return Calendar
-                      if (groupSlug === 'idoszak') return Clock
-                      if (groupSlug === 'ter') return MapPin
-                      if (groupSlug === 'kivel-mesz') return Users
-                      if (groupSlug === 'megkozelites') return Route
-                      return Filter
-                    }
-                    const Icon = getIcon()
-                    const hasValue = getValue() !== ''
-                    
-                    return (
-                      <div key={groupSlug} className="group">
-                        <label className="flex items-center gap-2 text-xs font-bold text-gray-600 uppercase tracking-wider mb-3">
-                          <Icon className={`h-3.5 w-3.5 ${hasValue ? 'text-[#2D7A4F]' : 'text-gray-400'}`} />
-                          {groupName}
-                          {hasValue && (
-                            <span className="ml-auto px-2 py-0.5 bg-[#2D7A4F] text-white text-[10px] font-bold rounded-full">
-                              Aktív
-                            </span>
-                          )}
-                        </label>
-                        <SearchableSelect
-                          options={[
-                            { value: '', label: 'Mind' },
-                            ...items
-                              .sort((a, b) => a.order - b.order)
-                              .map((filter) => ({
-                                value: filter.slug,
-                                label: filter.name,
-                              })),
-                          ]}
-                          value={getValue()}
-                          onChange={setValue}
-                          placeholder="Mind"
-                          searchPlaceholder={`Keresés ${groupName.toLowerCase()}...`}
-                          hasValue={hasValue}
-                        />
-                      </div>
-                    )
-                  })}
-                
-                {/* Kategória */}
-                <div className="group">
-                  <label className="flex items-center gap-2 text-xs font-bold text-gray-600 uppercase tracking-wider mb-3">
-                    <Tag className="h-3.5 w-3.5 text-gray-400" />
-                    Kategória
-                  </label>
-                  <div className="relative">
-                    <select className="w-full px-4 py-3 pr-10 bg-white border-2 border-gray-200 rounded-xl outline-none focus:border-[#2D7A4F] focus:ring-4 focus:ring-[#2D7A4F]/10 transition-all text-sm font-medium text-gray-900 appearance-none cursor-pointer hover:border-gray-300 group-hover:shadow-md">
-                      <option value="">Mind</option>
-                      <option value="ettermek">Éttermek</option>
-                      <option value="szallasok">Szállások</option>
-                      <option value="latnivalok">Látnivalók</option>
-                      <option value="programok">Programok</option>
-                    </select>
-                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
-                  </div>
-                </div>
-                
-                {/* Távolság */}
-                <div className="group">
-                  <label className="flex items-center gap-2 text-xs font-bold text-gray-600 uppercase tracking-wider mb-3">
-                    <Gauge className="h-3.5 w-3.5 text-gray-400" />
-                    Távolság
-                  </label>
-                  <div className="relative">
-                    <select className="w-full px-4 py-3 pr-10 bg-white border-2 border-gray-200 rounded-xl outline-none focus:border-[#2D7A4F] focus:ring-4 focus:ring-[#2D7A4F]/10 transition-all text-sm font-medium text-gray-900 appearance-none cursor-pointer hover:border-gray-300 group-hover:shadow-md">
-                      <option value="">Mind</option>
-                      <option value="1">1 km-en belül</option>
-                      <option value="5">5 km-en belül</option>
-                      <option value="10">10 km-en belül</option>
-                      <option value="25">25 km-en belül</option>
-                    </select>
-                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
-                  </div>
-                </div>
-                
-                {/* Értékelés */}
-                <div className="group">
-                  <label className="flex items-center gap-2 text-xs font-bold text-gray-600 uppercase tracking-wider mb-3">
-                    <Award className="h-3.5 w-3.5 text-gray-400" />
-                    Értékelés
-                  </label>
-                  <div className="relative">
-                    <select className="w-full px-4 py-3 pr-10 bg-white border-2 border-gray-200 rounded-xl outline-none focus:border-[#2D7A4F] focus:ring-4 focus:ring-[#2D7A4F]/10 transition-all text-sm font-medium text-gray-900 appearance-none cursor-pointer hover:border-gray-300 group-hover:shadow-md">
-                      <option value="">Mind</option>
-                      <option value="4">4+ csillag</option>
-                      <option value="4.5">4.5+ csillag</option>
-                    </select>
-                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
-                  </div>
-                </div>
-                
-                {/* Státusz */}
-                <div className="group">
-                  <label className="flex items-center gap-2 text-xs font-bold text-gray-600 uppercase tracking-wider mb-3">
-                    <CheckCircle className="h-3.5 w-3.5 text-gray-400" />
-                    Státusz
-                  </label>
-                  <div className="relative">
-                    <select className="w-full px-4 py-3 pr-10 bg-white border-2 border-gray-200 rounded-xl outline-none focus:border-[#2D7A4F] focus:ring-4 focus:ring-[#2D7A4F]/10 transition-all text-sm font-medium text-gray-900 appearance-none cursor-pointer hover:border-gray-300 group-hover:shadow-md">
-                      <option value="">Mind</option>
-                      <option value="open">Nyitva most</option>
-                    </select>
-                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
-                  </div>
-                </div>
-                
-                {/* Rendezés */}
-                <div className="group">
-                  <label className="flex items-center gap-2 text-xs font-bold text-gray-600 uppercase tracking-wider mb-3">
-                    <Sliders className="h-3.5 w-3.5 text-gray-400" />
-                    Rendezés
-                  </label>
-                  <div className="relative">
-                    <select className="w-full px-4 py-3 pr-10 bg-white border-2 border-gray-200 rounded-xl outline-none focus:border-[#2D7A4F] focus:ring-4 focus:ring-[#2D7A4F]/10 transition-all text-sm font-medium text-gray-900 appearance-none cursor-pointer hover:border-gray-300 group-hover:shadow-md">
-                      <option value="distance">Távolság</option>
-                      <option value="rating">Értékelés</option>
-                      <option value="name">Név</option>
-                    </select>
-                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
-                  </div>
-                </div>
+                    // Szűrők csoportosítása
+                    const groupedFilters = filters.reduce<Record<string, AppFilter[]>>((acc, f) => {
+                      const key = f.group_slug || 'egyeb'
+                      if (!acc[key]) acc[key] = []
+                      acc[key].push(f)
+                      return acc
+                    }, {})
+
+                    return Object.entries(groupedFilters)
+                      .filter(([groupSlug]) => allowedGroups.includes(groupSlug))
+                      .map(([groupSlug, items]) => {
+                        const groupName = items[0]?.group_name || groupSlug
+                        const currentValue = activeFilters[groupSlug] || ''
+                        const hasValue = !!currentValue
+
+                        // Ikonok a szűrő típusokhoz
+                        const getIcon = () => {
+                          if (groupSlug === 'tipus') return Home
+                          if (groupSlug === 'kenyelmi-funkciok') return Star
+                          if (groupSlug === 'kinek' || groupSlug === 'kinek-ajanlott') return Users
+                          if (groupSlug === 'konyha-tipusa') return Utensils
+                          if (groupSlug === 'etkezesi-igenyek') return CheckCircle
+                          if (groupSlug === 'hangulat') return Calendar
+                          if (groupSlug === 'program-tipusa') return Landmark
+                          if (groupSlug === 'megkozelithetoseg') return Route
+                          return Filter
+                        }
+                        const Icon = getIcon()
+
+                        return (
+                          <Accordion
+                            key={groupSlug}
+                            title={groupName}
+                            icon={Icon}
+                            hasActiveFilter={hasValue}
+                            defaultOpen={hasValue}
+                          >
+                            <SearchableSelect
+                              options={[
+                                { value: '', label: 'Mind' },
+                                ...items
+                                  .sort((a, b) => a.order - b.order)
+                                  .map((filter) => ({
+                                    value: filter.slug,
+                                    label: filter.name,
+                                  })),
+                              ]}
+                              value={currentValue}
+                              onChange={(val) => {
+                                setActiveFilters((prev) => ({
+                                  ...prev,
+                                  [groupSlug]: val,
+                                }))
+                              }}
+                              placeholder="Mind"
+                              searchPlaceholder={`Keresés ${groupName.toLowerCase()}...`}
+                              hasValue={hasValue}
+                            />
+                          </Accordion>
+                        )
+                      })
+                  })()}
+
+                  {/* Státusz */}
+                  <Accordion
+                    title="Státusz"
+                    icon={CheckCircle}
+                    hasActiveFilter={filterOpenOnly}
+                    defaultOpen={filterOpenOnly}
+                  >
+                    <label className="flex items-center gap-3 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={filterOpenOnly}
+                        onChange={(e) => setFilterOpenOnly(e.target.checked)}
+                        className="w-5 h-5 rounded border-gray-300 text-[#2D7A4F] focus:ring-[#2D7A4F] cursor-pointer"
+                      />
+                      <span className="text-sm font-medium text-gray-700">Nyitva most</span>
+                    </label>
+                  </Accordion>
+
+                  {/* Rendezés */}
+                  <Accordion
+                    title="Rendezés"
+                    icon={Sliders}
+                    hasActiveFilter={filterSortBy !== 'distance'}
+                    defaultOpen={false}
+                  >
+                    <div className="relative">
+                      <select
+                        value={filterSortBy}
+                        onChange={(e) => setFilterSortBy(e.target.value as 'distance' | 'rating' | 'name')}
+                        className="w-full px-4 py-3 pr-10 bg-white border-2 border-gray-200 rounded-xl outline-none focus:border-[#2D7A4F] focus:ring-4 focus:ring-[#2D7A4F]/10 transition-all text-sm font-medium text-gray-900 appearance-none cursor-pointer hover:border-gray-300 hover:shadow-md"
+                      >
+                        <option value="distance">Távolság</option>
+                        <option value="rating">Értékelés</option>
+                        <option value="name">Név</option>
+                      </select>
+                      <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+                    </div>
+                  </Accordion>
                 </div>
               </div>
 
