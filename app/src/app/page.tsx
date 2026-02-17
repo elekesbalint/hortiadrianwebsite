@@ -5,7 +5,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { Button } from '@/components/ui/Button'
 import { Card, CardContent, CardTitle, CardDescription } from '@/components/ui/Card'
-import { MapPin, Utensils, Bed, Star, Heart, Wine, Camera, Bath, Baby, Sparkles, ArrowRight, Landmark, ChevronLeft, ChevronRight, Users, Eye } from 'lucide-react'
+import { MapPin, Utensils, Bed, Star, Heart, Wine, Camera, Bath, Baby, Sparkles, ArrowRight, Landmark, ChevronLeft, ChevronRight, Users, Eye, Calendar } from 'lucide-react'
 import { AnimatedCounter } from '@/components/ui/AnimatedCounter'
 import { useCategoriesContext } from '@/components/providers/CategoriesProvider'
 import { getCategoryIconComponent } from '@/lib/categoryIcons'
@@ -37,13 +37,19 @@ const defaultCategoryImage = 'https://images.unsplash.com/photo-1517248135467-4c
 const FEATURED_CAROUSEL_INTERVAL_MS = 4500
 
 export default function HomePage() {
-  const { categories, featuredCategories, places, featuredPlaces, siteStats } = useCategoriesContext()
+  const { categories, featuredCategories, places, featuredPlaces, upcomingEvents, siteStats } = useCategoriesContext()
   const [carouselIndex, setCarouselIndex] = useState(0)
   const [featuredPaused, setFeaturedPaused] = useState(false)
+  const [carouselIndexEvents, setCarouselIndexEvents] = useState(0)
+  const [eventsPaused, setEventsPaused] = useState(false)
   const scrollRef = useRef<HTMLDivElement>(null)
   const slideRefs = useRef<(HTMLAnchorElement | null)[]>([])
-  const isUserInteractionRef = useRef(false) // Jelzi, hogy a változás felhasználói interakcióból jött-e
+  const scrollRefEvents = useRef<HTMLDivElement>(null)
+  const slideRefsEvents = useRef<(HTMLAnchorElement | null)[]>([])
+  const isUserInteractionRef = useRef(false)
+  const isUserInteractionRefEvents = useRef(false)
   const count = featuredPlaces.length
+  const countEvents = upcomingEvents.length
   // Csak azokat a kategóriákat jelenítjük meg, amelyek a headerben is megjelennek (show_in_header = true)
   const categoriesWithDisplay = categories
     .filter((c) => c.show_in_header)
@@ -101,6 +107,53 @@ export default function HomePage() {
     }, FEATURED_CAROUSEL_INTERVAL_MS)
     return () => clearInterval(t)
   }, [count, featuredPaused])
+
+  useEffect(() => {
+    const slide = slideRefsEvents.current[carouselIndexEvents]
+    if (!slide) {
+      isUserInteractionRefEvents.current = false
+      return
+    }
+    if (!isUserInteractionRefEvents.current) {
+      isUserInteractionRefEvents.current = false
+      return
+    }
+    const carouselSection = slide.closest('section')
+    if (!carouselSection) {
+      isUserInteractionRefEvents.current = false
+      return
+    }
+    const rect = carouselSection.getBoundingClientRect()
+    if (rect.top < window.innerHeight && rect.bottom > 0) {
+      slide.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' })
+    }
+    isUserInteractionRefEvents.current = false
+  }, [carouselIndexEvents])
+
+  const goPrevEvents = () => {
+    isUserInteractionRefEvents.current = true
+    setCarouselIndexEvents((i) => (countEvents <= 1 ? 0 : i === 0 ? countEvents - 1 : i - 1))
+  }
+  const goNextEvents = () => {
+    isUserInteractionRefEvents.current = true
+    setCarouselIndexEvents((i) => (countEvents <= 1 ? 0 : i === countEvents - 1 ? 0 : i + 1))
+  }
+
+  useEffect(() => {
+    if (countEvents <= 1 || eventsPaused) return
+    const t = setInterval(() => {
+      setCarouselIndexEvents((i) => (i === countEvents - 1 ? 0 : i + 1))
+    }, FEATURED_CAROUSEL_INTERVAL_MS)
+    return () => clearInterval(t)
+  }, [countEvents, eventsPaused])
+
+  const formatEventDate = (iso: string) => {
+    try {
+      return new Date(iso).toLocaleDateString('hu-HU', { day: 'numeric', month: 'short', year: 'numeric' })
+    } catch {
+      return ''
+    }
+  }
 
   return (
     <div className="overflow-hidden">
@@ -253,6 +306,110 @@ export default function HomePage() {
                   </Link>
                 )
               })}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Közelgő események – ugyanolyan carousel, értékelés nélkül */}
+      {upcomingEvents.length > 0 && (
+        <section className="py-20 md:py-28 bg-[#E5E5E5]">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 mb-12">
+              <div>
+                <span className="inline-flex items-center gap-2 bg-yellow-100 text-yellow-700 text-sm font-semibold px-4 py-2 rounded-full mb-4">
+                  <Calendar className="h-4 w-4" />
+                  Közelgő események
+                </span>
+                <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-2">
+                  Közelgő események
+                </h2>
+                <p className="text-lg text-gray-500">
+                  Események naptári sorrendben
+                </p>
+              </div>
+              <Link href="/terkep" className="group flex items-center gap-2 text-[#2D7A4F] font-semibold hover:gap-3 transition-all">
+                Összes megtekintése
+                <ArrowRight className="h-5 w-5" />
+              </Link>
+            </div>
+
+            <div
+              className="relative"
+              onMouseEnter={() => setEventsPaused(true)}
+              onMouseLeave={() => setEventsPaused(false)}
+            >
+              <div
+                ref={scrollRefEvents}
+                className="flex overflow-x-auto snap-x snap-mandatory gap-6 pb-4 scroll-smooth scrollbar-hide"
+                style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+              >
+                {upcomingEvents.map((place, i) => (
+                  <Link
+                    key={place.id}
+                    ref={(el) => { slideRefsEvents.current[i] = el }}
+                    href={`/hely/${place.slug || place.id}`}
+                    className="flex-shrink-0 w-[min(100%,420px)] sm:w-[min(100%,480px)] lg:w-[520px] snap-center"
+                  >
+                    <Card hover className="h-full group overflow-hidden">
+                      <div className="relative h-64 sm:h-72 overflow-hidden">
+                        <Image
+                          src={place.imageUrl || defaultCategoryImage}
+                          alt={place.name}
+                          fill
+                          className="object-cover group-hover:scale-105 transition-transform duration-300"
+                          sizes="(max-width: 768px) 100vw, 520px"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                        <div className="absolute top-3 left-3 flex gap-2">
+                          {place.eventDate && (
+                            <span className="px-3 py-1 rounded-full text-xs font-semibold bg-white/90 text-gray-800 backdrop-blur-sm">
+                              {formatEventDate(place.eventDate)}
+                            </span>
+                          )}
+                          {place.isPremium && <span className="px-3 py-1 rounded-full text-xs font-semibold bg-yellow-500/90 text-white backdrop-blur-sm">Prémium</span>}
+                        </div>
+                        <div className="absolute bottom-3 left-3 right-3 text-white">
+                          <p className="text-sm text-white/90">{place.category} · {place.address.split(',')[0]?.trim() ?? ''}</p>
+                          <CardTitle className="text-xl sm:text-2xl mt-1 text-white drop-shadow-md group-hover:text-[#E8F5E9] transition-colors">
+                            {place.name}
+                          </CardTitle>
+                        </div>
+                      </div>
+                    </Card>
+                  </Link>
+                ))}
+              </div>
+              <button
+                type="button"
+                onClick={goPrevEvents}
+                className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-2 sm:translate-x-0 z-10 w-12 h-12 md:w-14 md:h-14 rounded-full bg-white shadow-xl hover:shadow-2xl flex items-center justify-center text-gray-700 hover:bg-[#E8F5E9] hover:text-[#2D7A4F] transition-all hover:scale-110"
+                aria-label="Előző"
+              >
+                <ChevronLeft className="h-6 w-6 md:h-7 md:w-7" />
+              </button>
+              <button
+                type="button"
+                onClick={goNextEvents}
+                className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-2 sm:translate-x-0 z-10 w-12 h-12 md:w-14 md:h-14 rounded-full bg-white shadow-xl hover:shadow-2xl flex items-center justify-center text-gray-700 hover:bg-[#E8F5E9] hover:text-[#2D7A4F] transition-all hover:scale-110"
+                aria-label="Következő"
+              >
+                <ChevronRight className="h-6 w-6 md:h-7 md:w-7" />
+              </button>
+              <div className="flex justify-center gap-2 mt-6">
+                {upcomingEvents.map((_, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => {
+                      isUserInteractionRefEvents.current = true
+                      setCarouselIndexEvents(i)
+                    }}
+                    className={`w-2.5 h-2.5 rounded-full transition-all ${i === carouselIndexEvents ? 'bg-[#2D7A4F] scale-125' : 'bg-gray-300 hover:bg-gray-400'}`}
+                    aria-label={`Slide ${i + 1}`}
+                  />
+                ))}
+              </div>
             </div>
           </div>
         </section>

@@ -166,6 +166,24 @@ export async function getPlaces(): Promise<AppPlace[]> {
   return places
 }
 
+/** Közelgő események: event_date >= most, naptári sorrend, max 12. */
+export async function getUpcomingEvents(): Promise<AppPlace[]> {
+  const now = new Date().toISOString()
+  const { data, error } = await supabase
+    .from('places')
+    .select('*, categories(name, slug)')
+    .eq('is_active', true)
+    .not('event_date', 'is', null)
+    .gte('event_date', now)
+    .order('event_date', { ascending: true })
+    .limit(12)
+  if (error) {
+    console.error('getUpcomingEvents error', error)
+    return []
+  }
+  return (data ?? []).map((r) => rowToAppPlace(r as unknown as PlaceRowWithCategory))
+}
+
 /** Népszerű helyek a kezdőlaphoz: featured_order szerint, max 12. */
 export async function getFeaturedPlaces(): Promise<AppPlace[]> {
   const { data, error } = await supabase

@@ -13,6 +13,7 @@ type CategoriesContextValue = {
   headerCategories: HeaderCategory[]
   places: AppPlace[]
   featuredPlaces: AppPlace[]
+  upcomingEvents: AppPlace[]
   siteStats: SiteStatistic[]
 }
 
@@ -25,6 +26,7 @@ export function CategoriesProvider({
   initialHeaderCategories,
   initialPlaces,
   initialFeaturedPlaces,
+  initialUpcomingEvents,
   initialSiteStats,
 }: {
   children: ReactNode
@@ -33,6 +35,7 @@ export function CategoriesProvider({
   initialHeaderCategories: HeaderCategory[]
   initialPlaces: AppPlace[]
   initialFeaturedPlaces: AppPlace[]
+  initialUpcomingEvents: AppPlace[]
   initialSiteStats: SiteStatistic[]
 }) {
   const [categories] = useState<AppCategory[]>(initialCategories)
@@ -40,6 +43,7 @@ export function CategoriesProvider({
   const [headerCategories] = useState<HeaderCategory[]>(initialHeaderCategories)
   const [places] = useState<AppPlace[]>(initialPlaces)
   const [featuredPlaces] = useState<AppPlace[]>(initialFeaturedPlaces)
+  const [upcomingEvents] = useState<AppPlace[]>(initialUpcomingEvents)
   const [siteStats] = useState<SiteStatistic[]>(initialSiteStats)
 
   const value = useMemo(
@@ -49,9 +53,10 @@ export function CategoriesProvider({
       headerCategories,
       places,
       featuredPlaces,
+      upcomingEvents,
       siteStats,
     }),
-    [categories, featuredCategories, headerCategories, places, featuredPlaces, siteStats]
+    [categories, featuredCategories, headerCategories, places, featuredPlaces, upcomingEvents, siteStats]
   )
 
   return (
