@@ -178,7 +178,7 @@ export default function HomePage() {
             Programláz
           </h1>
           <p className="text-lg md:text-xl text-white/95 mb-10 max-w-2xl mx-auto leading-relaxed animate-hero-fade-in-up animate-hero-fade-in-up-delay-2">
-            Fedezd fel Magyarország legjobb helyeit – éttermek, szállások, látnivalók és programok egy helyen.
+            Fedezd fel hazánk legjobb helyeit – éttermek, szállások, látnivalók és élmények egy platformon.
           </p>
           <Link href="/terkep" className="inline-block animate-hero-fade-in-up animate-hero-fade-in-up-delay-3">
             <Button size="lg" className="bg-[#E8F5E9] text-[#1B5E20] hover:bg-white hover:text-[#2D7A4F] border-0 shadow-xl hover:shadow-2xl hover:shadow-[#2D7A4F]/25 hover:scale-105 transition-all duration-300 text-base font-semibold rounded-2xl px-8 py-6">

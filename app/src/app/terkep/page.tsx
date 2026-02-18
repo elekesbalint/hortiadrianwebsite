@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo, Suspense, useEffect } from 'react'
+import { useState, useMemo, Suspense, useEffect, useRef } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -40,6 +40,7 @@ function MapPageContent() {
   const [viewMode, setViewMode] = useState<'map' | 'list'>('map')
   const [isFilterOpen, setIsFilterOpen] = useState(false)
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null)
+  const horizontalScrollRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     Promise.all([getPlaces(), getCategories(), getFilters()]).then(([pls, cats, filts]) => {
@@ -274,7 +275,48 @@ function MapPageContent() {
             </div>
 
             {/* Gombok görgethető sorban mobil nézetben */}
-            <div className="flex items-center gap-2 sm:gap-4 overflow-x-auto pb-2 sm:pb-0 scrollbar-hide -mx-4 px-4 sm:mx-0 sm:px-0 flex-shrink-0">
+            <div 
+              ref={horizontalScrollRef}
+              className="flex items-center gap-2 sm:gap-4 overflow-x-auto pb-2 sm:pb-0 scrollbar-hide -mx-4 px-4 sm:mx-0 sm:px-0 flex-shrink-0"
+              style={{ touchAction: 'pan-x pinch-zoom' }}
+              onTouchStart={(e) => {
+                const touch = e.touches[0]
+                if (!touch) return
+                const startX = touch.clientX
+                const startY = touch.clientY
+                let isScrolling = false
+                
+                const handleTouchMove = (moveEvent: TouchEvent) => {
+                  if (!moveEvent.touches[0]) return
+                  const moveTouch = moveEvent.touches[0]
+                  const deltaX = Math.abs(moveTouch.clientX - startX)
+                  const deltaY = Math.abs(moveTouch.clientY - startY)
+                  
+                  // Ha horizontális scroll történik, akadályozzuk meg a vertikális scroll propagációt
+                  if (!isScrolling && deltaX > 10 && deltaX > deltaY) {
+                    isScrolling = true
+                  }
+                  
+                  if (isScrolling && deltaX > deltaY) {
+                    moveEvent.stopPropagation()
+                  }
+                }
+                
+                const handleTouchEnd = () => {
+                  document.removeEventListener('touchmove', handleTouchMove)
+                  document.removeEventListener('touchend', handleTouchEnd)
+                }
+                
+                document.addEventListener('touchmove', handleTouchMove, { passive: false })
+                document.addEventListener('touchend', handleTouchEnd)
+              }}
+              onWheel={(e) => {
+                // Desktop: csak vízszintesen görgetünk
+                if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) {
+                  e.stopPropagation()
+                }
+              }}
+            >
               {/* View Toggle */}
               <div className="flex items-center bg-gray-100 rounded-xl p-1 flex-shrink-0">
                 <button
