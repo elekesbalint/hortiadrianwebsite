@@ -17,6 +17,7 @@ import { uploadMenuFile } from '@/lib/db/menuUpload'
 import { uploadPlacePhoto } from '@/lib/db/placePhotoUpload'
 import { getCategories, type AppCategory } from '@/lib/db/categories'
 import { getFilters, getPlaceFilters, setPlaceFilters, type AppFilter } from '@/lib/db/filters'
+import { getCategoryFilterGroupsMap } from '@/lib/db/categoryFilterGroups'
 import { Pencil, Trash2, Plus, Search, X, Image as ImageIcon, FileText, Upload, Clock } from 'lucide-react'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 
@@ -70,6 +71,7 @@ export default function AdminPlacesPage() {
   const [uploadingPhoto, setUploadingPhoto] = useState(false)
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null)
   const [filters, setFilters] = useState<AppFilter[]>([])
+  const [categoryFilterGroupsMap, setCategoryFilterGroupsMap] = useState<Record<string, string[]>>({})
   const [selectedFilterIds, setSelectedFilterIds] = useState<string[]>([])
   const { isLoaded: isGoogleLoaded } = useJsApiLoader({
     googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '',
@@ -78,10 +80,11 @@ export default function AdminPlacesPage() {
 
   const load = async () => {
     setLoading(true)
-    const [pls, cats, filts] = await Promise.all([getPlaces(), getCategories(), getFilters()])
+    const [pls, cats, filts, map] = await Promise.all([getPlaces(), getCategories(), getFilters(), getCategoryFilterGroupsMap()])
     setPlaces(pls)
     setCategories(cats)
     setFilters(filts)
+    setCategoryFilterGroupsMap(map)
     setLoading(false)
   }
 
@@ -916,16 +919,28 @@ export default function AdminPlacesPage() {
                 <p className="text-xs text-gray-500 mt-1">1 = első, 2 = második... a &quot;Népszerű helyek&quot; szekcióban. 0 vagy üres = nem népszerű.</p>
               </div>
             
-            {/* Szűrők */}
+            {/* Szűrők – csak a kiválasztott kategóriához tartozó szűrőcsoportok */}
             <div className="w-full">
               <label className="block text-sm font-medium text-gray-700 mb-2">Szűrők</label>
-              <p className="text-xs text-gray-500 mb-4">Válassz ki, hogy mely szűrők vonatkoznak erre a helyre (pl. Évszak, Időszak, Tér, stb.)</p>
-              {filters.length === 0 ? (
-                <p className="text-sm text-gray-500 italic">Még nincs szűrő. Hozz létre szűrőket a <Link href="/admin/szurok" className="text-[#2D7A4F] hover:underline">Szűrők</Link> oldalon.</p>
-              ) : (
+              <p className="text-xs text-gray-500 mb-4">Csak a kategóriához rendelt szűrők jelennek meg. A kategória szűrőit a <Link href="/admin/kategoriak" className="text-[#2D7A4F] hover:underline">Kategóriák</Link> oldalon tudod beállítani.</p>
+              {(() => {
+                const allowedGroupSlugs = form.category_id ? (categoryFilterGroupsMap[form.category_id] ?? []) : []
+                const filtersToShow = allowedGroupSlugs.length > 0
+                  ? filters.filter((f) => allowedGroupSlugs.includes(f.group_slug))
+                  : []
+                if (filters.length === 0) {
+                  return <p className="text-sm text-gray-500 italic">Még nincs szűrő. Hozz létre szűrőket a <Link href="/admin/szurok" className="text-[#2D7A4F] hover:underline">Szűrők</Link> oldalon.</p>
+                }
+                if (!form.category_id) {
+                  return <p className="text-sm text-gray-500 italic">Először válassz kategóriát, utána itt megjelennek a hozzá tartozó szűrők.</p>
+                }
+                if (filtersToShow.length === 0) {
+                  return <p className="text-sm text-gray-500 italic">Ehhez a kategóriához nincs szűrő hozzárendelve. A <Link href="/admin/kategoriak" className="text-[#2D7A4F] hover:underline">Kategóriák</Link> oldalon a kategória szerkesztésénél tudod kiválasztani a szűrőcsoportokat.</p>
+                }
+                return (
                 <div className="space-y-6 max-h-[500px] overflow-y-auto p-4 border border-gray-200 rounded-xl bg-gray-50">
                   {Object.entries(
-                    filters.reduce<Record<string, AppFilter[]>>((acc, f) => {
+                    filtersToShow.reduce<Record<string, AppFilter[]>>((acc, f) => {
                       const key = f.group_slug || 'egyeb'
                       if (!acc[key]) acc[key] = []
                       acc[key].push(f)
@@ -982,7 +997,8 @@ export default function AdminPlacesPage() {
                       </div>
                     ))}
                 </div>
-              )}
+                )
+              })()}
             </div>
               <div className="flex justify-end gap-2 pt-4">
                 <Button type="button" variant="outline" onClick={closeModal}>
