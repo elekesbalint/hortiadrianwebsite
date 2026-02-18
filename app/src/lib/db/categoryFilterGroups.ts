@@ -39,7 +39,11 @@ export async function setFilterGroupsForCategory(
   groupSlugs: string[]
 ): Promise<boolean> {
   const admin = createServerSupabaseClient()
-  const table = admin.from('category_filter_groups')
+  type Table = {
+    delete: () => { eq: (col: string, val: string) => Promise<{ error: unknown }> }
+    insert: (rows: { category_id: string; group_slug: string }[]) => Promise<{ error: unknown }>
+  }
+  const table = (admin as unknown as { from: (t: string) => Table }).from('category_filter_groups')
   const { error: deleteError } = await table.delete().eq('category_id', categoryId)
   if (deleteError) {
     console.error('setFilterGroupsForCategory delete error', deleteError)
