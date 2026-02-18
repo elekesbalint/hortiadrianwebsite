@@ -10,10 +10,12 @@ import {
   moveCategoryDown,
   type AppCategory,
 } from '@/lib/db/categories'
+import { getFilterGroupOptions } from '@/lib/db/filters'
+import { getFilterGroupSlugsForCategory, setFilterGroupsForCategory } from '@/lib/db/categoryFilterGroups'
 import { getPlaces } from '@/lib/db/places'
 import { uploadCategoryBanner } from '@/lib/db/categoryBannerUpload'
 import { Button } from '@/components/ui/Button'
-import { FolderTree, Plus, Pencil, Trash2, ChevronUp, ChevronDown, Image as ImageIcon, Upload } from 'lucide-react'
+import { FolderTree, Plus, Pencil, Trash2, ChevronUp, ChevronDown, Image as ImageIcon, Upload, Sliders } from 'lucide-react'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 import { CATEGORY_ICON_OPTIONS, getCategoryIconComponent } from '@/lib/categoryIcons'
 
@@ -36,12 +38,15 @@ export default function AdminCategoriesPage() {
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
   const [uploadingBanner, setUploadingBanner] = useState(false)
   const [uploadingEditBanner, setUploadingEditBanner] = useState(false)
+  const [filterGroupOptions, setFilterGroupOptions] = useState<{ group_slug: string; group_name: string }[]>([])
+  const [editFilterGroupSlugs, setEditFilterGroupSlugs] = useState<string[]>([])
 
   const load = async () => {
     setLoading(true)
-    const [cats, pls] = await Promise.all([getCategories(), getPlaces()])
+    const [cats, pls, groups] = await Promise.all([getCategories(), getPlaces(), getFilterGroupOptions()])
     setCategories(cats)
     setPlaces(pls.map((p) => ({ category_id: p.category_id })))
+    setFilterGroupOptions(groups)
     setLoading(false)
   }
 
@@ -76,13 +81,15 @@ export default function AdminCategoriesPage() {
     }
   }
 
-  const startEdit = (id: string, name: string, image: string | null, icon: string | null, detail_page_title: string | null, featured_order: number | null) => {
+  const startEdit = async (id: string, name: string, image: string | null, icon: string | null, detail_page_title: string | null, featured_order: number | null) => {
     setEditingId(id)
     setEditName(name)
     setEditImage(image ?? '')
     setEditIcon(icon ?? null)
     setEditDetailPageTitle(detail_page_title ?? '')
     setEditFeaturedOrder(featured_order ? featured_order.toString() : '')
+    const slugs = await getFilterGroupSlugsForCategory(id)
+    setEditFilterGroupSlugs(slugs)
   }
 
   const saveEdit = async () => {
@@ -91,14 +98,17 @@ export default function AdminCategoriesPage() {
     if (!c) return
     setSaving(true)
     const ok = await updateCategory(editingId, c.slug, editName.trim(), { show_in_header: c.show_in_header, image: editImage.trim() || null, icon: editIcon || null, detail_page_title: editDetailPageTitle.trim() || null, featured_order: editFeaturedOrder ? Number(editFeaturedOrder) : null })
+    const okFilters = await setFilterGroupsForCategory(editingId, editFilterGroupSlugs)
     setSaving(false)
     if (ok) {
+      if (!okFilters) alert('A kategória mentve, de a szűrő hozzárendelések mentése sikertelen.')
       setEditingId(null)
       setEditName('')
       setEditImage('')
       setEditIcon(null)
       setEditDetailPageTitle('')
       setEditFeaturedOrder('')
+      setEditFilterGroupSlugs([])
       await load()
     } else {
       alert('Hiba történt a mentés során.')
@@ -120,6 +130,7 @@ export default function AdminCategoriesPage() {
     setEditIcon(null)
     setEditDetailPageTitle('')
     setEditFeaturedOrder('')
+    setEditFilterGroupSlugs([])
   }
 
   const handleMoveUp = async (id: string) => {
@@ -372,6 +383,32 @@ export default function AdminCategoriesPage() {
                             className="px-3 py-1.5 border border-gray-200 rounded-lg outline-none focus:border-[#2D7A4F] w-48 text-sm"
                           />
                           <p className="text-xs text-gray-400 mt-0.5">Ha megadva, megjelenik a főoldal "Felkapott kategóriák" szekciójában</p>
+                        </div>
+                        <div>
+                          <label className="block text-xs text-gray-500 mb-1.5 flex items-center gap-1">
+                            <Sliders className="h-3.5 w-3.5 text-[#2D7A4F]" />
+                            Szűrők ehhez a kategóriához
+                          </label>
+                          <p className="text-xs text-gray-400 mb-2">Ezek a szűrőcsoportok jelennek meg a kategória és a térkép oldalon.</p>
+                          <div className="flex flex-wrap gap-x-4 gap-y-1.5">
+                            {filterGroupOptions.map((opt) => (
+                              <label key={opt.group_slug} className="flex items-center gap-2 cursor-pointer text-sm text-gray-700">
+                                <input
+                                  type="checkbox"
+                                  checked={editFilterGroupSlugs.includes(opt.group_slug)}
+                                  onChange={(e) => {
+                                    if (e.target.checked) {
+                                      setEditFilterGroupSlugs((prev) => [...prev, opt.group_slug].sort())
+                                    } else {
+                                      setEditFilterGroupSlugs((prev) => prev.filter((s) => s !== opt.group_slug))
+                                    }
+                                  }}
+                                  className="rounded border-gray-300 text-[#2D7A4F] focus:ring-[#2D7A4F]"
+                                />
+                                {opt.group_name}
+                              </label>
+                            ))}
+                          </div>
                         </div>
                       </div>
                     ) : (

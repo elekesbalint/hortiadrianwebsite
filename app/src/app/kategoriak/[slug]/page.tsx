@@ -16,6 +16,7 @@ import { getCategoryIconComponent } from '@/lib/categoryIcons'
 import { getPlaces } from '@/lib/db/places'
 import { getCategories } from '@/lib/db/categories'
 import { getFilters, type AppFilter } from '@/lib/db/filters'
+import { getCategoryFilterGroupsMap } from '@/lib/db/categoryFilterGroups'
 import { getFavoritePlaceIds, addFavorite, removeFavorite } from '@/lib/db/favorites'
 import { formatTravelTime, estimateTravelTimeMinutes, calculateDistance, getRouteDistanceAndTime } from '@/lib/utils'
 import { useAuth } from '@/context/AuthContext'
@@ -61,6 +62,7 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
   const [places, setPlaces] = useState<Awaited<ReturnType<typeof getPlaces>>>([])
   const [categories, setCategories] = useState<Awaited<ReturnType<typeof getCategories>>>([])
   const [filters, setFilters] = useState<AppFilter[]>([])
+  const [categoryFilterGroupsMap, setCategoryFilterGroupsMap] = useState<Record<string, string[]>>({})
   const [loading, setLoading] = useState(true)
   const [isFilterOpen, setIsFilterOpen] = useState(false)
   const [favorites, setFavorites] = useState<string[]>([])
@@ -79,10 +81,11 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null)
 
   useEffect(() => {
-    Promise.all([getPlaces(), getCategories(), getFilters()]).then(([pls, cats, filts]) => {
+    Promise.all([getPlaces(), getCategories(), getFilters(), getCategoryFilterGroupsMap()]).then(([pls, cats, filts, map]) => {
       setPlaces(pls)
       setCategories(cats)
       setFilters(filts)
+      setCategoryFilterGroupsMap(map)
       setLoading(false)
     })
   }, [])
@@ -469,28 +472,9 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
                   />
                 </div>
 
-                {/* Kategória-specifikus szűrők */}
+                {/* Kategória-specifikus szűrők (DB: category_filter_groups) */}
                 {(() => {
-                  // Kategória-specifikus szűrő csoportok meghatározása
-                  const categoryFilterGroups: Record<string, string[]> = {
-                    szallasok: ['tipus', 'kenyelmi-funkciok', 'kinek', 'evszak'],
-                    ettermek: ['konyha-tipusa', 'etkezesi-igenyek'],
-                    programok: ['hangulat', 'evszak', 'idoszak', 'kivel-mesz', 'ter'],
-                    latnivalok: ['program-tipusa', 'kinek-ajanlott', 'megkozelithetoseg', 'evszak', 'kivel-mesz', 'hangulat', 'ter'],
-                    // Kiemelt kategóriák (főoldal) – több slug variáns az "Esős napra" kategóriához
-                    paroknak: ['paroknak'],
-                    'esos-napra': ['esos-napra'],
-                    esos_napra: ['esos-napra'],
-                    esosnapra: ['esos-napra'],
-                    'esos napra': ['esos-napra'],
-                    hetvegere: ['hetvegere'],
-                    // Gyerekeknek kategória – több slug variáns
-                    gyerekeknek: ['korosztaly', 'ter', 'aktivitas', 'kreativ', 'kulturalis'],
-                    gyerekek: ['korosztaly', 'ter', 'aktivitas', 'kreativ', 'kulturalis'],
-                    'gyerekek-nek': ['korosztaly', 'ter', 'aktivitas', 'kreativ', 'kulturalis'],
-                  }
-
-                  const allowedGroups = categoryFilterGroups[slug] || []
+                  const allowedGroups = categoryBySlug ? (categoryFilterGroupsMap[categoryBySlug.id] ?? []) : []
                   
                   // Szűrők csoportosítása
                   const groupedFilters = filters.reduce<Record<string, AppFilter[]>>((acc, f) => {

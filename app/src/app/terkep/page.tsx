@@ -16,6 +16,7 @@ import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 import { getPlaces } from '@/lib/db/places'
 import { getCategories } from '@/lib/db/categories'
 import { getFilters, type AppFilter } from '@/lib/db/filters'
+import { getCategoryFilterGroupsMap } from '@/lib/db/categoryFilterGroups'
 import { calculateDistance, estimateTravelTimeMinutes, formatTravelTime, getRouteDistanceAndTime } from '@/lib/utils'
 
 const BUDAPEST = { lat: 47.4979, lng: 19.0402 }
@@ -26,6 +27,7 @@ function MapPageContent() {
   const [placesAll, setPlacesAll] = useState<Awaited<ReturnType<typeof getPlaces>>>([])
   const [categories, setCategories] = useState<Awaited<ReturnType<typeof getCategories>>>([])
   const [filters, setFilters] = useState<AppFilter[]>([])
+  const [categoryFilterGroupsMap, setCategoryFilterGroupsMap] = useState<Record<string, string[]>>({})
   const [loading, setLoading] = useState(true)
   
   // Szűrő értékek
@@ -43,10 +45,11 @@ function MapPageContent() {
   const horizontalScrollRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    Promise.all([getPlaces(), getCategories(), getFilters()]).then(([pls, cats, filts]) => {
+    Promise.all([getPlaces(), getCategories(), getFilters(), getCategoryFilterGroupsMap()]).then(([pls, cats, filts, map]) => {
       setPlacesAll(pls)
       setCategories(cats)
       setFilters(filts)
+      setCategoryFilterGroupsMap(map)
       setLoading(false)
     })
   }, [])
@@ -483,23 +486,11 @@ function MapPageContent() {
                     </div>
                   </Accordion>
 
-                  {/* Kategória-specifikus szűrők (csak ha van kiválasztott kategória) */}
+                  {/* Kategória-specifikus szűrők (DB: category_filter_groups) */}
                   {(() => {
                     const selectedCategorySlug = filterCategory || kategoriaSlug || ''
-                    const categoryFilterGroups: Record<string, string[]> = {
-                      szallasok: ['tipus', 'kenyelmi-funkciok', 'kinek'],
-                      ettermek: ['konyha-tipusa', 'etkezesi-igenyek'],
-                      programok: ['hangulat'],
-                      latnivalok: ['program-tipusa', 'kinek-ajanlott', 'megkozelithetoseg'],
-                      paroknak: ['paroknak'],
-                      'esos-napra': ['esos-napra'],
-                      esos_napra: ['esos-napra'],
-                      esosnapra: ['esos-napra'],
-                      'esos napra': ['esos-napra'],
-                      hetvegere: ['hetvegere'],
-                    }
-
-                    const allowedGroups = categoryFilterGroups[selectedCategorySlug] || []
+                    const selectedCategory = categories.find((c) => c.slug === selectedCategorySlug)
+                    const allowedGroups = selectedCategory ? (categoryFilterGroupsMap[selectedCategory.id] ?? []) : []
                     
                     // Szűrők csoportosítása
                     const groupedFilters = filters.reduce<Record<string, AppFilter[]>>((acc, f) => {

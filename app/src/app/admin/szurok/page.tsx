@@ -10,6 +10,7 @@ import {
   deleteFilter,
   type AppFilter,
 } from '@/lib/db/filters'
+import { getCategoriesByFilterGroupSlug } from '@/lib/db/categoryFilterGroups'
 import { Sliders, Plus, Pencil, Trash2, X } from 'lucide-react'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 
@@ -30,6 +31,7 @@ export default function AdminFiltersPage() {
   const [modalOpen, setModalOpen] = useState<'add' | 'edit' | null>(null)
   const [editingFilter, setEditingFilter] = useState<AppFilter | null>(null)
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
+  const [categoryNamesByGroupSlug, setCategoryNamesByGroupSlug] = useState<Record<string, string[]>>({})
   const [form, setForm] = useState({
     group_name: '',
     group_slug: '', // Automatikusan generálódik
@@ -43,6 +45,15 @@ export default function AdminFiltersPage() {
     setLoading(true)
     const list = await getFilters()
     setFilters(list)
+    const groupSlugs = [...new Set(list.map((f) => f.group_slug))]
+    const map: Record<string, string[]> = {}
+    await Promise.all(
+      groupSlugs.map(async (slug) => {
+        const cats = await getCategoriesByFilterGroupSlug(slug)
+        map[slug] = cats.map((c) => c.name)
+      })
+    )
+    setCategoryNamesByGroupSlug(map)
     setLoading(false)
   }
 
@@ -166,9 +177,14 @@ export default function AdminFiltersPage() {
           {Object.entries(grouped).map(([groupSlug, items]) => (
             <Card key={groupSlug}>
               <CardContent className="p-4">
-                <h2 className="text-lg font-semibold text-[#1A1A1A] mb-3">
+                <h2 className="text-lg font-semibold text-[#1A1A1A] mb-1">
                   {items[0]?.group_name || groupSlug}
                 </h2>
+                {(categoryNamesByGroupSlug[groupSlug]?.length ?? 0) > 0 && (
+                  <p className="text-xs text-gray-500 mb-3">
+                    Kategóriák: {categoryNamesByGroupSlug[groupSlug]?.join(', ')}
+                  </p>
+                )}
                 <ul className="space-y-2">
                   {items.map((f) => (
                     <li

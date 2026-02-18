@@ -77,6 +77,11 @@ export type Database = {
           created_at?: string
         }
       }
+      category_filter_groups: {
+        Row: { category_id: string; group_slug: string }
+        Insert: { category_id: string; group_slug: string }
+        Update: { category_id?: string; group_slug?: string }
+      }
       places: {
         Row: {
           id: string

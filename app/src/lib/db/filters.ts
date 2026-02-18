@@ -34,6 +34,19 @@ export async function getFilters(): Promise<AppFilter[]> {
   return (data ?? []) as AppFilter[]
 }
 
+/** Egyedi szűrőcsoportok (group_slug, group_name) – admin kategória szűrő hozzárendeléshez. */
+export async function getFilterGroupOptions(): Promise<{ group_slug: string; group_name: string }[]> {
+  const list = await getFilters()
+  const seen = new Set<string>()
+  const out: { group_slug: string; group_name: string }[] = []
+  for (const f of list) {
+    if (seen.has(f.group_slug)) continue
+    seen.add(f.group_slug)
+    out.push({ group_slug: f.group_slug, group_name: f.group_name })
+  }
+  return out.sort((a, b) => a.group_name.localeCompare(b.group_name))
+}
+
 export async function insertFilter(
   groupName: string,
   groupSlug: string,
