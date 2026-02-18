@@ -7,7 +7,7 @@ import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { Button } from '@/components/ui/Button'
 import { Card, CardContent, CardTitle } from '@/components/ui/Card'
-import { MapPin, Star, Heart, ChevronDown, Map, Sliders, RotateCcw, Search, Utensils, Home, Landmark, Calendar, Clock, Users, Route, Tag, Gauge, CheckCircle, X, CloudRain } from 'lucide-react'
+import { MapPin, Star, Heart, ChevronDown, Map, Sliders, RotateCcw, Search, Utensils, Home, Landmark, Calendar, Clock, Users, Route, Tag, Gauge, CheckCircle, X, CloudRain, Baby, Sparkles, Camera, Music } from 'lucide-react'
 import { CityAutocomplete } from '@/components/ui/CityAutocomplete'
 import { DistanceSlider } from '@/components/ui/DistanceSlider'
 import { FilterChip } from '@/components/ui/FilterChip'
@@ -484,6 +484,10 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
                     esosnapra: ['esos-napra'],
                     'esos napra': ['esos-napra'],
                     hetvegere: ['hetvegere'],
+                    // Gyerekeknek kategória – több slug variáns
+                    gyerekeknek: ['korosztaly', 'ter', 'aktivitas', 'kreativ', 'kulturalis'],
+                    gyerekek: ['korosztaly', 'ter', 'aktivitas', 'kreativ', 'kulturalis'],
+                    'gyerekek-nek': ['korosztaly', 'ter', 'aktivitas', 'kreativ', 'kulturalis'],
                   }
 
                   const allowedGroups = categoryFilterGroups[slug] || []
@@ -520,6 +524,11 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
                         if (groupSlug === 'paroknak') return Heart
                         if (groupSlug === 'esos-napra') return CloudRain
                         if (groupSlug === 'hetvegere') return Calendar
+                        // Gyerekeknek kategória szűrők
+                        if (groupSlug === 'korosztaly') return Baby
+                        if (groupSlug === 'aktivitas') return Gauge
+                        if (groupSlug === 'kreativ') return Sparkles
+                        if (groupSlug === 'kulturalis') return Landmark
                         return Sliders
                       }
                       const Icon = getIcon()
