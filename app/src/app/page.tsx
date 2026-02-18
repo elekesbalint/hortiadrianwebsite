@@ -545,8 +545,8 @@ export default function HomePage() {
       <section className="py-8 md:py-28 bg-[#E5E5E5]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-12 items-center">
-            {/* Magyarország térkép pincékkel (sötét háttér) – mobilnézetben kisebb távolság a címsor előtt */}
-            <div className="relative h-[400px] md:h-[500px] overflow-hidden rounded-2xl bg-black">
+            {/* Magyarország térkép pincékkel (átlátszó háttér) – mobilnézetben kisebb távolság a címsor előtt */}
+            <div className="relative h-[400px] md:h-[500px] overflow-hidden rounded-2xl">
               <Image
                 src="/images/magyarorszag-pinek.png"
                 alt="Magyarország – fedezd fel a helyeket"
