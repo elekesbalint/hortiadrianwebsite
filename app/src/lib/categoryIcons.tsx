@@ -18,6 +18,7 @@ import {
   Sparkles,
   Heart,
   CloudRain,
+  Baby,
   type LucideIcon,
 } from 'lucide-react'
 
@@ -40,6 +41,7 @@ export const CATEGORY_ICON_OPTIONS: { id: string; label: string }[] = [
   { id: 'Palmtree', label: 'Nyár / Strand' },
   { id: 'Music', label: 'Zene / Koncert' },
   { id: 'Sparkles', label: 'Wellness / Szépség' },
+  { id: 'Baby', label: 'Gyerekeknek' },
 ]
 
 const ICON_MAP: Record<string, LucideIcon> = {
@@ -60,6 +62,7 @@ const ICON_MAP: Record<string, LucideIcon> = {
   Palmtree,
   Music,
   Sparkles,
+  Baby,
 }
 
 /** Ikon komponens a megadott névből (header és admin megjelenítéshez). */

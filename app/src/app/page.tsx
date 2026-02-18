@@ -197,9 +197,9 @@ export default function HomePage() {
       </section>
 
       {/* Kategóriakártyák – referencia: képek + ikonok, négyzetes kártyák */}
-      <section className="pt-12 pb-20 md:pt-16 md:pb-28 bg-[#E5E5E5]">
+      <section className="pt-8 pb-8 md:pt-16 md:pb-28 bg-[#E5E5E5]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="mb-12 text-center">
+          <div className="mb-6 md:mb-12 text-center">
             <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-3">
               Fedezd fel a kategóriákat
             </h2>
@@ -250,9 +250,9 @@ export default function HomePage() {
 
       {/* Kiemelt kategóriák */}
       {featuredCategories.length > 0 && (
-        <section className="py-20 md:py-28 bg-[#E5E5E5]">
+        <section className="py-8 md:py-28 bg-[#E5E5E5]">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 mb-12">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 mb-4 md:mb-12">
               <div>
                 <span className="inline-flex items-center gap-2 bg-yellow-100 text-yellow-700 text-sm font-semibold px-4 py-2 rounded-full mb-4">
                   <Sparkles className="h-4 w-4" />
@@ -312,9 +312,9 @@ export default function HomePage() {
       )}
 
       {/* Közelgő események – mindig a helyén; ha nincs esemény, üzenet */}
-      <section className="py-20 md:py-28 bg-[#E5E5E5]">
+      <section className="py-8 md:py-28 bg-[#E5E5E5]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 mb-12">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 mb-4 md:mb-12">
             <div>
               <span className="inline-flex items-center gap-2 bg-yellow-100 text-yellow-700 text-sm font-semibold px-4 py-2 rounded-full mb-4">
                 <Calendar className="h-4 w-4" />
@@ -422,9 +422,9 @@ export default function HomePage() {
       </section>
 
       {/* Népszerű helyek */}
-      <section className="py-20 md:py-28 bg-[#E5E5E5]">
+      <section className="py-8 md:py-28 bg-[#E5E5E5]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 mb-12">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 mb-4 md:mb-12">
             <div>
               <span className="inline-flex items-center gap-2 bg-yellow-100 text-yellow-700 text-sm font-semibold px-4 py-2 rounded-full mb-4">
                 <Sparkles className="h-4 w-4" />
@@ -542,13 +542,13 @@ export default function HomePage() {
 
 
       {/* Térkép és főoldal statisztikák (adminból szerkeszthető: Főoldal statisztikák) */}
-      <section className="py-20 md:py-28 bg-[#E5E5E5]">
+      <section className="py-8 md:py-28 bg-[#E5E5E5]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            {/* Stylized map – Magyarország körvonal (megyék) */}
-            <div className="relative h-[400px] md:h-[500px] overflow-hidden">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-12 items-center">
+            {/* Magyarország térkép pincékkel (sötét háttér) – mobilnézetben kisebb távolság a címsor előtt */}
+            <div className="relative h-[400px] md:h-[500px] overflow-hidden rounded-2xl bg-black">
               <Image
-                src="/images/magyarorszag-korvonal.png"
+                src="/images/magyarorszag-pinek.png"
                 alt="Magyarország – fedezd fel a helyeket"
                 fill
                 className="object-contain"
