@@ -23,6 +23,7 @@ import {
   FileText,
 } from 'lucide-react'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
+import { getSiteUrl } from '@/lib/utils'
 
 const navItems = [
   { href: '/admin', label: 'Áttekintés', icon: LayoutDashboard },
@@ -130,7 +131,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
     const startEnroll = () => {
       if (cancelled) return
       // Issuer paraméter hozzáadva a site URL hiba elkerüléséhez
-      const siteUrl = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000'
+      const siteUrl = getSiteUrl()
       supabase.auth.mfa
         .enroll({ 
           factorType: 'totp', 

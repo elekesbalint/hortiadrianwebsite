@@ -16,7 +16,10 @@ import { Footer } from '@/components/layout/Footer'
 import { CookieConsent } from '@/components/layout/CookieConsent'
 import { AuthProviderWrapper } from '@/components/providers/AuthProviderWrapper'
 
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://programlaz.hu'
+
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: 'Programláz - Fedezd fel Magyarország legjobb helyeit',
   description: 'Éttermek, szállások, látnivalók és programok egy helyen, interaktív térképen. Fedezd fel Magyarország legjobb helyeit!',
   keywords: 'éttermek, szállások, látnivalók, programok, Magyarország, térkép, kirándulás, utazás, programláz',

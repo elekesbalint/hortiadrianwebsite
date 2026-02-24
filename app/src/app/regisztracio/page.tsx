@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/Button'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 import { supabase } from '@/lib/supabase'
 import { addNewsletterSubscriber } from '@/lib/db/newsletter'
+import { getSiteUrl } from '@/lib/utils'
 
 const inputClass =
   'w-full pl-11 pr-4 py-3 bg-white border border-gray-200 rounded-xl outline-none focus:border-[#2D7A4F] focus:ring-2 focus:ring-[#2D7A4F]/20 transition-all placeholder:text-gray-400'
@@ -29,7 +30,7 @@ function RegisztracioForm() {
 
   const handleOAuth = async (provider: 'google' | 'facebook') => {
     setError('')
-    const redirectTo = `${typeof window !== 'undefined' ? window.location.origin : ''}/auth/callback?next=${encodeURIComponent(redirect)}`
+    const redirectTo = `${getSiteUrl()}/auth/callback?next=${encodeURIComponent(redirect)}`
     const { data, error: err } = await supabase.auth.signInWithOAuth({
       provider,
       options: { redirectTo },

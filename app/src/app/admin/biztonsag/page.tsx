@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { Shield } from 'lucide-react'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 import { supabase } from '@/lib/supabase'
+import { getSiteUrl } from '@/lib/utils'
 
 const inputClass =
   'w-full pl-4 pr-4 py-3 bg-white border border-gray-200 rounded-xl outline-none focus:border-[#2D7A4F] focus:ring-2 focus:ring-[#2D7A4F]/20 transition-all placeholder:text-gray-400'
@@ -47,7 +48,7 @@ export default function AdminBiztonsagPage() {
       await supabase.auth.mfa.unenroll({ factorId: f.id })
     }
     // Próbáljuk meg az issuer paraméterrel, hogy elkerüljük a "site url is improperly formatted" hibát
-    const siteUrl = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000'
+    const siteUrl = getSiteUrl()
     const { data: enrollRes, error: enrollErr } = await supabase.auth.mfa.enroll({
       factorType: 'totp',
       friendlyName: 'Admin',

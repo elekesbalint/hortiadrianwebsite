@@ -5,6 +5,17 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
+/** Abszolút site URL (programlaz.hu élesben). NEXT_PUBLIC_SITE_URL vagy window.origin, fallback localhost. */
+export function getSiteUrl(): string {
+  if (typeof process !== 'undefined' && process.env.NEXT_PUBLIC_SITE_URL) {
+    return process.env.NEXT_PUBLIC_SITE_URL.replace(/\/$/, '')
+  }
+  if (typeof window !== 'undefined' && window.location?.origin) {
+    return window.location.origin
+  }
+  return 'https://programlaz.hu'
+}
+
 // Calculate distance between two coordinates (Haversine formula)
 export function calculateDistance(
   lat1: number,

@@ -6,6 +6,7 @@ import Image from 'next/image'
 import { Mail } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { supabase } from '@/lib/supabase'
+import { getSiteUrl } from '@/lib/utils'
 
 const inputClass =
   'w-full pl-11 pr-4 py-3 bg-white border border-gray-200 rounded-xl outline-none focus:border-[#2D7A4F] focus:ring-2 focus:ring-[#2D7A4F]/20 transition-all placeholder:text-gray-400'
@@ -20,7 +21,7 @@ export default function ElfelejtettJelszoPage() {
     e.preventDefault()
     setError('')
     setIsLoading(true)
-    const redirectTo = typeof window !== 'undefined' ? `${window.location.origin}/uj-jelszo` : undefined
+    const redirectTo = `${getSiteUrl()}/uj-jelszo`
     const { error: err } = await supabase.auth.resetPasswordForEmail(email, { redirectTo })
     setIsLoading(false)
     if (err) {
