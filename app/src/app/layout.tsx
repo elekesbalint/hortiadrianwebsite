@@ -15,6 +15,7 @@ const fontBrand = Dancing_Script({
 import { Footer } from '@/components/layout/Footer'
 import { CookieConsent } from '@/components/layout/CookieConsent'
 import { AuthProviderWrapper } from '@/components/providers/AuthProviderWrapper'
+import { GoogleAnalytics } from '@/components/analytics/GoogleAnalytics'
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://programlaz.hu'
 const DEFAULT_TITLE = 'Programláz - Fedezd fel Magyarország legjobb helyeit'
@@ -100,6 +101,7 @@ export default async function RootLayout({
   return (
     <html lang="hu">
       <body className={`${fontBrand.variable} antialiased min-h-screen flex flex-col`} suppressHydrationWarning>
+        <GoogleAnalytics />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
         <AuthProviderWrapper>
           <CategoriesProvider

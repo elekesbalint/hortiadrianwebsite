@@ -36,3 +36,9 @@ Az oldal professzionális SEO optimalizálásának rövid áttekintése.
 3. **Tartalom**: a hely- és kategóriaoldalak leírásai egyediek, 150–160 karakter körül; a képek alt szövegei a komponensekben (pl. hely neve).
 4. **Teljesítmény**: LCP/CLS barát (prioritásos képek, méretezés); a lazy load a listáknál megmarad.
 5. **Verification**: ha kell, a root layout `metadata.verification` mezőjébe beállítható pl. `google: '...'`, `yandex: '...'` (Search Console / Yandex kód).
+
+## Google Analytics 4 (GA4)
+
+- A **GoogleAnalytics** komponens (`@/components/analytics/GoogleAnalytics`) betölti a gtag.js-t és konfigurálja a GA4-et, ha a **NEXT_PUBLIC_GA_MEASUREMENT_ID** környezeti változó be van állítva (pl. `G-XXXXXXXXXX`).
+- Az első oldalbetöltés és minden kliens oldali navigáció automatikusan `page_view` eseményként kerül rögzítésre.
+- **Beállítás**: [analytics.google.com](https://analytics.google.com) → Admin → Data Streams → Web → Measurement ID. Másold ki a **G-…** azonosítót, és add meg Vercelben (vagy `.env.local`-ban) a `NEXT_PUBLIC_GA_MEASUREMENT_ID` értékeként.
