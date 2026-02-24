@@ -542,9 +542,9 @@ export default function HomePage() {
 
 
       {/* Térkép és főoldal statisztikák (adminból szerkeszthető: Főoldal statisztikák) */}
-      <section className="py-6 md:py-28 bg-[#E5E5E5]">
+      <section className="py-4 md:py-28 bg-[#E5E5E5]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 lg:gap-12 items-center">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-1 md:gap-4 lg:gap-12 items-center">
             {/* Magyarország térkép gombostűkkel (átlátszó háttér) – mobilnézetben kisebb távolság a címsor előtt */}
             <div className="relative h-[400px] md:h-[500px] overflow-hidden rounded-2xl">
               <Image
