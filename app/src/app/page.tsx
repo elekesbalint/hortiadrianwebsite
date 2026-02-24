@@ -542,9 +542,9 @@ export default function HomePage() {
 
 
       {/* Térkép és főoldal statisztikák (adminból szerkeszthető: Főoldal statisztikák) */}
-      <section className="py-8 md:py-28 bg-[#E5E5E5]">
+      <section className="py-6 md:py-28 bg-[#E5E5E5]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-12 items-center">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 lg:gap-12 items-center">
             {/* Magyarország térkép gombostűkkel (átlátszó háttér) – mobilnézetben kisebb távolság a címsor előtt */}
             <div className="relative h-[400px] md:h-[500px] overflow-hidden rounded-2xl">
               <Image
@@ -556,9 +556,9 @@ export default function HomePage() {
               />
             </div>
             {/* Főoldal statisztika kártyák (site_statistics táblából, adminból szerkeszthető) */}
-            <div className="space-y-8">
+            <div className="space-y-6 md:space-y-8">
               <div>
-                <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
+                <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-2 md:mb-4">
                   Csatlakozz közösségünkhöz
                 </h2>
                 <p className="text-lg text-gray-600">

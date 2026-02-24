@@ -454,7 +454,7 @@ function MapPageContent() {
                     <DistanceSlider
                       value={filterMaxDistance}
                       onChange={setFilterMaxDistance}
-                      max={50}
+                      max={250}
                       step={1}
                     />
                   </Accordion>

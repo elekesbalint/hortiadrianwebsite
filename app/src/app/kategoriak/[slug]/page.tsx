@@ -467,7 +467,7 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
                   <DistanceSlider
                     value={filterMaxDistance}
                     onChange={setFilterMaxDistance}
-                    max={50}
+                    max={250}
                     step={1}
                   />
                 </div>
