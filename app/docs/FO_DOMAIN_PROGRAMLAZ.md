@@ -35,7 +35,22 @@ Részletek: [OAUTH_BEALLITAS.md](./OAUTH_BEALLITAS.md).
 2. Add hozzá a **programlaz.hu**-t (és opcionálisan a **www.programlaz.hu**-t).
 3. A domain kezelőnél (ahol a DNS-t állítod) állítsd a programlaz.hu-t (és esetleg www) a Vercel által megadott rekordokra (A/CNAME).
 
-## 5. Egyéb
+## 5. Google Maps API – referrer engedélyezés
+
+A térkép (Maps JavaScript API) csak olyan domainről működik, ami az API kulcs **Application restrictions** alatt szerepel.
+
+1. Nyisd meg: [Google Cloud Console](https://console.cloud.google.com/) → válaszd a projektet.
+2. **APIs & Services** → **Credentials** → kattints a **Maps** API-hoz használt kulcsra (vagy az általános API kulcsra).
+3. **Application restrictions**:
+   - Ha **HTTP referrers** van beállítva: a **Website restrictions** listához add hozzá:
+     - `https://programlaz.hu/*`
+     - `https://www.programlaz.hu/*`
+     - (Opcionálisan localhost fejlesztéshez: `http://localhost:*`, `http://127.0.0.1:*`.)
+   - **Save**.
+
+Ezután a **RefererNotAllowedMapError** eltűnik, és a térkép a programlaz.hu-n is betölt.
+
+## 6. Egyéb
 
 - **E-mail / hírlevél** saját domainről: [DOMAIN_EMAIL_SETUP.md](./DOMAIN_EMAIL_SETUP.md).
 - **Cookie / adatkezelés**: ha van cookie szöveg, ellenőrizd, hogy a domainre vonatkozó részek naprakészek legyenek.

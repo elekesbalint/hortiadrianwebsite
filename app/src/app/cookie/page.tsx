@@ -1,6 +1,13 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { ArrowLeft, Cookie, Shield, BarChart3, Settings } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
+
+export const metadata: Metadata = {
+  title: 'Cookie beállítások',
+  description: 'A Programláz weboldal cookie-kat használ a legjobb felhasználói élmény biztosítása érdekében. Részletek a cookie típusokról és kezelésükről.',
+  robots: { index: true, follow: true },
+}
 
 export default function CookiePage() {
   return (

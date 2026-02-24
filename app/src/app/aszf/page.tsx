@@ -1,3 +1,11 @@
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Általános Szerződési Feltételek',
+  description: 'Programláz általános szerződési feltételei és használati szabályai.',
+  robots: { index: true, follow: true },
+}
+
 export default function ASZFPage() {
   return (
     <div className="min-h-[calc(100vh-80px)] bg-gray-50 flex items-center justify-center px-4 py-16">
