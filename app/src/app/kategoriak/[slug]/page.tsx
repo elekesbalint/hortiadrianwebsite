@@ -495,9 +495,11 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
                       const getIcon = () => {
                         if (groupSlug === 'tipus') return Home
                         if (groupSlug === 'kenyelmi-funkciok') return Star
+                        if (groupSlug === 'szolgaltatasok') return CheckCircle
                         if (groupSlug === 'kinek' || groupSlug === 'kinek-ajanlott') return Users
                         if (groupSlug === 'konyha-tipusa') return Utensils
                         if (groupSlug === 'etkezesi-igenyek') return CheckCircle
+                        if (groupSlug === 'ellatas') return Utensils
                         if (groupSlug === 'hangulat') return Calendar
                         if (groupSlug === 'program-tipusa') return Landmark
                         if (groupSlug === 'megkozelithetoseg') return Route
@@ -510,9 +512,6 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
                         if (groupSlug === 'hetvegere') return Calendar
                         // Gyerekeknek kategória szűrők
                         if (groupSlug === 'korosztaly') return Baby
-                        if (groupSlug === 'aktivitas') return Gauge
-                        if (groupSlug === 'kreativ') return Sparkles
-                        if (groupSlug === 'kulturalis') return Landmark
                         return Sliders
                       }
                       const Icon = getIcon()

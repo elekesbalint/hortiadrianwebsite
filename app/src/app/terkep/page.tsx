@@ -511,6 +511,7 @@ function MapPageContent() {
                         const getIcon = () => {
                           if (groupSlug === 'tipus') return Home
                           if (groupSlug === 'kenyelmi-funkciok') return Star
+                          if (groupSlug === 'szolgaltatasok') return CheckCircle
                           if (groupSlug === 'kinek' || groupSlug === 'kinek-ajanlott') return Users
                           if (groupSlug === 'konyha-tipusa') return Utensils
                           if (groupSlug === 'etkezesi-igenyek') return CheckCircle
