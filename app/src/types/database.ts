@@ -401,6 +401,40 @@ export type Database = {
           updated_by?: string | null
         }
       }
+      category_view_stats: {
+        Row: {
+          category_id: string
+          date: string
+          views: number
+        }
+        Insert: {
+          category_id: string
+          date: string
+          views?: number
+        }
+        Update: {
+          category_id?: string
+          date?: string
+          views?: number
+        }
+      }
+      place_view_stats: {
+        Row: {
+          place_id: string
+          date: string
+          views: number
+        }
+        Insert: {
+          place_id: string
+          date: string
+          views?: number
+        }
+        Update: {
+          place_id?: string
+          date?: string
+          views?: number
+        }
+      }
       site_documents: {
         Row: {
           key: string
@@ -420,6 +454,16 @@ export type Database = {
           updated_at?: string
           updated_by?: string | null
         }
+      }
+    }
+    Functions: {
+      increment_category_view: {
+        Args: { p_category_id: string }
+        Returns: void
+      }
+      increment_place_view: {
+        Args: { p_place_id: string }
+        Returns: void
       }
     }
   }

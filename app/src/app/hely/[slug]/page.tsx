@@ -15,6 +15,7 @@ import { getReviewsByPlaceId, addReview, uploadReviewImage, type AppReview } fro
 import {
   MapPin, Star, Heart, Share2, Navigation, ChevronLeft, ChevronRight, Image as ImageIcon, FileText, MessageSquare, X, Globe, Mail, Clock, CheckCircle2, CalendarDays, Banknote
 } from 'lucide-react'
+import { supabase } from '@/lib/supabase'
 
 const tabsBase = [
   { id: 'info', label: 'Információk', icon: MapPin },
@@ -80,6 +81,12 @@ export default function PlaceDetailPage({ params }: { params: Promise<{ slug: st
   useEffect(() => {
     if (!place?.id) return
     getReviewsByPlaceId(place.id).then(setReviews)
+  }, [place?.id])
+
+  // Hely megtekintés számláló (napi stats táblába) – fire-and-forget
+  useEffect(() => {
+    if (!place?.id) return
+    void supabase.rpc('increment_place_view', { p_place_id: place.id } as any)
   }, [place?.id])
 
   // Hash alapú navigáció: #menu → Étlap fül (csak éttermeknél)

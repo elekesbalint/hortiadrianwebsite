@@ -20,6 +20,7 @@ import { getCategoryFilterGroupsMap } from '@/lib/db/categoryFilterGroups'
 import { getFavoritePlaceIds, addFavorite, removeFavorite } from '@/lib/db/favorites'
 import { formatTravelTime, estimateTravelTimeMinutes, calculateDistance, getRouteDistanceAndTime } from '@/lib/utils'
 import { useAuth } from '@/context/AuthContext'
+import { supabase } from '@/lib/supabase'
 
 const BUDAPEST = { lat: 47.4979, lng: 19.0402 }
 
@@ -115,6 +116,12 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
   const displayName = categoryBySlug?.detail_page_title ?? categoryBySlug?.name ?? config.name
   const Icon = getCategoryIconComponent(categoryBySlug?.icon ?? null) ?? config.icon
   const heroImageUrl = categoryBySlug?.image || config.heroImage
+
+  // Kategória megtekintés számláló (napi stats táblába) – fire-and-forget
+  useEffect(() => {
+    if (!categoryBySlug) return
+    void supabase.rpc('increment_category_view', { p_category_id: categoryBySlug.id } as any)
+  }, [categoryBySlug?.id])
   const placesInCategory = useMemo(() => {
     if (!categoryBySlug) return places
     return places.filter(
