@@ -1,3 +1,5 @@
+'use client'
+
 import { useState, useEffect, useMemo } from 'react'
 import { getPlaces } from '@/lib/db/places'
 import {
