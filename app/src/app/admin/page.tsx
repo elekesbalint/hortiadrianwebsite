@@ -3,15 +3,22 @@
 import { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
 import { getPlaces } from '@/lib/db/places'
+import { getCategories, type AppCategory } from '@/lib/db/categories'
 import { MapPin, FolderTree, Star, Eye } from 'lucide-react'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 
 export default function AdminDashboardPage() {
   const [places, setPlaces] = useState<Awaited<ReturnType<typeof getPlaces>>>([])
+  const [categories, setCategories] = useState<AppCategory[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    getPlaces().then(setPlaces).finally(() => setLoading(false))
+    Promise.all([getPlaces(), getCategories()])
+      .then(([pls, cats]) => {
+        setPlaces(pls)
+        setCategories(cats)
+      })
+      .finally(() => setLoading(false))
   }, [])
 
   const stats = useMemo(() => {
@@ -66,7 +73,7 @@ export default function AdminDashboardPage() {
             </div>
             <div>
               <p className="text-sm font-medium text-gray-500">Kategóriák</p>
-              <p className="text-2xl font-bold text-[#1A1A1A]">{Object.keys(stats.byCategory).length}</p>
+              <p className="text-2xl font-bold text-[#1A1A1A]">{categories.length}</p>
             </div>
           </div>
         </div>
