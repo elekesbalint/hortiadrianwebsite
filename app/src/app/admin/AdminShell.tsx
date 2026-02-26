@@ -31,6 +31,7 @@ const navItems = [
   { href: '/admin/kategoriak', label: 'Kategóriák', icon: FolderTree },
   { href: '/admin/szurok', label: 'Szűrők', icon: Sliders },
   { href: '/admin/site-statistics', label: 'Főoldal statisztikák', icon: TrendingUp },
+  { href: '/admin/statisztikak', label: 'Részletes statisztikák', icon: TrendingUp },
   { href: '/admin/partnereinknek', label: 'Partnereinknek PDF', icon: FileText },
   { href: '/admin/ertesitesek', label: 'Értesítések', icon: Bell },
   { href: '/admin/hirlevel', label: 'Hírlevél', icon: Mail },
