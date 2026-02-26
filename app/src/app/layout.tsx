@@ -27,7 +27,7 @@ export const metadata: Metadata = {
   description: DEFAULT_DESCRIPTION,
   keywords: ['éttermek', 'szállások', 'látnivalók', 'programok', 'Magyarország', 'térkép', 'kirándulás', 'utazás', 'programláz', 'helyek', 'felfedezés'],
   icons: {
-    icon: [{ url: '/favicon.ico', type: 'image/x-icon' }, { url: '/logo.png', type: 'image/png' }],
+    icon: [{ url: '/logo.png', type: 'image/png' }],
     apple: '/logo.png',
   },
   openGraph: {
