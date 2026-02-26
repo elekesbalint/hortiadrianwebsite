@@ -21,6 +21,7 @@ import { getFavoritePlaceIds, addFavorite, removeFavorite } from '@/lib/db/favor
 import { formatTravelTime, estimateTravelTimeMinutes, calculateDistance, getRouteDistanceAndTime } from '@/lib/utils'
 import { useAuth } from '@/context/AuthContext'
 import { supabase } from '@/lib/supabase'
+import { recordStatistic } from '@/lib/db/statistics'
 
 const BUDAPEST = { lat: 47.4979, lng: 19.0402 }
 
@@ -772,7 +773,11 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-10">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
           {filteredPlaces.map((place) => (
-            <Link key={place.id} href={`/hely/${place.slug || place.id}`} >
+            <Link
+              key={place.id}
+              href={`/hely/${place.slug || place.id}`}
+              onClick={() => recordStatistic('place_click', place.id)}
+            >
               <Card hover className="h-full group relative">
                 {/* Favorite Button – csak bejelentkezés után adható kedvencnek */}
                 <button

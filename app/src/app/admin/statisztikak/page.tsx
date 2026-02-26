@@ -1,237 +1,296 @@
-'use client'
-
 import { useState, useEffect, useMemo } from 'react'
-import { getCategoryViewStats, getPlaceViewStats, type AggregatedCategoryView, type AggregatedPlaceView } from '@/lib/db/viewStats'
-import { Button } from '@/components/ui/Button'
+import { getPlaces } from '@/lib/db/places'
+import {
+  getStatisticsForAdmin,
+  type StatsPeriod,
+  type StatsResult,
+} from '@/app/admin/statisztikak/actions'
+import { BarChart3, Download, Mail, Copy, Check } from 'lucide-react'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
-import { TrendingUp, Download } from 'lucide-react'
 
-type Period = 'day' | 'week' | 'month'
-type ViewMode = 'categories' | 'places'
+const PERIOD_LABELS: Record<StatsPeriod, string> = {
+  day: 'Napi',
+  week: 'Heti',
+  month: 'Havi',
+  year: 'Éves',
+}
 
-export default function DetailedStatsPage() {
-  const [viewMode, setViewMode] = useState<ViewMode>('categories')
-  const [period, setPeriod] = useState<Period>('day')
-  const [rangeDays, setRangeDays] = useState(30)
-  const [categoryViews, setCategoryViews] = useState<AggregatedCategoryView[]>([])
-  const [placeViews, setPlaceViews] = useState<AggregatedPlaceView[]>([])
-  const [loadingViews, setLoadingViews] = useState(false)
+export default function AdminStatsPage() {
+  const [places, setPlaces] = useState<Awaited<ReturnType<typeof getPlaces>>>([])
+  const [loading, setLoading] = useState(true)
+  const [period, setPeriod] = useState<StatsPeriod>('day')
+  const [placeId, setPlaceId] = useState<string>('')
+  const [statsResult, setStatsResult] = useState<StatsResult | null>(null)
+  const [statsLoading, setStatsLoading] = useState(false)
+  const [copied, setCopied] = useState(false)
 
-  // Részletes statisztikák betöltése (napi sorok, utolsó rangeDays nap)
   useEffect(() => {
-    const to = new Date()
-    const from = new Date()
-    from.setDate(to.getDate() - rangeDays + 1)
-    const toStr = to.toISOString().slice(0, 10)
-    const fromStr = from.toISOString().slice(0, 10)
+    getPlaces().then(setPlaces).finally(() => setLoading(false))
+  }, [])
 
-    setLoadingViews(true)
-    Promise.all([getCategoryViewStats(fromStr, toStr), getPlaceViewStats(fromStr, toStr)])
-      .then(([cats, places]) => {
-        setCategoryViews(cats)
-        setPlaceViews(places)
-      })
-      .finally(() => setLoadingViews(false))
-  }, [rangeDays])
+  useEffect(() => {
+    setStatsLoading(true)
+    getStatisticsForAdmin(period, placeId || null)
+      .then(setStatsResult)
+      .finally(() => setStatsLoading(false))
+  }, [period, placeId])
 
-  // Aggregálás napi/heti/havi bontásra – kategóriák
-  const groupedCategoryViews = useMemo(() => {
-    const map = new Map<string, { label: string; period: string; views: number }>()
-    categoryViews.forEach((row) => {
-      const d = new Date(row.date)
-      let periodKey: string
-      if (period === 'day') {
-        periodKey = d.toISOString().slice(0, 10)
-      } else if (period === 'week') {
-        const firstJan = new Date(d.getFullYear(), 0, 1)
-        const week = Math.ceil((((d.getTime() - firstJan.getTime()) / 86400000) + firstJan.getDay() + 1) / 7)
-        periodKey = `${d.getFullYear()}-W${week.toString().padStart(2, '0')}`
-      } else {
-        periodKey = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}`
-      }
-      const key = `${row.category_id}-${periodKey}`
-      const current = map.get(key)
-      if (current) {
-        current.views += row.views
-      } else {
-        map.set(key, { label: row.name || 'Ismeretlen kategória', period: periodKey, views: row.views })
-      }
-    })
-    return Array.from(map.values()).sort((a, b) => b.views - a.views)
-  }, [categoryViews, period])
+  const stats = useMemo(() => {
+    if (places.length === 0)
+      return { byCategory: {} as Record<string, number>, avgRating: 0, premiumCount: 0 }
+    const byCategory = places.reduce<Record<string, number>>((acc, p) => {
+      acc[p.category] = (acc[p.category] || 0) + 1
+      return acc
+    }, {})
+    const avgRating = places.reduce((s, p) => s + p.rating, 0) / places.length
+    const premiumCount = places.filter((p) => p.isPremium).length
+    return { byCategory, avgRating, premiumCount }
+  }, [places])
 
-  // Aggregálás napi/heti/havi bontásra – helyek
-  const groupedPlaceViews = useMemo(() => {
-    const map = new Map<string, { label: string; period: string; views: number }>()
-    placeViews.forEach((row) => {
-      const d = new Date(row.date)
-      let periodKey: string
-      if (period === 'day') {
-        periodKey = d.toISOString().slice(0, 10)
-      } else if (period === 'week') {
-        const firstJan = new Date(d.getFullYear(), 0, 1)
-        const week = Math.ceil((((d.getTime() - firstJan.getTime()) / 86400000) + firstJan.getDay() + 1) / 7)
-        periodKey = `${d.getFullYear()}-W${week.toString().padStart(2, '0')}`
-      } else {
-        periodKey = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}`
-      }
-      const key = `${row.place_id}-${periodKey}`
-      const current = map.get(key)
-      if (current) {
-        current.views += row.views
-      } else {
-        const labelBase = row.name || 'Ismeretlen hely'
-        const label = row.category_name ? `${labelBase} (${row.category_name})` : labelBase
-        map.set(key, { label, period: periodKey, views: row.views })
-      }
-    })
-    return Array.from(map.values()).sort((a, b) => b.views - a.views)
-  }, [placeViews, period])
-
-  const currentRows = viewMode === 'categories' ? groupedCategoryViews : groupedPlaceViews
-
-  const handleExportCsv = () => {
-    if (currentRows.length === 0) return
-    const header = 'Típus;Név;Periódus;Megtekintések\n'
-    const typeLabel = viewMode === 'categories' ? 'Kategória' : 'Hely'
-    const lines = currentRows.map((row) => {
-      const safeLabel = row.label.replace(/"/g, '""')
-      return `${typeLabel};"${safeLabel}";${row.period};${row.views}`
-    })
-    const csv = header + lines.join('\n')
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
+  const downloadCsv = () => {
+    if (!statsResult) return
+    const headers = ['Időszak', 'Oldalmegtekintés', 'Hely megtekintés', 'Hely kattintás', 'Útvonal kattintás']
+    const rows = statsResult.byPeriod.map((r) => [
+      r.periodLabel,
+      r.page_views,
+      r.place_views,
+      r.place_clicks,
+      r.direction_clicks,
+    ])
+    const totalRow = ['Összesen', statsResult.totals.page_views, statsResult.totals.place_views, statsResult.totals.place_clicks, statsResult.totals.direction_clicks]
+    const lines = [headers.join(';'), ...rows.map((r) => r.join(';')), totalRow.join(';')]
+    const csv = lines.join('\n')
+    const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = `statisztikak_${viewMode}_${period}.csv`
-    document.body.appendChild(a)
+    a.download = `statisztika-${period}-${placeId || 'osszes'}-${new Date().toISOString().slice(0, 10)}.csv`
     a.click()
-    document.body.removeChild(a)
     URL.revokeObjectURL(url)
+  }
+
+  const copyReportForEmail = () => {
+    if (!statsResult) return
+    const placeName = placeId && places.find((p) => p.id === placeId)?.name
+    let text = `Statisztika – ${PERIOD_LABELS[period]} lebontás\n`
+    if (placeName) text += `Hely: ${placeName}\n\n`
+    text += `Összesen: oldalmegtekintés ${statsResult.totals.page_views}, hely megtekintés ${statsResult.totals.place_views}, hely kattintás ${statsResult.totals.place_clicks}, útvonal kattintás ${statsResult.totals.direction_clicks}\n\n`
+    text += statsResult.byPeriod
+      .map((r) => `${r.periodLabel}: megtekintés ${r.place_views}, kattintás ${r.place_clicks}, útvonal ${r.direction_clicks}`)
+      .join('\n')
+    navigator.clipboard.writeText(text).then(() => {
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    })
+  }
+
+  const selectedPlace = placeId ? places.find((p) => p.id === placeId) : null
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-2xl font-bold text-[#1A1A1A]">Statisztikák</h1>
+          <div className="mt-4">
+            <LoadingSpinner />
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-[#1A1A1A] flex items-center gap-2">
-          <TrendingUp className="h-7 w-7 text-[#2D7A4F]" />
-          Részletes statisztikák
-        </h1>
-        <p className="text-gray-500 mt-1">
-          Kattintás statisztikák kategóriákra és helyekre lebontva, napi/heti/havi nézetben.
-        </p>
+        <h1 className="text-2xl font-bold text-[#1A1A1A]">Statisztikák</h1>
+        <p className="text-gray-500 mt-1">Összesítések és megtekintési adatok.</p>
       </div>
 
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-        <div className="p-6 border-b border-gray-100 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <div>
-            <h2 className="text-lg font-semibold text-[#1A1A1A]">Megtekintések időszak szerint</h2>
-            <p className="text-xs text-gray-500 mt-1">
-              Napi aggregáció az utolsó {rangeDays} napra. A heti/havi nézet ezekből kerül összesítésre.
-            </p>
-          </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <div className="inline-flex rounded-xl border border-gray-200 bg-gray-50 p-1">
-              <button
-                type="button"
-                className={`px-3 py-1.5 text-xs font-medium rounded-lg ${
-                  viewMode === 'categories' ? 'bg-white shadow-sm text-[#1A1A1A]' : 'text-gray-500'
-                }`}
-                onClick={() => setViewMode('categories')}
-              >
-                Kategóriák
-              </button>
-              <button
-                type="button"
-                className={`px-3 py-1.5 text-xs font-medium rounded-lg ${
-                  viewMode === 'places' ? 'bg-white shadow-sm text-[#1A1A1A]' : 'text-gray-500'
-                }`}
-                onClick={() => setViewMode('places')}
-              >
-                Helyek
-              </button>
-            </div>
-            <div className="inline-flex rounded-xl border border-gray-200 bg-gray-50 p-1">
-              <button
-                type="button"
-                className={`px-3 py-1.5 text-xs font-medium rounded-lg ${
-                  period === 'day' ? 'bg-white shadow-sm text-[#1A1A1A]' : 'text-gray-500'
-                }`}
-                onClick={() => setPeriod('day')}
-              >
-                Napi
-              </button>
-              <button
-                type="button"
-                className={`px-3 py-1.5 text-xs font-medium rounded-lg ${
-                  period === 'week' ? 'bg-white shadow-sm text-[#1A1A1A]' : 'text-gray-500'
-                }`}
-                onClick={() => setPeriod('week')}
-              >
-                Heti
-              </button>
-              <button
-                type="button"
-                className={`px-3 py-1.5 text-xs font-medium rounded-lg ${
-                  period === 'month' ? 'bg-white shadow-sm text-[#1A1A1A]' : 'text-gray-500'
-                }`}
-                onClick={() => setPeriod('month')}
-              >
-                Havi
-              </button>
-            </div>
+      {/* Megtekintések és kattintások */}
+      <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
+        <h2 className="text-lg font-semibold text-[#1A1A1A] mb-4 flex items-center gap-2">
+          <BarChart3 className="h-5 w-5 text-[#2D7A4F]" />
+          Megtekintések és kattintások
+        </h2>
+        <p className="text-sm text-gray-500 mb-4">
+          Oldalmegtekintések, hely megtekintések, helyre kattintások és útvonal gomb kattintások – időszak és hely szerint.
+        </p>
+        <div className="flex flex-wrap gap-4 items-center mb-4">
+          <label className="flex items-center gap-2">
+            <span className="text-sm font-medium text-gray-700">Időszak:</span>
             <select
-              className="px-3 py-1.5 text-xs border border-gray-200 rounded-lg bg-white text-gray-700"
-              value={rangeDays}
-              onChange={(e) => setRangeDays(Number(e.target.value) || 30)}
+              value={period}
+              onChange={(e) => setPeriod(e.target.value as StatsPeriod)}
+              className="rounded-lg border border-gray-200 px-3 py-2 text-sm focus:ring-2 focus:ring-[#2D7A4F] focus:border-[#2D7A4F]"
             >
-              <option value={7}>Utolsó 7 nap</option>
-              <option value={30}>Utolsó 30 nap</option>
-              <option value={90}>Utolsó 90 nap</option>
+              {(Object.entries(PERIOD_LABELS) as [StatsPeriod, string][]).map(([v, l]) => (
+                <option key={v} value={v}>{l}</option>
+              ))}
             </select>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleExportCsv}
-              disabled={currentRows.length === 0 || loadingViews}
+          </label>
+          <label className="flex items-center gap-2">
+            <span className="text-sm font-medium text-gray-700">Hely:</span>
+            <select
+              value={placeId}
+              onChange={(e) => setPlaceId(e.target.value)}
+              className="rounded-lg border border-gray-200 px-3 py-2 text-sm focus:ring-2 focus:ring-[#2D7A4F] focus:border-[#2D7A4F] min-w-[200px]"
             >
-              <Download className="h-4 w-4 mr-1" />
-              CSV export
-            </Button>
+              <option value="">Összes hely</option>
+              {places.map((p) => (
+                <option key={p.id} value={p.id}>{p.name}</option>
+              ))}
+            </select>
+          </label>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={downloadCsv}
+              disabled={!statsResult || statsLoading}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#2D7A4F] text-white text-sm font-medium hover:bg-[#246b43] disabled:opacity-50"
+            >
+              <Download className="h-4 w-4" />
+              Letöltés (CSV)
+            </button>
+            {selectedPlace && (
+              <button
+                type="button"
+                onClick={copyReportForEmail}
+                disabled={!statsResult || statsLoading}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-[#2D7A4F] text-[#2D7A4F] text-sm font-medium hover:bg-[#2D7A4F]/10 disabled:opacity-50"
+              >
+                {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                {copied ? 'Másolva' : 'Másolás (küldés a helynek)'}
+              </button>
+            )}
           </div>
         </div>
 
-        {loadingViews ? (
-          <div className="flex items-center justify-center py-8">
-            <LoadingSpinner />
-          </div>
-        ) : currentRows.length === 0 ? (
-          <div className="py-8 text-center text-sm text-gray-500">
-            Még nincs elérhető megtekintés statisztika az adott időszakra.
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-full text-sm">
-              <thead className="bg-gray-50 border-b border-gray-100">
-                <tr>
-                  <th className="text-left px-4 py-2 font-semibold text-gray-600">Név</th>
-                  <th className="text-left px-4 py-2 font-semibold text-gray-600">Periódus</th>
-                  <th className="text-right px-4 py-2 font-semibold text-gray-600">Megtekintések</th>
-                </tr>
-              </thead>
-              <tbody>
-                {currentRows.map((row, idx) => (
-                  <tr
-                    key={`${row.label}-${row.period}-${idx}`}
-                    className="border-b border-gray-50 hover:bg-gray-50/60"
-                  >
-                    <td className="px-4 py-2 text-gray-800">{row.label}</td>
-                    <td className="px-4 py-2 text-gray-500 text-xs">{row.period}</td>
-                    <td className="px-4 py-2 text-right font-semibold text-[#2D7A4F]">{row.views}</td>
+        {statsLoading ? (
+          <p className="text-gray-500 py-4">Statisztika betöltése...</p>
+        ) : statsResult ? (
+          <>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-gray-200 text-left text-gray-600">
+                    <th className="py-2 pr-4">Időszak</th>
+                    <th className="py-2 pr-4 text-right">Oldalmegtekintés</th>
+                    <th className="py-2 pr-4 text-right">Hely megtekintés</th>
+                    <th className="py-2 pr-4 text-right">Hely kattintás</th>
+                    <th className="py-2 pr-4 text-right">Útvonal kattintás</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {statsResult.byPeriod.map((r) => (
+                    <tr key={r.periodKey} className="border-b border-gray-50">
+                      <td className="py-2 pr-4 font-medium">{r.periodLabel}</td>
+                      <td className="py-2 pr-4 text-right">{r.page_views}</td>
+                      <td className="py-2 pr-4 text-right">{r.place_views}</td>
+                      <td className="py-2 pr-4 text-right">{r.place_clicks}</td>
+                      <td className="py-2 pr-4 text-right">{r.direction_clicks}</td>
+                    </tr>
+                  ))}
+                </tbody>
+                <tfoot>
+                  <tr className="border-t-2 border-gray-200 font-semibold">
+                    <td className="py-2 pr-4">Összesen</td>
+                    <td className="py-2 pr-4 text-right">{statsResult.totals.page_views}</td>
+                    <td className="py-2 pr-4 text-right">{statsResult.totals.place_views}</td>
+                    <td className="py-2 pr-4 text-right">{statsResult.totals.place_clicks}</td>
+                    <td className="py-2 pr-4 text-right">{statsResult.totals.direction_clicks}</td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+            {statsResult.byPlace.length > 0 && !placeId && (
+              <div className="mt-6">
+                <h3 className="text-sm font-semibold text-gray-700 mb-2">Helyek szerint (megtekintés / kattintás / útvonal)</h3>
+                <div className="overflow-x-auto max-h-60 overflow-y-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-gray-200 text-left text-gray-600">
+                        <th className="py-1 pr-4">Hely</th>
+                        <th className="py-1 pr-4 text-right">Megtekintés</th>
+                        <th className="py-1 pr-4 text-right">Kattintás</th>
+                        <th className="py-1 pr-4 text-right">Útvonal</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {statsResult.byPlace.slice(0, 30).map((p) => (
+                        <tr key={p.place_id} className="border-b border-gray-50">
+                          <td className="py-1 pr-4">{p.place_name}</td>
+                          <td className="py-1 pr-4 text-right">{p.place_views}</td>
+                          <td className="py-1 pr-4 text-right">{p.place_clicks}</td>
+                          <td className="py-1 pr-4 text-right">{p.direction_clicks}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+          </>
+        ) : (
+          <div className="py-4 space-y-2">
+            <p className="text-gray-500">Nincs megtekintési adat az időszakra.</p>
+            <p className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg p-3">
+              Ha az adatbázisban (statistics tábla) vannak sorok, de itt nem jelennek meg, add a <code className="bg-amber-100 px-1 rounded">.env.local</code> fájlhoz a <strong>SUPABASE_SERVICE_ROLE_KEY</strong> értéket (Supabase Dashboard → Project Settings → API → service_role secret), majd indítsd újra a dev szervert.
+            </p>
+          </div>
+        )}
+      </div>
+
+      {/* Helyek összesítő (meglévő) */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
+          <h3 className="text-sm font-medium text-gray-500 mb-2">Helyek kategóriánként</h3>
+          <ul className="space-y-2">
+            {Object.entries(stats.byCategory).map(([cat, count]) => (
+              <li key={cat} className="flex justify-between text-sm">
+                <span className="text-gray-700">{cat}</span>
+                <span className="font-semibold text-[#2D7A4F]">{count}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+        <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
+          <h3 className="text-sm font-medium text-gray-500 mb-2">Átlag értékelés</h3>
+          <p className="text-2xl font-bold text-[#1A1A1A]">{stats.avgRating.toFixed(1)}</p>
+        </div>
+        <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
+          <h3 className="text-sm font-medium text-gray-500 mb-2">Prémium helyek</h3>
+          <p className="text-2xl font-bold text-[#1A1A1A]">{stats.premiumCount}</p>
+        </div>
+      </div>
+      <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
+        <h3 className="text-lg font-semibold text-[#1A1A1A] mb-4 flex items-center gap-2">
+          <BarChart3 className="h-5 w-5 text-[#2D7A4F]" />
+          Helyek kategóriánként (oszlopdiagram)
+        </h3>
+        {Object.keys(stats.byCategory).length === 0 ? (
+          <p className="text-gray-500 text-center py-8">Nincs megjeleníthető adat.</p>
+        ) : (
+          <div className="space-y-4">
+            {Object.entries(stats.byCategory).map(([cat, count]) => {
+              const max = Math.max(...Object.values(stats.byCategory), 1)
+              const width = (count / max) * 100
+              return (
+                <div key={cat} className="flex items-center gap-4">
+                  <span className="w-28 text-sm font-medium text-gray-700 flex-shrink-0">{cat}</span>
+                  <div className="flex-1 h-8 bg-gray-100 rounded-lg overflow-hidden">
+                    <div
+                      className="h-full bg-[#2D7A4F] rounded-lg transition-all duration-500 min-w-[2rem] flex items-center justify-end pr-2"
+                      style={{ width: `${Math.max(width, count ? 8 : 0)}%` }}
+                    >
+                      {count > 0 && (
+                        <span className="text-xs font-semibold text-white">{count}</span>
+                      )}
+                    </div>
+                  </div>
+                  <span className="w-10 text-right text-sm font-semibold text-[#2D7A4F]">{count}</span>
+                </div>
+              )
+            })}
           </div>
         )}
       </div>

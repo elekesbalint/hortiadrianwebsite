@@ -9,6 +9,7 @@ import { MapPin, Utensils, Bed, Star, Heart, Wine, Camera, Bath, Baby, Sparkles,
 import { AnimatedCounter } from '@/components/ui/AnimatedCounter'
 import { useCategoriesContext } from '@/components/providers/CategoriesProvider'
 import { getCategoryIconComponent } from '@/lib/categoryIcons'
+import { recordStatistic } from '@/lib/db/statistics'
 
 /** Ikon a kategóriához: ha van mentett icon a DB-ben, azt; különben slug alapján (ugyanaz, mint headerben és részletes nézetben). */
 function getCategoryIcon(slug: string, iconFromDb: string | null) {
@@ -354,6 +355,7 @@ export default function HomePage() {
                     key={place.id}
                     ref={(el) => { slideRefsEvents.current[i] = el }}
                     href={`/hely/${place.slug || place.id}`}
+                    onClick={() => recordStatistic('place_click', place.id)}
                     className="flex-shrink-0 w-[min(100%,420px)] sm:w-[min(100%,480px)] lg:w-[520px] snap-center"
                   >
                     <Card hover className="h-full group overflow-hidden">
@@ -464,6 +466,7 @@ export default function HomePage() {
                   key={place.id}
                   ref={(el) => { slideRefs.current[i] = el }}
                   href={`/hely/${place.slug || place.id}`}
+                  onClick={() => recordStatistic('place_click', place.id)}
                   className="flex-shrink-0 w-[min(100%,420px)] sm:w-[min(100%,480px)] lg:w-[520px] snap-center"
                 >
                   <Card hover className="h-full group overflow-hidden">

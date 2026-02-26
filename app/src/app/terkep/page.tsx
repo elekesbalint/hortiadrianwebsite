@@ -18,6 +18,7 @@ import { getCategories } from '@/lib/db/categories'
 import { getFilters, type AppFilter } from '@/lib/db/filters'
 import { getCategoryFilterGroupsMap } from '@/lib/db/categoryFilterGroups'
 import { calculateDistance, estimateTravelTimeMinutes, formatTravelTime, getRouteDistanceAndTime } from '@/lib/utils'
+import { recordStatistic } from '@/lib/db/statistics'
 
 const BUDAPEST = { lat: 47.4979, lng: 19.0402 }
 
@@ -775,7 +776,11 @@ function MapPageContent() {
                 </p>
               </div>
               {placesWithDistance.map((place) => (
-                <Link key={place.id} href={`/hely/${place.slug || place.id}`}>
+                <Link
+                  key={place.id}
+                  href={`/hely/${place.slug || place.id}`}
+                  onClick={() => recordStatistic('place_click', place.id)}
+                >
                   <Card hover className="mb-4">
                     <CardContent className="px-1.5 py-4 sm:p-5">
                       <div className="flex items-start gap-3 sm:gap-5">

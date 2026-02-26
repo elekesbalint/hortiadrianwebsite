@@ -5,6 +5,7 @@ import { Header } from '@/components/layout/Header'
 import { getCategories, getFeaturedCategories, getCategoriesForHeader } from '@/lib/db/categories'
 import { getPlaces, getFeaturedPlaces, getUpcomingEvents } from '@/lib/db/places'
 import { getSiteStatistics } from '@/lib/db/siteStatistics'
+import { StatisticsTracker } from '@/components/StatisticsTracker'
 import { CategoriesProvider } from '@/components/providers/CategoriesProvider'
 
 const fontBrand = Dancing_Script({
@@ -113,6 +114,7 @@ export default async function RootLayout({
             initialUpcomingEvents={upcomingEvents}
             initialSiteStats={siteStats}
           >
+            <StatisticsTracker />
             <Header />
             <main className="flex-1 min-w-0 w-full">
               {children}

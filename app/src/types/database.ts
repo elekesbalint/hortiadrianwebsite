@@ -375,6 +375,29 @@ export type Database = {
           created_at?: string
         }
       }
+      statistics: {
+        Row: {
+          id: string
+          place_id: string | null
+          event_type: 'page_view' | 'place_view' | 'direction_click' | 'place_click'
+          user_id: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          place_id?: string | null
+          event_type: 'page_view' | 'place_view' | 'direction_click' | 'place_click'
+          user_id?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          place_id?: string | null
+          event_type?: 'page_view' | 'place_view' | 'direction_click' | 'place_click'
+          user_id?: string | null
+          created_at?: string
+        }
+      }
       site_statistics: {
         Row: {
           id: string
@@ -476,4 +499,5 @@ export type Place = Database['public']['Tables']['places']['Row']
 export type Filter = Database['public']['Tables']['filters']['Row']
 export type Favorite = Database['public']['Tables']['favorites']['Row']
 export type Review = Database['public']['Tables']['reviews']['Row']
+export type Statistic = Database['public']['Tables']['statistics']['Row']
 export type PushSubscriptionRow = Database['public']['Tables']['push_subscriptions']['Row']
