@@ -57,7 +57,12 @@ export default function HomePage() {
       ...c,
       icon: getCategoryIcon(c.slug, c.icon),
       imageUrl: c.image || categoryImages[c.slug] || defaultCategoryImage,
-      count: places.filter((p) => p.category_id === c.id).length,
+      // Egy hely több kategóriához is tartozhat (categoryIds); a fő + extra kategóriákat is számoljuk.
+      count: places.filter(
+        (p) =>
+          (p.categoryIds && p.categoryIds.includes(c.id)) ||
+          p.category_id === c.id
+      ).length,
     }))
 
   useEffect(() => {
