@@ -163,7 +163,7 @@ function rowToAppPlace(row: PlaceRowWithCategory, categoriesForPlace?: { ids: st
 export async function getPlaces(): Promise<AppPlace[]> {
   const { data, error } = await supabase
     .from('places')
-    .select('*, categories(name, slug)')
+    .select('*, categories!places_category_id_fkey(name, slug)')
     .eq('is_active', true)
     .order('created_at', { ascending: false })
   if (error) {
@@ -216,7 +216,7 @@ export async function getUpcomingEvents(): Promise<AppPlace[]> {
   const now = new Date().toISOString()
   const { data, error } = await supabase
     .from('places')
-    .select('*, categories(name, slug)')
+    .select('*, categories!places_category_id_fkey(name, slug)')
     .eq('is_active', true)
     .not('event_date', 'is', null)
     .gte('event_date', now)
@@ -244,7 +244,7 @@ export async function getUpcomingEvents(): Promise<AppPlace[]> {
 export async function getFeaturedPlaces(): Promise<AppPlace[]> {
   const { data, error } = await supabase
     .from('places')
-    .select('*, categories(name, slug)')
+    .select('*, categories!places_category_id_fkey(name, slug)')
     .eq('is_active', true)
     .not('featured_order', 'is', null)
     .order('featured_order', { ascending: true })
@@ -296,7 +296,7 @@ export async function getFeaturedPlaces(): Promise<AppPlace[]> {
 export async function getPlaceById(id: string): Promise<AppPlace | null> {
   const { data, error } = await supabase
     .from('places')
-    .select('*, categories(name, slug)')
+    .select('*, categories!places_category_id_fkey(name, slug)')
     .eq('id', id)
     .eq('is_active', true)
     .single()
@@ -353,7 +353,7 @@ export async function getPlacesByIds(ids: string[]): Promise<AppPlace[]> {
   if (ids.length === 0) return []
   const { data, error } = await supabase
     .from('places')
-    .select('*, categories(name, slug)')
+    .select('*, categories!places_category_id_fkey(name, slug)')
     .in('id', ids)
     .eq('is_active', true)
   if (error) {
