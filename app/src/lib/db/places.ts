@@ -319,7 +319,7 @@ export async function getPlaceBySlug(slug: string): Promise<AppPlace | null> {
   // Először próbáljuk meg a decode-olt slug-gal
   let { data, error } = await supabase
     .from('places')
-    .select('*, categories(name, slug)')
+    .select('*, categories!places_category_id_fkey(name, slug)')
     .eq('slug', decodedSlug)
     .eq('is_active', true)
     .single()
@@ -328,7 +328,7 @@ export async function getPlaceBySlug(slug: string): Promise<AppPlace | null> {
   if (error && decodedSlug !== slug) {
     const { data: data2, error: error2 } = await supabase
       .from('places')
-      .select('*, categories(name, slug)')
+      .select('*, categories!places_category_id_fkey(name, slug)')
       .eq('slug', slug)
       .eq('is_active', true)
       .single()
