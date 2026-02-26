@@ -22,6 +22,10 @@ export type AppPlace = {
   category: string
   category_id: string
   categorySlug: string
+  /** Összes kategória ID, amelyhez a hely tartozik (place_categories alapján, primary + extra) */
+  categoryIds: string[]
+  /** Összes kategória slug (sorrendben: primary elöl, ha elérhető) */
+  categorySlugs: string[]
   description: string
   address: string
   rating: number
@@ -93,14 +97,41 @@ async function ensureUniqueSlug(baseSlug: string, excludeId?: string): Promise<s
   }
 }
 
-function rowToAppPlace(row: PlaceRowWithCategory): AppPlace {
+async function getCategoriesForPlaces(placeIds: string[]): Promise<Map<string, { ids: string[]; slugs: string[] }>> {
+  const map = new Map<string, { ids: string[]; slugs: string[] }>()
+  if (placeIds.length === 0) return map
+
+  const { data, error } = await supabase
+    .from('place_categories')
+    .select('place_id, category_id, categories(slug)')
+    .in('place_id', placeIds)
+
+  if (error || !data) return map
+
+  for (const row of data as { place_id: string; category_id: string; categories: { slug: string } | null }[]) {
+    if (!map.has(row.place_id)) {
+      map.set(row.place_id, { ids: [], slugs: [] })
+    }
+    const entry = map.get(row.place_id)!
+    entry.ids.push(row.category_id)
+    if (row.categories?.slug) entry.slugs.push(row.categories.slug)
+  }
+
+  return map
+}
+
+function rowToAppPlace(row: PlaceRowWithCategory, categoriesForPlace?: { ids: string[]; slugs: string[] }): AppPlace {
   const images: string[] = Array.isArray(row.images) ? (row.images as string[]) : []
+  const baseCategoryIds = categoriesForPlace?.ids ?? (row.category_id ? [row.category_id] : [])
+  const baseCategorySlugs = categoriesForPlace?.slugs ?? (row.categories?.slug ? [row.categories.slug] : [])
   return {
     id: row.id,
     name: row.name,
     category: row.categories?.name ?? '',
     category_id: row.category_id,
     categorySlug: row.categories?.slug ?? '',
+    categoryIds: baseCategoryIds,
+    categorySlugs: baseCategorySlugs,
     description: row.description ?? '',
     address: row.address,
     rating: row.rating,
@@ -139,8 +170,13 @@ export async function getPlaces(): Promise<AppPlace[]> {
     console.error('getPlaces error', error)
     return []
   }
-  const places = (data ?? []).map((r) => {
-    const p = rowToAppPlace(r as unknown as PlaceRowWithCategory)
+  const rows = (data ?? []) as PlaceRowWithCategory[]
+  const placeIds = rows.map((r) => r.id)
+  const categoriesMap = await getCategoriesForPlaces(placeIds)
+
+  const places = rows.map((r) => {
+    const cats = categoriesMap.get(r.id)
+    const p = rowToAppPlace(r, cats)
     if (p.openingHours && Object.keys(p.openingHours).length > 0) {
       p.isOpen = isPlaceOpenNow(p.openingHours, p.isOpen)
     }
@@ -149,7 +185,6 @@ export async function getPlaces(): Promise<AppPlace[]> {
 
   // Helyekhez rendelt szűrők betöltése
   if (places.length > 0) {
-    const placeIds = places.map((p) => p.id)
     const { data: placeFiltersData } = await supabase
       .from('place_filters')
       .select('place_id, filter_id')
@@ -191,8 +226,13 @@ export async function getUpcomingEvents(): Promise<AppPlace[]> {
     console.error('getUpcomingEvents error', error)
     return []
   }
-  return (data ?? []).map((r) => {
-    const p = rowToAppPlace(r as unknown as PlaceRowWithCategory)
+  const rows = (data ?? []) as PlaceRowWithCategory[]
+  const placeIds = rows.map((r) => r.id)
+  const categoriesMap = await getCategoriesForPlaces(placeIds)
+
+  return rows.map((r) => {
+    const cats = categoriesMap.get(r.id)
+    const p = rowToAppPlace(r, cats)
     if (p.openingHours && Object.keys(p.openingHours).length > 0) {
       p.isOpen = isPlaceOpenNow(p.openingHours, p.isOpen)
     }
@@ -213,8 +253,13 @@ export async function getFeaturedPlaces(): Promise<AppPlace[]> {
     console.error('getFeaturedPlaces error', error)
     return []
   }
-  const places = (data ?? []).map((r) => {
-    const p = rowToAppPlace(r as unknown as PlaceRowWithCategory)
+  const rows = (data ?? []) as PlaceRowWithCategory[]
+  const placeIds = rows.map((r) => r.id)
+  const categoriesMap = await getCategoriesForPlaces(placeIds)
+
+  const places = rows.map((r) => {
+    const cats = categoriesMap.get(r.id)
+    const p = rowToAppPlace(r, cats)
     if (p.openingHours && Object.keys(p.openingHours).length > 0) {
       p.isOpen = isPlaceOpenNow(p.openingHours, p.isOpen)
     }
@@ -256,7 +301,10 @@ export async function getPlaceById(id: string): Promise<AppPlace | null> {
     .eq('is_active', true)
     .single()
   if (error || !data) return null
-  const p = rowToAppPlace(data as unknown as PlaceRowWithCategory)
+  const row = data as unknown as PlaceRowWithCategory
+  const categoriesMap = await getCategoriesForPlaces([row.id])
+  const cats = categoriesMap.get(row.id)
+  const p = rowToAppPlace(row, cats)
   if (p.openingHours && Object.keys(p.openingHours).length > 0) {
     p.isOpen = isPlaceOpenNow(p.openingHours, p.isOpen)
   }
@@ -291,7 +339,10 @@ export async function getPlaceBySlug(slug: string): Promise<AppPlace | null> {
   }
   
   if (error || !data) return null
-  const p = rowToAppPlace(data as unknown as PlaceRowWithCategory)
+  const row = data as unknown as PlaceRowWithCategory
+  const categoriesMap = await getCategoriesForPlaces([row.id])
+  const cats = categoriesMap.get(row.id)
+  const p = rowToAppPlace(row, cats)
   if (p.openingHours && Object.keys(p.openingHours).length > 0) {
     p.isOpen = isPlaceOpenNow(p.openingHours, p.isOpen)
   }
@@ -309,8 +360,12 @@ export async function getPlacesByIds(ids: string[]): Promise<AppPlace[]> {
     console.error('getPlacesByIds error', error)
     return []
   }
-  const places = (data ?? []).map((r) => {
-    const p = rowToAppPlace(r as unknown as PlaceRowWithCategory)
+  const rows = (data ?? []) as PlaceRowWithCategory[]
+  const categoriesMap = await getCategoriesForPlaces(ids)
+
+  const places = rows.map((r) => {
+    const cats = categoriesMap.get(r.id)
+    const p = rowToAppPlace(r, cats)
     if (p.openingHours && Object.keys(p.openingHours).length > 0) {
       p.isOpen = isPlaceOpenNow(p.openingHours, p.isOpen)
     }
@@ -346,6 +401,8 @@ export async function getPlacesByIds(ids: string[]): Promise<AppPlace[]> {
 export type PlaceFormInput = {
   name: string
   category_id: string
+  /** További kategóriák ID-i (a category_id mellett) – place_categories táblába kerülnek. */
+  extra_category_ids?: string[]
   description: string
   address: string
   rating: number
@@ -429,7 +486,24 @@ export async function insertPlace(input: PlaceFormInput): Promise<{ id: string }
     const msg = error.message || String(error)
     return { error: msg.includes('featured_order') ? 'A featured_order oszlop hiányzik. Futtasd a Supabase migrációt: 0012_featured_order.sql (SQL Editor).' : msg }
   }
-  return data ? { id: (data as { id: string }).id } : { error: 'Ismeretlen hiba' }
+  const newId = data ? (data as { id: string }).id : null
+  if (!newId) return { error: 'Ismeretlen hiba' }
+
+  // place_categories many-to-many kapcsolatok mentése (primary + extra kategóriák)
+  const extraIds = input.extra_category_ids ?? []
+  const allCategoryIds = [input.category_id, ...extraIds.filter((id) => id && id !== input.category_id)]
+  if (allCategoryIds.length > 0) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await (admin.from('place_categories') as any).insert(
+      allCategoryIds.map((cid, index) => ({
+        place_id: newId,
+        category_id: cid,
+        is_primary: index === 0,
+      }))
+    )
+  }
+
+  return { id: newId }
 }
 
 export async function updatePlace(id: string, input: PlaceFormInput): Promise<{ ok: true } | { ok: false; error: string }> {
@@ -482,6 +556,24 @@ export async function updatePlace(id: string, input: PlaceFormInput): Promise<{ 
     const msg = error.message || String(error)
     return { ok: false, error: msg.includes('featured_order') ? 'A featured_order oszlop hiányzik. Futtasd a Supabase migrációt: 0012_featured_order.sql.' : msg }
   }
+
+  // place_categories many-to-many kapcsolatok frissítése
+  const extraIds = input.extra_category_ids ?? []
+  const allCategoryIds = [input.category_id, ...extraIds.filter((cid) => cid && cid !== input.category_id)]
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const table: any = admin.from('place_categories')
+  // Töröljük a régi hozzárendeléseket, majd újra beszúrjuk a teljes listát
+  await table.delete().eq('place_id', id)
+  if (allCategoryIds.length > 0) {
+    await table.insert(
+      allCategoryIds.map((cid, index) => ({
+        place_id: id,
+        category_id: cid,
+        is_primary: index === 0,
+      }))
+    )
+  }
+
   return { ok: true }
 }
 

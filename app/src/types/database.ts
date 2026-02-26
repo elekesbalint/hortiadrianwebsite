@@ -235,6 +235,26 @@ export type Database = {
           filter_id?: string
         }
       }
+      place_categories: {
+        Row: {
+          place_id: string
+          category_id: string
+          is_primary: boolean
+          created_at: string
+        }
+        Insert: {
+          place_id: string
+          category_id: string
+          is_primary?: boolean
+          created_at?: string
+        }
+        Update: {
+          place_id?: string
+          category_id?: string
+          is_primary?: boolean
+          created_at?: string
+        }
+      }
       favorites: {
         Row: {
           id: string

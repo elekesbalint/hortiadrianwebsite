@@ -26,6 +26,7 @@ const GOOGLE_MAPS_LIBS: ('places')[] = ['places']
 const defaultForm: PlaceFormInput = {
   name: '',
   category_id: '',
+  extra_category_ids: [],
   description: '',
   address: '',
   rating: 4,
@@ -97,7 +98,10 @@ export default function AdminPlacesPage() {
       !search.trim() ||
       p.name.toLowerCase().includes(search.toLowerCase()) ||
       p.address.toLowerCase().includes(search.toLowerCase())
-    const matchCat = !categoryFilter || p.category === categoryFilter
+    const matchCat =
+      !categoryFilter ||
+      (p.categoryIds && p.categoryIds.includes(categoryFilter)) ||
+      p.category_id === categoryFilter
     return matchSearch && matchCat
   })
 
@@ -105,6 +109,7 @@ export default function AdminPlacesPage() {
     setForm({
       ...defaultForm,
       category_id: categories.length > 0 ? categories[0].id : '',
+      extra_category_ids: [],
     })
     setEditingPlace(null)
     setMenuFile(null)
@@ -120,6 +125,7 @@ export default function AdminPlacesPage() {
     setForm({
       name: place.name,
       category_id: place.category_id,
+      extra_category_ids: place.categoryIds?.filter((id) => id !== place.category_id) ?? [],
       description: place.description,
       address: place.address,
       rating: place.rating,
@@ -320,7 +326,7 @@ export default function AdminPlacesPage() {
         >
           <option value="">Minden kategória</option>
           {categories.map((c) => (
-            <option key={c.id} value={c.name}>
+            <option key={c.id} value={c.id}>
               {c.name}
             </option>
           ))}
@@ -444,7 +450,7 @@ export default function AdminPlacesPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Kategória *</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Fő kategória *</label>
                   <select
                     value={form.category_id}
                     onChange={(e) => setForm((f) => ({ ...f, category_id: e.target.value }))}
@@ -458,6 +464,53 @@ export default function AdminPlacesPage() {
                   </select>
                 </div>
               </div>
+              {categories.length > 0 && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    További kategóriák ehhez a helyhez
+                  </label>
+                  <div className="flex flex-wrap gap-2">
+                    {categories.map((c) => {
+                      if (c.id === form.category_id) return null
+                      const checked = form.extra_category_ids?.includes(c.id) ?? false
+                      return (
+                        <label
+                          key={c.id}
+                          className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs cursor-pointer transition-colors ${
+                            checked
+                              ? 'border-[#2D7A4F] bg-[#E8F5E9] text-[#1B5E20]'
+                              : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50'
+                          }`}
+                        >
+                          <input
+                            type="checkbox"
+                            className="h-3 w-3"
+                            checked={checked}
+                            onChange={(e) => {
+                              const checkedNow = e.target.checked
+                              setForm((prev) => {
+                                const current = prev.extra_category_ids ?? []
+                                if (checkedNow) {
+                                  if (current.includes(c.id)) return prev
+                                  return { ...prev, extra_category_ids: [...current, c.id] }
+                                }
+                                return {
+                                  ...prev,
+                                  extra_category_ids: current.filter((id) => id !== c.id),
+                                }
+                              })
+                            }}
+                          />
+                          <span>{c.name}</span>
+                        </label>
+                      )
+                    })}
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Egy hely több kategóriában is megjelenhet (pl. Étterem és Program). A fő kategória határozza meg az alap megjelenítést.
+                  </p>
+                </div>
+              )}
               {(() => {
                 const selectedCategory = categories.find(c => c.id === form.category_id)
                 const isEventCategory = selectedCategory?.slug === 'programok' || selectedCategory?.slug === 'esemeny'

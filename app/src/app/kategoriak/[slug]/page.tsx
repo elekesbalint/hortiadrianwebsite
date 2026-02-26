@@ -117,7 +117,11 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
   const heroImageUrl = categoryBySlug?.image || config.heroImage
   const placesInCategory = useMemo(() => {
     if (!categoryBySlug) return places
-    return places.filter((p) => p.category_id === categoryBySlug.id)
+    return places.filter(
+      (p) =>
+        (p.categoryIds && p.categoryIds.includes(categoryBySlug.id)) ||
+        p.category_id === categoryBySlug.id
+    )
   }, [places, categoryBySlug])
 
   const centerForDistance = userLocation ?? BUDAPEST

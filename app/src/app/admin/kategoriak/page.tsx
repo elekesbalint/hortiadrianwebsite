@@ -21,7 +21,7 @@ import { CATEGORY_ICON_OPTIONS, getCategoryIconComponent } from '@/lib/categoryI
 
 export default function AdminCategoriesPage() {
   const [categories, setCategories] = useState<AppCategory[]>([])
-  const [places, setPlaces] = useState<{ category_id: string }[]>([])
+  const [places, setPlaces] = useState<{ category_id: string; categoryIds?: string[] }[]>([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [newSlug, setNewSlug] = useState('')
@@ -45,7 +45,7 @@ export default function AdminCategoriesPage() {
     setLoading(true)
     const [cats, pls, groups] = await Promise.all([getCategories(), getPlaces(), getFilterGroupOptions()])
     setCategories(cats)
-    setPlaces(pls.map((p) => ({ category_id: p.category_id })))
+    setPlaces(pls.map((p) => ({ category_id: p.category_id, categoryIds: p.categoryIds })))
     setFilterGroupOptions(groups)
     setLoading(false)
   }
@@ -55,7 +55,11 @@ export default function AdminCategoriesPage() {
   }, [])
 
   const placeCountByCategoryId = (categoryId: string) =>
-    places.filter((p) => p.category_id === categoryId).length
+    places.filter(
+      (p) =>
+        (p.categoryIds && p.categoryIds.includes(categoryId)) ||
+        p.category_id === categoryId
+    ).length
 
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault()

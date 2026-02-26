@@ -69,7 +69,9 @@ function MapPageContent() {
         if (p.name.toLowerCase().includes(query)) return true
         
         // Kategória keresés (pl. "étterem", "szállás")
-        const category = categories.find((c) => c.id === p.category_id)
+        const category = categories.find(
+          (c) => p.categoryIds?.includes(c.id) || c.id === p.category_id
+        )
         if (category && (category.name.toLowerCase().includes(query) || category.slug.toLowerCase().includes(query))) {
           return true
         }
@@ -89,7 +91,11 @@ function MapPageContent() {
     if (selectedCategorySlug) {
       const cat = categories.find((c) => c.slug === selectedCategorySlug)
       if (cat) {
-        filtered = filtered.filter((p) => p.category_id === cat.id)
+        filtered = filtered.filter(
+          (p) =>
+            (p.categoryIds && p.categoryIds.includes(cat.id)) ||
+            p.category_id === cat.id
+        )
       }
     }
     
